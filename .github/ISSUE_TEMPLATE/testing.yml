@@ -1,0 +1,153 @@
+name: 🧪 Testing Task
+description: Add or improve automated test coverage.
+title: '[TEST] <short summary>'
+labels: ['type: test', 'status: triage-needed']
+
+body:
+  - type: dropdown
+    id: test-type
+    attributes:
+      label: Test Type
+      description: What level of testing is needed?
+      options:
+        - Unit Tests
+        - Integration Tests
+        - End-to-End (E2E) Tests
+        - API Tests
+        - Performance Tests
+        - Security Tests
+        - Multiple (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: target
+    attributes:
+      label: Target Code/Module
+      description: What specific code needs test coverage? Include file paths or module names.
+      placeholder: |
+        - File: app/Controllers/Http/AuthController.ts
+        - Methods: register(), login(), resetPassword()
+        - Or: Authentication module (all controllers and services)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why are these tests needed now?
+      placeholder: |
+        Choose one or describe:
+        - New feature needs test coverage before merge
+        - Existing code has insufficient coverage (current: 45%, target: 80%)
+        - Bug #123 wasn't caught by tests - need to prevent regression
+        - Refactoring planned - need safety net first
+        - Code review identified untested edge cases
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current Test Coverage
+      description: What tests already exist (if any)? What's the current coverage percentage?
+      placeholder: |
+        - Current coverage: 45% (or "No tests exist")
+        - Existing tests cover: basic registration happy path only
+        - Missing: error handling, validation, edge cases
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Test Scenarios Required
+      description: List specific scenarios that must be covered. Be as detailed as possible.
+      placeholder: |
+        Registration Tests:
+        - [ ] Valid registration with all required fields
+        - [ ] Registration with duplicate email returns 409 error
+        - [ ] Registration with invalid email format returns 400 error
+        - [ ] Registration without password returns 400 error
+        - [ ] Password must be at least 8 characters
+        - [ ] Successful registration sends welcome email
+        - [ ] Registration creates user record in database
+
+        Login Tests:
+        - [ ] Valid credentials return JWT token
+        - [ ] Invalid password returns 401 error
+        - [ ] Non-existent email returns 401 error
+        - [ ] Account locked after 5 failed attempts
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this testing task to be considered complete?
+      placeholder: |
+        - [ ] All scenarios listed above have passing tests
+        - [ ] Code coverage for target module reaches 80%+
+        - [ ] Tests run in CI pipeline without failures
+        - [ ] Test execution time under 10 seconds for unit tests
+        - [ ] All edge cases and error conditions covered
+        - [ ] Tests follow project testing conventions (see docs/testing.md)
+        - [ ] Mock external dependencies (email service, database)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this test coverage?
+      options:
+        - Critical – Blocks deployment/merge
+        - High – Core functionality, needed soon
+        - Medium – Important but not blocking
+        - Low – Nice to have, can wait
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Blockers
+      description: Does this require test data, fixtures, mocks, or other setup?
+      placeholder: |
+        - Needs test database with sample user data
+        - Requires mock email service setup
+        - Depends on #456 (API endpoints) being completed first
+        - Need to install @faker-js/faker for test data generation
+    validations:
+      required: false
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Notes (Optional)
+      description: Any specific testing patterns, frameworks, or approaches to use?
+      placeholder: |
+        - Use Japa test framework (already configured)
+        - Follow AAA pattern (Arrange, Act, Assert)
+        - Use database transactions for isolation
+        - Mock external API calls with MSW
+        - Reference similar tests in tests/auth/login.spec.ts
+    validations:
+      required: false
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Resources & References
+      description: Links to code, documentation, or related issues.
+      placeholder: |
+        - Code to test: https://github.com/org/repo/blob/main/app/Controllers/AuthController.ts
+        - Related bug: #123
+        - Testing docs: docs/testing-guidelines.md
+        - Coverage report: https://codecov.io/...
+    validations:
+      required: false

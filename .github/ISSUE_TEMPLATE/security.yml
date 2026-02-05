@@ -1,0 +1,96 @@
+name: 🔐 Security Task
+description: Address security vulnerabilities or implement security improvements.
+title: '[SECURITY] <short summary>'
+labels: ['type: security', 'status: triage-needed']
+
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How critical is this security issue?
+      options:
+        - Critical (immediate action required)
+        - High (fix within days)
+        - Medium (fix within weeks)
+        - Low (fix when possible)
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Security Concern
+      description: Describe the vulnerability, weakness, or security risk.
+      placeholder: |
+        Example: User passwords are stored in plain text in the database, making them vulnerable if the database is compromised.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could happen if this is exploited? Who/what is affected?
+      placeholder: |
+        - Attacker could access all user accounts
+        - Affects: All registered users (~5000 accounts)
+        - Data at risk: Email addresses, personal info, passwords
+    validations:
+      required: true
+
+  - type: textarea
+    id: attack-vector
+    attributes:
+      label: Attack Vector (if applicable)
+      description: How could this vulnerability be exploited?
+      placeholder: |
+        Example: SQL injection via unsanitized input on /api/search endpoint
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this be fixed or mitigated?
+      placeholder: |
+        - Hash passwords using bcrypt before storing
+        - Add migration to hash existing plain text passwords
+        - Update user registration and password reset flows
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this issue to be considered resolved?
+      placeholder: |
+        - [ ] All passwords in database are hashed
+        - [ ] New registrations store hashed passwords only
+        - [ ] Password reset flow uses hashed passwords
+        - [ ] Security audit confirms no plain text passwords exist
+        - [ ] Unit tests cover password hashing
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: CVE IDs, security advisories, documentation, or related issues.
+      placeholder: |
+        - OWASP: https://...
+        - Related issue: #123
+        - CVE-2024-xxxxx
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Context
+      description: Any other relevant information (affected versions, workarounds, testing approach).
+    validations:
+      required: false

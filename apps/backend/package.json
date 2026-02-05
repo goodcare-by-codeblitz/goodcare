@@ -1,0 +1,23 @@
+{
+	"name": "goodcare-backend",
+	"version": "1.0.0",
+	"description": "A care management backend application that helps in organizing and managing care services efficiently and compliant with regulations.",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsx watch server.ts",
+		"build": "tsc -p tsconfig.json",
+		"start": "node server.js"
+	},
+	"author": "Your Name",
+	"license": "MIT",
+	"type": "module",
+	"dependencies": {
+		"dotenv": "^17.2.3",
+		"fastify": "^5.7.2"
+	},
+	"devDependencies": {
+		"@types/node": "^25.1.0",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	}
+}

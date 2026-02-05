@@ -1,0 +1,190 @@
+name: 🧹 Chore / Maintenance
+description: Routine maintenance, refactoring, dependency updates, or technical debt.
+title: '[CHORE] <short summary>'
+labels: ['type: chore', 'status: triage-needed']
+
+body:
+  - type: dropdown
+    id: chore-type
+    attributes:
+      label: Chore Type
+      description: What kind of maintenance is this?
+      options:
+        - Dependency Update
+        - Code Cleanup / Refactoring
+        - Documentation Update
+        - Configuration Change
+        - Build/CI/CD Improvement
+        - Database Maintenance
+        - Performance Optimization
+        - Security Patch
+        - Technical Debt Reduction
+        - Deprecation/Removal
+        - Other (specify in summary)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Clear, specific description of the maintenance task.
+      placeholder: |
+        Examples:
+        - Upgrade AdonisJS from v5 to v6
+        - Remove unused authentication middleware from 2023
+        - Update Node.js base Docker image to v20 LTS
+        - Refactor user service to use repository pattern
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason / Motivation
+      description: Why is this maintenance needed now?
+      placeholder: |
+        Choose the most relevant reason(s):
+        - Security vulnerability (CVE-XXXX-XXXX)
+        - Dependency is deprecated/unsupported
+        - Blocking other work or upgrades
+        - Technical debt is causing bugs/slowdowns
+        - Improving code maintainability
+        - Reducing build times
+        - Compliance requirement
+        - Part of planned refactoring initiative
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this maintenance?
+      options:
+        - Critical – Security issue or production blocker
+        - High – Blocking other work or causing problems
+        - Medium – Should be done soon
+        - Low – Nice to have, can wait
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope of Changes
+      description: What files, modules, or systems will be affected?
+      placeholder: |
+        - Files: app/Services/UserService.ts, app/Repositories/UserRepository.ts
+        - Modules: Authentication, User Management
+        - Config: package.json, tsconfig.json
+        - Database: No migrations needed (or: requires migration)
+        - Documentation: Update API docs and README
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks / Checklist
+      description: Break down the work into specific, actionable tasks.
+      placeholder: |
+        - [ ] Update package.json dependencies
+        - [ ] Run npm audit fix
+        - [ ] Update code to match new API (breaking changes)
+        - [ ] Update tests for new dependency version
+        - [ ] Update documentation
+        - [ ] Test in staging environment
+        - [ ] Update CI/CD pipeline if needed
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected Impact
+      description: How will this affect the codebase, performance, or development workflow?
+      placeholder: |
+        Positive impacts:
+        - Resolves security vulnerability with severity 7.5
+        - Reduces bundle size by ~50KB
+        - Improves build time from 45s to 30s
+        - Makes code more maintainable for future changes
+
+        Potential risks:
+        - Breaking changes in API (documented in migration guide)
+        - Requires team to learn new patterns
+        - May temporarily increase build time during transition
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes?
+      description: Will this require changes from other developers or affect existing functionality?
+      options:
+        - 'Yes – Requires code changes from team'
+        - 'Yes – Changes existing behavior'
+        - 'No – Fully backward compatible'
+        - 'Unknown – Needs investigation'
+    validations:
+      required: true
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Testing Strategy
+      description: How will you verify this maintenance doesn't break anything?
+      placeholder: |
+        - Run full test suite (unit + integration)
+        - Manual testing in staging: [list critical flows]
+        - Check bundle size with webpack-bundle-analyzer
+        - Verify no console errors in dev tools
+        - Performance testing: compare before/after metrics
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Blockers
+      description: Does this depend on other work or require coordination?
+      placeholder: |
+        - Must complete #456 (API refactor) first
+        - Requires notification to team (breaking changes)
+        - Need to schedule downtime for database migration
+        - Waiting for design team approval on new UI patterns
+    validations:
+      required: false
+
+  - type: textarea
+    id: rollback-plan
+    attributes:
+      label: Rollback Plan (if applicable)
+      description: For risky changes, how can this be reverted if something goes wrong?
+      placeholder: |
+        - Keep old dependency version in package.json comments
+        - Git tag before merge: v1.2.3-pre-upgrade
+        - Database migration has down() method tested
+        - Feature flag allows toggling between old/new implementation
+    validations:
+      required: false
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Resources & References
+      description: Links to related issues, documentation, or migration guides.
+      placeholder: |
+        - Related issue: #789
+        - Migration guide: https://adonisjs.com/v5-to-v6-upgrade
+        - Security advisory: https://github.com/advisories/GHSA-xxxx
+        - RFC/Design doc: [link]
+    validations:
+      required: false

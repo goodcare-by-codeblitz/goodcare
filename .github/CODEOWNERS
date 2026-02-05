@@ -1,0 +1,14 @@
+# Default owner
+
+- @SimzMapisa
+
+## Backend
+
+apps/backend/ @backend-team
+packages/db/ @platform-team
+packages/auth/ @platform-team
+
+## Frontend
+
+apps/web/ @frontend-team
+apps/mobile/ @mobile-team

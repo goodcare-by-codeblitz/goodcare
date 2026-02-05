@@ -1,0 +1,132 @@
+name: 💡 Feature Request
+description: Propose a new feature or enhancement for Tengago.
+title: '[FEATURE] <short summary>'
+labels: ['type: feature', 'status: triage-needed']
+
+body:
+  - type: checkboxes
+    id: duplicates
+    attributes:
+      label: Duplicate Check
+      description: Confirm this feature has not been proposed before.
+      options:
+        - label: I have searched both **open** and **closed** issues and confirmed this is not a duplicate.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What specific problem does this feature solve? Avoid vague descriptions.
+      placeholder: |
+        Example: Users cannot filter products by multiple criteria, forcing them to scroll through hundreds of irrelevant results. This causes frustration and increases cart abandonment.
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: Who needs this feature and why?
+      placeholder: |
+        As a [type of user]
+        I want to [action]
+        So that [benefit]
+
+        Example:
+        As a customer browsing products
+        I want to filter by category, price range, and vendor
+        So that I can quickly find relevant products without scrolling
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Expected Outcome
+      description: What should be possible after this feature is implemented? Focus on the outcome, not the implementation.
+      placeholder: |
+        Example: Users can filter products by category, price range, and vendor, and see filtered results update in real-time without page reload.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: User Impact
+      description: How many users would benefit from this feature?
+      options:
+        - All users
+        - Most users (>50%)
+        - Some users (10-50%)
+        - Few users (<10%)
+        - Admin/internal users only
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution (Optional)
+      description: If you have a technical approach in mind, describe it. Engineering will refine this during implementation.
+      placeholder: |
+        Example:
+        - Add filter sidebar component to product listing page
+        - Create API endpoint: GET /api/products?category=&minPrice=&maxPrice=&vendor=
+        - Use query parameters to maintain filter state in URL
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What specific, testable conditions must be met for this feature to be considered complete?
+      placeholder: |
+        - [ ] Filter sidebar displays category, price range, and vendor options
+        - [ ] Selecting filters updates product list without page reload
+        - [ ] Filter state persists in URL (shareable/bookmarkable)
+        - [ ] "Clear all filters" button resets to default view
+        - [ ] Filter works on mobile with responsive design
+        - [ ] API endpoint supports pagination with filters
+        - [ ] Loading state shown while fetching filtered results
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this feature?
+      options:
+        - Critical – Blocks users or other work
+        - High – Needed soon, significant impact
+        - Medium – Important but not urgent
+        - Low – Nice to have, minimal impact
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies (Optional)
+      description: Does this feature require other features, APIs, or design work to be completed first?
+      placeholder: |
+        - Requires #123 (vendor API) to be completed first
+        - Needs design mockups from design team
+        - Database indexing may be needed for performance
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Context (Optional)
+      description: Screenshots, mockups, competitor examples, related issues, or other relevant information.
+      placeholder: |
+        - Similar feature in [competitor]: [link]
+        - User feedback: [link to support ticket]
+        - Related to issue #456
+    validations:
+      required: false

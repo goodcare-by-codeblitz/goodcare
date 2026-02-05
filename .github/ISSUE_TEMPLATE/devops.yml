@@ -1,0 +1,257 @@
+name: 🏗️ DevOps / Infrastructure
+description: Infrastructure, CI/CD, deployment, monitoring, or operations improvement.
+title: '[DEVOPS] <short summary>'
+labels: ['type: devops', 'status: triage-needed']
+
+body:
+  - type: dropdown
+    id: devops-type
+    attributes:
+      label: DevOps Category
+      description: What type of infrastructure work is this?
+      options:
+        - CI/CD Pipeline
+        - Deployment / Release Process
+        - Infrastructure as Code (IaC)
+        - Containerization / Docker
+        - Monitoring / Observability
+        - Security / Secrets Management
+        - Performance / Scaling
+        - Backup / Disaster Recovery
+        - Environment Configuration
+        - Cloud Infrastructure (AWS/Azure/GCP)
+        - Networking / DNS
+        - Database Operations
+        - Other (specify in summary)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current State / Problem
+      description: What infrastructure limitation, issue, or gap exists today?
+      placeholder: |
+        Examples:
+        - Deployments are manual and error-prone (takes 45 min, fails 30% of the time)
+        - No monitoring alerts when API response time exceeds 2s
+        - Staging environment doesn't match production (Node v16 vs v20)
+        - Application logs are scattered across multiple servers
+        - SSL certificates expire without warning
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Desired Outcome
+      description: What should the infrastructure/operations look like after this is complete?
+      placeholder: |
+        Examples:
+        - Automated deployments via GitHub Actions (< 10 min, rollback in 2 min)
+        - PagerDuty alerts when response time > 2s for 5 minutes
+        - All environments use identical Node v20 via Docker
+        - Centralized logging in DataDog with 30-day retention
+        - Automated SSL renewal 30 days before expiry
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Affected Environment(s)
+      description: Which environments does this impact?
+      multiple: true
+      options:
+        - Production
+        - Staging
+        - Development
+        - Testing/QA
+        - All environments
+        - CI/CD only
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Technical Requirements
+      description: Specific technical implementation requirements or constraints.
+      placeholder: |
+        - Use GitHub Actions (already configured) not Jenkins
+        - Deploy to AWS ECS (existing infrastructure)
+        - Must support zero-downtime deployments
+        - Environment variables stored in AWS Secrets Manager
+        - Docker images tagged with git commit SHA
+        - Must work with existing PostgreSQL RDS instance
+        - SSL certificates via Let's Encrypt
+        - Cost must stay under $50/month additional
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What specific, testable conditions must be met for this to be considered complete?
+      placeholder: |
+        - [ ] Dockerfile builds successfully in < 5 minutes
+        - [ ] GitHub Actions workflow deploys to staging on merge to develop branch
+        - [ ] GitHub Actions workflow deploys to production on merge to main branch
+        - [ ] Deployments include automated database migrations
+        - [ ] Rollback process documented and tested
+        - [ ] Environment variables documented in .env.example
+        - [ ] CI pipeline runs tests before deployment
+        - [ ] Deployment sends notification to #deployments Slack channel
+        - [ ] Documentation updated in docs/deployment.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this infrastructure work?
+      options:
+        - Critical – Production outage or security issue
+        - High – Blocking deployments or development
+        - Medium – Needed soon, impacting workflow
+        - Low – Nice to have, can wait
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: How will this affect the team, users, or systems?
+      placeholder: |
+        Positive impacts:
+        - Reduces deployment time from 45 min to 10 min
+        - Eliminates 30% deployment failure rate
+        - Saves team ~5 hours/week on manual deployments
+        - Enables faster hotfix releases (2 min vs 45 min)
+
+        Potential risks/disruptions:
+        - Requires 1 hour production maintenance window
+        - Team needs training on new deployment process
+        - Initial setup may cause staging downtime
+        - Requires AWS cost increase (~$30/month for additional resources)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: downtime-required
+    attributes:
+      label: Downtime Required?
+      description: Will this require scheduled downtime?
+      options:
+        - 'Yes – Production downtime needed'
+        - 'Yes – Staging/Dev downtime only'
+        - 'No – Zero downtime deployment'
+        - 'Unknown – Needs investigation'
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback-plan
+    attributes:
+      label: Rollback / Contingency Plan
+      description: If something goes wrong, how do we revert or recover?
+      placeholder: |
+        - Keep old deployment process documented until new one proven stable
+        - Terraform state backed up before infrastructure changes
+        - Database snapshot taken before migration
+        - Feature flag allows reverting to old CI/CD if needed
+        - Manual deployment process remains available as fallback
+        - Incident response plan: [link to runbook]
+    validations:
+      required: false
+
+  - type: textarea
+    id: security-considerations
+    attributes:
+      label: Security Considerations
+      description: Are there security implications to consider?
+      placeholder: |
+        - API keys stored in GitHub Secrets (encrypted at rest)
+        - IAM roles follow principle of least privilege
+        - Container images scanned for vulnerabilities in CI
+        - Secrets never logged or exposed in error messages
+        - Audit logging enabled for all infrastructure changes
+    validations:
+      required: false
+
+  - type: textarea
+    id: cost-estimate
+    attributes:
+      label: Cost Estimate (if applicable)
+      description: What are the infrastructure cost implications?
+      placeholder: |
+        Current costs: $200/month (AWS EC2 + RDS)
+        Additional costs:
+        - ECS Fargate: +$50/month
+        - CloudWatch logs: +$15/month
+        - Total new monthly cost: $265/month (+32%)
+
+        Or: No additional costs (using existing infrastructure)
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Prerequisites
+      description: What needs to be in place or completed first?
+      placeholder: |
+        - Requires AWS account access with admin permissions
+        - Depends on #456 (database migration) being completed
+        - Need approval from security team for new IAM roles
+        - Team training session scheduled before rollout
+        - Requires Terraform state migration first
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing-validation
+    attributes:
+      label: Testing & Validation Plan
+      description: How will you verify this works correctly?
+      placeholder: |
+        - Deploy test app to staging environment
+        - Run load tests: 1000 req/s for 10 minutes
+        - Verify monitoring alerts trigger correctly
+        - Test rollback procedure in staging
+        - Chaos engineering: simulate pod failures
+        - Verify zero downtime during deployment
+    validations:
+      required: false
+
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation Required
+      description: What documentation needs to be created or updated?
+      placeholder: |
+        - Update deployment runbook (docs/deployment.md)
+        - Create troubleshooting guide for common CI/CD issues
+        - Update team wiki with new infrastructure diagram
+        - Document environment variable requirements
+        - Create video walkthrough of deployment process
+    validations:
+      required: false
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Resources & References
+      description: Links to related issues, documentation, architecture diagrams, or external resources.
+      placeholder: |
+        - Related issue: #789
+        - Architecture diagram: [Figma link]
+        - AWS documentation: https://docs.aws.amazon.com/...
+        - Terraform modules: https://github.com/org/terraform-modules
+        - Monitoring dashboard: https://datadog.com/...
+    validations:
+      required: false
