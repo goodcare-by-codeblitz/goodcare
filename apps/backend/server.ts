@@ -1,12 +1,17 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
-const app = Fastify({
+import { registerRoutes } from './routes/auth/register.js';
+
+
+export const app = Fastify({
 	logger: true,
 });
 
 app.get('/health', async () => {
-	return { status: 'ok', timestamp: new Date().toISOString() };
+	return { status: 'okay', timestamp: new Date().toISOString() };
 });
+
+app.register(registerRoutes, { prefix: '/auth' });
 
 // start the server
 const start = async () => {

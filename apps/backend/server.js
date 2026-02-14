@@ -4,8 +4,9 @@ const app = Fastify({
     logger: true,
 });
 app.get('/health', async () => {
-    return { status: 'ok' };
+    return { status: 'ok', timestamp: new Date().toISOString() };
 });
+// start the server
 const start = async () => {
     try {
         await app.listen({

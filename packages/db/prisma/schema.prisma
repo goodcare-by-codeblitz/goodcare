@@ -1,0 +1,642 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "./../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * RoleScope defines the scope of a role, which can be either PLATFORM (applicable across the entire platform) or ORGANIZATION (specific to a particular organization). This allows for flexible role definitions and permissions management based on the context in which the role is used.
+ */
+enum RoleScope {
+  PLATFORM
+  ORGANIZATION
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  DECEASED
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  LEFT
+}
+
+enum VisitStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum CarePlanStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum QualificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum VisitTaskStatus {
+  PENDING
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+// enum AuditAction {
+//   CREATE
+//   UPDATE
+//   DELETE
+//   LOGIN
+//   LOGOUT
+//   PASSWORD_CHANGE
+//   ROLE_ASSIGNMENT
+//   OTHER
+// }
+
+enum IncidentReportStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  NOT_SPECIFIED
+}
+
+/**
+ * User represents a user of the system, which can be a caregiver, healthcare provider, or administrator.
+ * It includes fields for email, password hash, status, and timestamps for creation and updates.
+ * Each user can be associated with multiple organizations through the OrganizationUser join table, allowing for multi-tenancy and flexible user management across different organizations using the platform.
+ * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as visits assigned by the user, incident reports they have reported, and audit logs of their actions within the system.
+ */
+model User {
+  id           String     @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String     @unique
+  passwordHash String
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  organizationUsers OrganizationUser[]
+  invitedMembers    OrganizationUser[] @relation("OrgUserInvitedBy")
+  // visitAssignments  VisitAssignment[]  @relation("AssignedBy")
+  // incidentsReported IncidentReport[]
+  // auditLogs         AuditLog[]
+  roles             RoleAssignment[]
+
+  // carePlans CarePlan[]
+
+  // inviteTokens InviteToken[]
+}
+
+/**
+ * Organization represents a healthcare organization or care provider within the system.
+ * It includes fields for the organization's name, status, and timestamps for creation and updates.
+ * Each organization can have an associated address and is linked to users (through OrganizationUser), patients, visits, care plans, daily notes, incident reports, audit logs, carers, qualifications, roles, and invite tokens.
+ * This model serves as the central entity around which other models are organized, allowing for multi-tenancy and separation of data between different organizations using the platform.
+ * The unique constraints and indexes on the organizationId field in related models ensure efficient querying and data integrity when associating records with specific organizations, while the relationships defined in this model allow for easy navigation and management of related data across the platform.
+ */
+
+model Organization {
+  id        String             @id @default(uuid())
+  name      String
+  status    OrganizationStatus @default(ACTIVE)
+  slug      String             @unique
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  deletedAt DateTime?
+
+  // addressId String?
+  // address   Address? @relation(fields: [addressId], references: [id])
+
+  users    OrganizationUser[]
+  patients Patient[]
+  // visits     Visit[]
+  // carePlans  CarePlan[]
+  // dailyNotes DailyNote[]
+  // incidents  IncidentReport[]
+  // auditLogs  AuditLog[]
+
+  // carers Carer[]
+
+  // qualifications Qualification[]
+
+  // inviteTokens InviteToken[]
+}
+
+/**
+ * OrganizationUser represents the membership of a user within an organization, allowing for tracking of which users belong to which organizations and their status within those organizations.
+ * Each record includes the user ID, organization ID, membership status (invited, active, suspended, left), and timestamps for when the user was invited, joined, and left the organization.
+ * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the membership, the organization they belong to, and any audit logs or invite tokens related to their membership in the organization. The unique constraints and indexes on the combination of userId and organizationId ensure that a user cannot have duplicate memberships within the same organization, while allowing for efficient querying of memberships by user and organization, which are common use cases in managing user access and roles within healthcare applications.
+ */
+model OrganizationUser {
+  id             String @id @default(uuid())
+  userId         String
+  organizationId String
+
+  status    MembershipStatus
+  invitedAt DateTime         @default(now())
+  joinedAt  DateTime
+  leftAt    DateTime?
+
+  // carer        Carer?
+  invitedById  String
+  invitedBy    User         @relation("OrgUserInvitedBy", fields: [invitedById], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  // auditLogs    AuditLog[]             @relation("ActorOrgUserAuditLogs")
+  // inviteTokens InviteToken[]
+
+  @@unique([userId, organizationId])
+  @@unique([id, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+/**
+ * Role represents a role that can be assigned to users within the system, allowing for role-based access control and permissions management.
+ * Each role has a name, a scope (either PLATFORM or ORGANIZATION), and is associated with an organization (if the scope is ORGANIZATION).
+ */
+model Role {
+  id    String    @id @default(uuid())
+  name  String
+  scope RoleScope @default(PLATFORM)
+
+  roleAssignments RoleAssignment[]
+  permissions     RolePermission[]
+
+  @@unique([scope, name])
+  @@index([name])
+}
+
+/**
+ * Permission represents a specific permission or action that can be assigned to roles within the system, allowing for granular control over what actions users with specific roles can perform.
+ * Each permission has a unique key and a description, and can be associated with multiple roles through the RolePermission join table, enabling a many-to-many relationship between roles and permissions. This allows for flexible permission assignments and management within the system, as permissions can be reused across different roles and roles can have multiple permissions assigned to them. The unique constraint on the key field ensures that each permission is distinct and can be easily referenced when assigning permissions to roles, while the relationships defined in this model allow for easy navigation and management of related data across the platform, such as the roles associated with a permission and the permissions assigned to a role.
+ */
+model Permission {
+  id          String @id @default(uuid())
+  key         String @unique //Examples: "manage_users", "view_reports", "edit_care_plans"
+  description String // Examples: "Allows the user to manage other users within the organization", "Allows the user to view reports and analytics", "Allows the user to create and edit care plans"
+
+  roles RolePermission[]
+}
+
+/**
+ * RolePermission is the join table between Role and Permission, representing the permissions assigned to a role.
+ * This allows for a many-to-many relationship between roles and permissions, enabling flexible permission assignments and management within the system.
+ * Each record in this table links a specific role to a specific permission, allowing for granular control over role-based access and authorization.
+ */
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+/**
+ * RoleAssignment represents the assignment of a role to a user within the system, allowing for tracking of which users have which roles and their associated permissions.
+ * Each record includes the user ID, role ID, and optionally the organization ID (if the role is organization-scoped), as well as relationships to the User and Role models.
+ * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the role assignment, the role that is assigned, and any permissions associated with that role. The indexes on userId and roleId facilitate efficient querying of role assignments by user and by role, which are common use cases in managing user access and permissions within healthcare applications. The optional organizationId field allows for flexibility in assigning roles that are specific to an organization, while still supporting platform-wide roles that do not require an organization context
+ */
+model RoleAssignment {
+  id             String  @id @default(uuid())
+  userId         String
+  roleId         String
+  organizationId String?
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId, organizationId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([organizationId])
+}
+
+/**
+ * Carer represents a caregiver or healthcare provider within the system.
+ * It includes fields to track their employment details (hire date, employment type, experience years, availability),
+ * as well as their status (active, on leave, suspended, terminated).
+ * Each Carer is associated with an OrganizationUser, linking them to a specific user and organization.
+ * Carers can have multiple qualifications, be assigned to multiple visits, and create daily notes and visit tasks.
+ */
+
+// model Carer {
+//   id                 String           @id @default(uuid())
+//   hireDate           DateTime
+//   employmentType     String
+//   experienceYears    Int              @default(0)
+//   availability       String
+//   updatedAt          DateTime         @updatedAt
+//   status             EmploymentStatus @default(ACTIVE)
+//   organizationUserId String           @unique
+//   organizationUser   OrganizationUser @relation(fields: [organizationUserId], references: [id])
+
+//   organizationId String
+//   organization   Organization @relation(fields: [organizationId], references: [id])
+
+//   qualifications   Qualification[]
+//   visitAssignments VisitAssignment[]
+//   dailyNotes       DailyNote[]
+//   visitTasks       VisitTask[]
+
+//   @@unique([id, organizationUserId])
+//   @@unique([id, organizationId])
+//   @@index([organizationId])
+//   @@index([status])
+// }
+
+/**
+ * Qualification represents a specific qualification or certification that a carer holds, such as "First Aid Certification", "Nursing License", or "CPR Training".
+ * Each qualification is associated with a specific carer and organization, and has a type (linked to QualificationType), a file URL for the qualification document, and status fields to track its verification and expiration.
+ * This model allows for tracking and managing the qualifications of carers within the organization, ensuring that they meet the necessary requirements for their roles and responsibilities.
+ * The unique constraint on the combination of carerId, organizationId, and typeId ensures that a carer cannot have duplicate qualifications of the same type within the same organization, while allowing for multiple different qualifications to be tracked for each carer.
+ */
+
+// model Qualification {
+//   id             String            @id @default(uuid())
+//   carerId        String
+//   typeId         String
+//   carer          Carer             @relation(fields: [carerId, organizationId], references: [id, organizationId])
+//   type           QualificationType @relation(fields: [typeId], references: [id])
+//   fileUrl        String // reference to storage (S3, GCS, local, etc.)
+//   organizationId String
+//   organization   Organization      @relation(fields: [organizationId], references: [id])
+
+//   status    QualificationStatus
+//   issuedAt  DateTime?
+//   expiresAt DateTime?
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@unique([carerId, organizationId, typeId])
+//   @@index([organizationId])
+// }
+
+/**
+ * QualificationType represents a specific type of qualification or certification that a carer can hold, such as "First Aid Certification", "Nursing License", or "CPR Training".
+ * Each qualification type has a unique key, a name, and an optional description, as well as a boolean field to indicate whether the qualification expires and requires renewal.
+ * This model allows for defining and managing the different types of qualifications that carers can have within the organization, providing a reference for tracking and verifying carer qualifications.
+ * The unique constraint on the key field ensures that each qualification type is distinct and can be easily referenced when assigning qualifications to carers.
+ */
+
+// model QualificationType {
+//   id          String  @id @default(uuid())
+//   key         String  @unique
+//   name        String
+//   description String? 
+//   expires     Boolean @default(false)
+
+//   qualifications Qualification[]
+// }
+
+/**
+ * Patient represents a patient receiving care within the organization.
+ * It includes fields for personal information (first name, last name, date of birth, gender) and status (active, inactive, deceased).
+ * Each patient is associated with an organization and can have an optional address.
+ * Patients can have multiple visits and care plans, allowing for comprehensive tracking of their care history and ongoing care needs within the organization.
+ * The unique constraint on the combination of id and organizationId ensures that patient records are unique within each organization, while allowing for the possibility of patients with the same name or other attributes across different organizations. The indexes on organizationId and lastName, firstName facilitate efficient querying of patients by organization and by name, which are common use cases in healthcare applications.
+ */
+model Patient {
+  id                String        @id @default(uuid())
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  gender            Gender        @default(NOT_SPECIFIED)
+  genderDescription String?       @db.VarChar(255)
+  status            PatientStatus
+
+  organizationId String
+  addressId      String?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  // address      Address?     @relation(fields: [addressId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // visits    Visit[]
+  // carePlans CarePlan[]
+
+  // @@unique([id, organizationId])
+  // @@index([organizationId])
+  // @@index([lastName, firstName])
+}
+
+/**
+ * Visit represents a scheduled visit or appointment for a patient, which can be assigned to one or more carers.
+ * It includes fields for the scheduled start and end times, actual start and end times, and status (scheduled, in progress, completed, cancelled, no show).
+ * Each visit is associated with an organization and a patient, and can have multiple assignments to carers (VisitAssignment), tasks (VisitTask), daily notes (DailyNote), and incident reports (IncidentReport) related to the visit.
+ * The unique constraint on the combination of id and organizationId ensures that visit records are unique within each organization, while the indexes on organizationId and scheduledStart facilitate efficient querying of visits by organization and by scheduled time, which are common use cases in healthcare applications. The index on patientId allows for efficient retrieval of all visits associated with a specific patient, which is essential for managing patient care and history.
+ */
+
+// model Visit {
+//   id             String      @id @default(uuid())
+//   scheduledStart DateTime
+//   scheduledEnd   DateTime
+//   actualStart    DateTime?
+//   actualEnd      DateTime?
+//   status         VisitStatus
+//   organizationId String
+//   patientId      String
+
+//   organization Organization @relation(fields: [organizationId], references: [id])
+//   patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+
+//   assignments     VisitAssignment[]
+//   tasks           VisitTask[]
+//   dailyNotes      DailyNote[]
+//   incidentReports IncidentReport[]
+
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   deletedAt DateTime?
+
+//   @@unique([id, organizationId])
+//   @@index([organizationId, scheduledStart])
+//   @@index([patientId])
+// }
+
+/**
+ * VisitAssignment represents the assignment of a carer to a specific visit, allowing for tracking which carers are responsible for which visits.
+ * It includes fields for the assigned and unassigned timestamps, as well as an active flag to indicate whether the assignment is currently active.
+ * Each assignment is associated with a specific visit, carer, and organization, and also tracks which user assigned the carer to the visit.
+ * The unique constraint on the combination of visitId, carerId, organizationId, and isActive ensures that a carer cannot be assigned to the same visit multiple times while maintaining a history of past assignments. The indexes on organizationId, carerId, visitId, and assignedById facilitate efficient querying of assignments by organization, carer, visit, and assigning user, which are common use cases in managing care assignments within healthcare applications.
+ */
+// model VisitAssignment {
+//   id           String    @id @default(uuid())
+//   assignedAt   DateTime  @default(now())
+//   unassignedAt DateTime?
+//   isActive     Boolean   @default(true)
+
+//   visitId        String
+//   carerId        String
+//   assignedById   String
+//   organizationId String
+
+//   visit Visit @relation(fields: [visitId, organizationId], references: [id, organizationId])
+//   carer Carer @relation(fields: [carerId, organizationId], references: [id, organizationId])
+
+//   assignedBy User @relation("AssignedBy", fields: [assignedById], references: [id])
+
+//   @@unique([visitId, carerId, organizationId, isActive])
+//   @@index([organizationId])
+//   @@index([carerId])
+//   @@index([visitId])
+//   @@index([assignedById])
+//   @@index([organizationId, carerId, isActive])
+//   @@index([organizationId, visitId, isActive])
+// }
+
+/**
+ * CarePlan represents a care plan for a patient, which can include goals, interventions, and other relevant information about the patient's care.
+ * It includes fields for the version number, goals, status (draft, active, superseded, archived), and timestamps for creation and updates.
+ * Each care plan is associated with a specific patient and organization, and tracks which user created the care plan.
+ * The unique constraint on the combination of patientId, organizationId, and version ensures that each version of a care plan for a specific patient within an organization is unique, allowing for versioning and historical tracking of care plans. The indexes on organizationId and patientId facilitate efficient querying of care plans by organization and by patient, which are common use cases in managing patient care within healthcare applications.
+ */
+// model CarePlan {
+//   id        String         @id @default(uuid())
+//   version   Int
+//   goals     String
+//   status    CarePlanStatus
+//   createdAt DateTime       @default(now())
+//   updatedAt DateTime       @updatedAt
+//   deletedAt DateTime?
+
+//   patientId      String
+//   organizationId String
+
+//   createdById String
+//   createdBy   User   @relation(fields: [createdById], references: [id])
+
+//   patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+//   organization Organization @relation(fields: [organizationId], references: [id])
+
+//   @@unique([patientId, organizationId, version])
+//   @@index([organizationId, patientId])
+//   @@index([organizationId, patientId, status])
+// }
+
+/**
+ * VisitTask represents a specific task or action item related to a visit, such as "Administer medication", "Check vital signs", or "Assist with mobility".
+ * Each task has a description, status (pending, completed, declined, cancelled), and timestamps for creation and completion.
+ * Tasks are associated with a specific visit and organization, and can optionally track which carer completed the task.
+ * The index on organizationId and visitId allows for efficient retrieval of all tasks associated with a specific visit within an organization, which is essential for managing and tracking care activities during visits. The index on completedByCarerId facilitates querying of tasks completed by specific carers, which can be useful for performance tracking and reporting.
+ */
+// model VisitTask {
+//   id          String          @id @default(uuid())
+//   description String
+//   status      VisitTaskStatus @default(PENDING)
+//   createdAt   DateTime        @default(now())
+//   completedAt DateTime?
+
+//   completedByCarerId String?
+//   completedByCarer   Carer?  @relation(fields: [completedByCarerId, organizationId], references: [id, organizationId])
+
+//   visitId        String
+//   organizationId String
+//   visit          Visit  @relation(fields: [visitId, organizationId], references: [id, organizationId])
+
+//   @@index([organizationId, visitId])
+// }
+
+/**
+ * DailyNote represents a note or observation made by a carer during a visit, allowing for documentation of the patient's condition, care provided, and any relevant observations.
+ * Each note includes the content of the note, timestamps for creation and updates, and is associated with a specific visit, carer, and organization.
+ * The indexes on carerId, organizationId with createdAt, and organizationId with visitId and createdAt facilitate efficient querying of daily notes by carer, by organization and date, and by visit within an organization, which are common use cases for reviewing care documentation and tracking patient progress over time within healthcare applications.
+ */
+
+// model DailyNote {
+//   id        String    @id @default(uuid())
+//   notes     String
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   deletedAt DateTime?
+
+//   visitId        String
+//   carerId        String
+//   organizationId String
+
+//   visit Visit @relation(fields: [visitId, organizationId], references: [id, organizationId])
+//   carer Carer @relation(fields: [carerId, organizationId], references: [id, organizationId])
+
+//   organization Organization @relation(fields: [organizationId], references: [id])
+
+//   @@index([carerId])
+//   @@index([organizationId, createdAt])
+//   @@index([organizationId, visitId, createdAt])
+// }
+
+/**
+ * IncidentReport represents an incident or adverse event that occurred during a visit, allowing for documentation and tracking of incidents related to patient care.
+ * Each report includes a description of the incident, its severity, status (open, investigating, resolved, closed), and timestamps for creation and updates.
+ * Incident reports are associated with a specific visit, patient, organization, and the user who reported the incident.
+ * The indexes on organizationId with visitId, reportedById, and createdAt facilitate efficient querying of incident reports by organization and visit, by reporting user, and by date, which are common use cases for reviewing and managing incidents within healthcare applications. This allows organizations to track patterns in incidents, identify areas for improvement in care delivery, and ensure accountability for patient safety.
+ */
+// model IncidentReport {
+//   id             String           @id @default(uuid())
+//   description    String
+//   severity       IncidentSeverity
+//   organizationId String
+//   createdAt      DateTime         @default(now())
+//   updatedAt      DateTime         @updatedAt
+//   deletedAt      DateTime?
+
+// patinetId String?
+// patient   Patient? @relation(fields: [patinetId, organizationId], references: [id, organizationId])
+
+// visitId String?
+// visit   Visit?  @relation(fields: [visitId, organizationId], references: [id, organizationId])
+
+// organization Organization @relation(fields: [organizationId], references: [id])
+
+//   reportedById String
+//   reportedBy   User   @relation(fields: [reportedById], references: [id])
+
+//   status IncidentReportStatus @default(OPEN)
+
+//   @@index([organizationId, visitId])
+//   @@index([reportedById])
+//   @@index([createdAt])
+// }
+
+/**
+ * AuditLog represents a log of actions taken within the system, allowing for tracking and auditing of user activities and changes to data.
+ * Each log entry includes the action performed, the type and ID of the entity affected, the old and new values (if applicable), and metadata about the user's IP address and user agent.
+ * Audit logs are associated with a specific organization, the user who performed the action, and optionally the user's membership in the organization (OrganizationUser).
+ * The indexes on organizationId, actorUserId, createdAt, entityType with entityId, and actorOrganizationUserId facilitate efficient querying of audit logs by organization, by user, by date, and by affected entity, which are common use cases for reviewing and analyzing user activities and changes within healthcare applications. This allows organizations to maintain accountability, track changes to critical data, and investigate any issues or incidents that may arise.
+ */
+
+// model AuditLog {
+//   id         String   @id @default(uuid())
+//   action     String
+//   entityType String
+//   entityId   String
+//   oldValues  Json?
+//   newValues  Json?
+//   ipAddress  String?
+//   userAgent  String?
+//   createdAt  DateTime @default(now())
+
+//   organizationId          String
+//   actorUserId             String
+//   actorOrganizationUserId String?
+
+//   organization          Organization      @relation(fields: [organizationId], references: [id])
+//   actorUser             User              @relation(fields: [actorUserId], references: [id])
+//   actorOrganizationUser OrganizationUser? @relation("ActorOrgUserAuditLogs", fields: [actorOrganizationUserId], references: [id])
+
+//   @@index([organizationId])
+//   @@index([actorUserId])
+//   @@index([createdAt])
+//   @@index([entityType, entityId])
+//   @@index([actorOrganizationUserId])
+// }
+
+/**
+ * Address represents a physical address that can be associated with organizations and patients within the system.
+ * It includes fields for the address lines, city, postcode, and country.
+ * Each address can be linked to multiple organizations and patients, allowing for flexible association of addresses with different entities within the healthcare platform.
+ * This model allows for standardized storage and management of address information, which can be important for communication, billing, and other operational aspects of healthcare delivery.
+ * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as retrieving all organizations or patients associated with a specific address.
+ */
+
+// model Address {
+//   id       String  @id @default(uuid())
+//   line1    String
+//   line2    String?
+//   city     String
+//   postcode String
+//   country  String
+
+//   organizations Organization[]
+//   patients      Patient[]
+// }
+
+/**
+ * InviteToken represents an invitation for a user to join an organization, allowing for tracking of invitations sent to potential users.
+ * Each token includes the email of the invitee, a hashed token for security, expiration and usage timestamps, and a reference to the organization and optionally the user who was invited (if they have already accepted the invitation).
+ * The model also tracks which user created the invitation, allowing for accountability and auditing of invitation activities within the organization.
+ * The indexes on organizationId with email, organizationUserId, and expiresAt facilitate efficient querying of invite tokens by organization and email (to check for existing invitations), by associated user (to track invitations related to specific users), and by expiration date (to manage and clean up expired tokens), which are common use cases in managing user invitations within healthcare applications.
+ */
+
+// model InviteToken {
+//   id                 String    @id @default(uuid())
+//   organizationId     String
+//   organizationUserId String?
+//   email              String
+//   tokenHash          String    @unique
+//   expiresAt          DateTime
+//   usedAt             DateTime?
+//   revokedAt          DateTime?
+//   createdAt          DateTime  @default(now())
+//   createdByUserId    String
+
+//   organization     Organization      @relation(fields: [organizationId], references: [id])
+//   organizationUser OrganizationUser? @relation(fields: [organizationUserId], references: [id])
+//   createdBy        User              @relation(fields: [createdByUserId], references: [id])
+
+//   @@index([organizationId, email])
+//   @@index([organizationUserId])
+//   @@index([expiresAt])
+// }

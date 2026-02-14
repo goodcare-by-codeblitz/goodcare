@@ -1,5 +1,5 @@
 {
-	"name": "goodcare-backend",
+	"name": "@repo/backend",
 	"version": "1.0.0",
 	"description": "A care management backend application that helps in organizing and managing care services efficiently and compliant with regulations.",
 	"main": "index.js",
@@ -12,8 +12,14 @@
 	"license": "MIT",
 	"type": "module",
 	"dependencies": {
+		"@prisma/client": "^7.4.0",
+		"@repo/db": "workspace:*",
+		"@types/bcrypt": "^6.0.0",
+		"@types/slug": "^5.0.9",
+		"bcrypt": "^6.0.0",
 		"dotenv": "^17.2.3",
-		"fastify": "^5.7.2"
+		"fastify": "^5.7.2",
+		"slug": "^11.0.1"
 	},
 	"devDependencies": {
 		"@types/node": "^25.1.0",

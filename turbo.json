@@ -1,0 +1,30 @@
+{
+	"$schema": "https://turborepo.dev/schema.json",
+	"tasks": {
+		"db:seed": {
+			"cache": false
+		},
+		"db:generate": {
+			"cache": false
+		},
+		"db:migrate": {
+			"cache": false,
+			"persistent": true
+		},
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": [".next/**", "!.next/cache/**"]
+		},
+		"check-types": {
+			"dependsOn": ["^check-types"]
+		},
+		"dev": {
+			"persistent": true,
+			"cache": false
+		},
+		"db:reset": {
+			"cache": false,
+			"persistent": true
+		}
+	}
+}

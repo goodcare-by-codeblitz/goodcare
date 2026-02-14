@@ -1,1 +1,8 @@
 node_modules
+.turbo
+dist
+
+.env
+./apps/backend/.env
+./packages/db/prisma/.env
+./apps/web/.env
