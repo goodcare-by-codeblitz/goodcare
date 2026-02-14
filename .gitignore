@@ -2,7 +2,7 @@ node_modules
 .turbo
 dist
 
+# Environment files
 .env
-./apps/backend/.env
-./packages/db/prisma/.env
-./apps/web/.env
+.env.*
+!.env.example
