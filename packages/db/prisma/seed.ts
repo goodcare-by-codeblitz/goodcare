@@ -1,3 +1,4 @@
+import { hashPassword } from "../../helpers/src/index";
 import { prisma } from '../src/index';
 
 const roles = [
@@ -57,6 +58,62 @@ const permissions = [
 	// Settings
 	{ key: 'manage_settings', description: 'Manage platform and organization settings' },
 ];
+
+// TODO: Fix superadmin creation to create only one superadmin
+async function createSuperAdmin() {
+	const email = process.env.PLATFORM_SUPERUSER_EMAIL?.toLowerCase().trim();
+	const password = process.env.PLATFORM_SUPERUSER_PASSWORD;
+
+	if (!email || !password) {
+		console.warn('SuperAdmin credentials not set in environment variables, skipping creation');
+		return;
+	}
+
+	const existingUser = await prisma.user.findUnique({ where: { email } });
+	if (existingUser) {
+		console.log('SuperAdmin user already exists, skipping creation');
+	}
+
+	const hashedPassword = await hashPassword(password);
+
+	try {
+		await prisma.$transaction(async (tx) => {
+			const superAdminRole = await tx.role.findFirst({
+				where: { name: 'SuperAdmin', scope: 'PLATFORM' },
+				select: { id: true },
+			});
+
+			if (!superAdminRole) {
+				throw new Error('SuperAdmin role not found, cannot create SuperAdmin user');
+			}
+
+			const user = await tx.user.upsert({
+				where: { email },
+				update: { passwordHash: hashedPassword },
+				create: {
+					email,
+					passwordHash: hashedPassword,
+					firstName: 'Goodcare',
+					lastName: 'Admin',
+				},
+				select: { id: true, email: true },
+			});
+
+			await tx.roleAssignment.create({
+				data: {
+					userId: user.id,
+					roleId: superAdminRole.id,
+				},
+			});
+		});
+		console.log('SuperAdmin user created or updated successfully');
+		
+	} catch (error) {
+		console.error('Error creating SuperAdmin user:', error);
+	}
+}
+	
+	
 
 async function main() {
 	for (const role of roles) {
@@ -263,6 +320,10 @@ async function main() {
 
 		console.log(`Assigned ${permKeys.length} permissions to ${roleKey}`);
 	}
+
+	createSuperAdmin().catch((e) => {
+		console.error('Error in createSuperAdmin:', e);
+	});
 }
 
 main()
