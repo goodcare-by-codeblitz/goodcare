@@ -98,3 +98,8 @@ export type RoleAssignment = Prisma.RoleAssignmentModel
  *  * The unique constraint on the combination of id and organizationId ensures that patient records are unique within each organization, while allowing for the possibility of patients with the same name or other attributes across different organizations. The indexes on organizationId and lastName, firstName facilitate efficient querying of patients by organization and by name, which are common use cases in healthcare applications.
  */
 export type Patient = Prisma.PatientModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel

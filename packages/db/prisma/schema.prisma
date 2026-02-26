@@ -142,6 +142,8 @@ model User {
   // carePlans CarePlan[]
 
   // inviteTokens InviteToken[]
+
+  sessions Session[]
 }
 
 /**
@@ -156,7 +158,7 @@ model Organization {
   id        String             @id @default(uuid())
   name      String
   status    OrganizationStatus @default(ACTIVE)
-  slug      String             @unique
+  slug      String
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
   deletedAt DateTime?
@@ -177,6 +179,8 @@ model Organization {
   // qualifications Qualification[]
 
   // inviteTokens InviteToken[]
+
+  @@unique([slug])
 }
 
 /**
@@ -193,7 +197,7 @@ model OrganizationUser {
   invitedAt DateTime         @default(now())
   joinedAt  DateTime
   leftAt    DateTime?
-
+ 
   // carer        Carer?
   invitedById  String
   invitedBy    User         @relation("OrgUserInvitedBy", fields: [invitedById], references: [id])
@@ -640,3 +644,19 @@ model Patient {
 //   @@index([organizationUserId])
 //   @@index([expiresAt])
 // }
+
+model Session{
+  id String @id @default(uuid())
+  sessionId String @unique
+  userId String
+  refreshTokenHash String @unique
+  userAgent String?
+  ip String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
