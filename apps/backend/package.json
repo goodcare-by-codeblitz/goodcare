@@ -12,8 +12,11 @@
 	"license": "MIT",
 	"type": "module",
 	"dependencies": {
+		"@fastify/cookie": "^11.0.2",
+		"@fastify/jwt": "^10.0.0",
 		"@prisma/client": "^7.4.0",
 		"@repo/db": "workspace:*",
+		"@repo/helpers": "workspace:*",
 		"@types/bcrypt": "^6.0.0",
 		"@types/slug": "^5.0.9",
 		"bcrypt": "^6.0.0",
