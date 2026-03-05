@@ -100,6 +100,8 @@ export async function registerService(input: RegisterInput): Promise<RegisterRes
   }
 }
 
+// TODO: Consider extracting session management to a separate service for better separation of concerns and reusability across login, registration, and token refresh flows.
+// TODO: Consider implementing more granular error handling and logging for better observability and debugging, especially around authentication failures and database operations.
 export async function loginService(input: LoginInput): Promise<LoginResult> {
   const email = input.email.toLowerCase().trim();
 
@@ -144,9 +146,13 @@ export async function loginService(input: LoginInput): Promise<LoginResult> {
 }
 
 export async function logoutService(userId: string) {  
-  await prisma.session.deleteMany({
+  try {
+    await prisma.session.deleteMany({
     where: {
       userId,
     },
   });
+  } catch (error) {
+    throw new Error("Failed to logout user" + error);
+  }
 }
