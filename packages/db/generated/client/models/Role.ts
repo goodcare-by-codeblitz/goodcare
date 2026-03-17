@@ -14,9 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Role
- * *
- *  * Role represents a role that can be assigned to users within the system, allowing for role-based access control and permissions management.
- *  * Each role has a name, a scope (either PLATFORM or ORGANIZATION), and is associated with an organization (if the scope is ORGANIZATION).
+ * 
  */
 export type RoleModel = runtime.Types.Result.DefaultSelection<Prisma.$RolePayload>
 
