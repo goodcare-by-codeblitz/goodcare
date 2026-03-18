@@ -1,18 +1,18 @@
-# Goodcare
+# ![Goodcare Logo](./logo.svg)
 
 A compliant, audit-ready system for domiciliary care companies. Built as a monorepo with a Fastify REST API, Next.js web app, and Expo mobile app.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Monorepo | pnpm + Turborepo |
-| Backend API | Fastify 5 (TypeScript) |
-| Web App | Next.js 16 + React 19 + Tailwind CSS |
-| Mobile App | Expo / React Native |
-| Database | PostgreSQL 16 + Prisma ORM |
-| Job Queue | BullMQ + Redis |
-| Auth | JWT + httpOnly cookies |
+| Layer       | Technology                           |
+| ----------- | ------------------------------------ |
+| Monorepo    | pnpm + Turborepo                     |
+| Backend API | Fastify 5 (TypeScript)               |
+| Web App     | Next.js 16 + React 19 + Tailwind CSS |
+| Mobile App  | Expo / React Native                  |
+| Database    | PostgreSQL 16 + Prisma ORM           |
+| Job Queue   | BullMQ + Redis                       |
+| Auth        | JWT + httpOnly cookies               |
 
 ## Prerequisites
 
@@ -91,22 +91,23 @@ pnpm -F @repo/db db:reset      # Reset database (destructive)
 
 ## Environment Variables
 
-| Variable | Used by | Description |
-|----------|---------|-------------|
-| `DIRECT_URL` | db, backend | PostgreSQL connection string |
-| `JWT_SECRET` | backend | Signs JWTs |
-| `COOKIE_SECRET` | backend | Signs cookies |
-| `PLATFORM_SUPERUSER_EMAIL` | seed, auth | Superadmin email |
-| `PLATFORM_SUPERUSER_PASSWORD` | seed | Superadmin password |
-| `REDIS_URL` | backend | Redis connection for BullMQ |
-| `SENDGRID_API_KEY` | backend | Email delivery |
-| `PORT` | backend | Server port (default: 3000) |
+| Variable                      | Used by     | Description                  |
+| ----------------------------- | ----------- | ---------------------------- |
+| `DIRECT_URL`                  | db, backend | PostgreSQL connection string |
+| `JWT_SECRET`                  | backend     | Signs JWTs                   |
+| `COOKIE_SECRET`               | backend     | Signs cookies                |
+| `PLATFORM_SUPERUSER_EMAIL`    | seed, auth  | Superadmin email             |
+| `PLATFORM_SUPERUSER_PASSWORD` | seed        | Superadmin password          |
+| `REDIS_URL`                   | backend     | Redis connection for BullMQ  |
+| `SENDGRID_API_KEY`            | backend     | Email delivery               |
+| `PORT`                        | backend     | Server port (default: 3000)  |
 
 ## API Documentation
 
 In development, Swagger UI is available at `http://localhost:3000/docs`. The raw OpenAPI 3.0 JSON spec is at `/docs/json`.
 
 To export the spec as a file:
+
 ```bash
 pnpm -F @repo/backend openapi:export > openapi.json
 ```
