@@ -6,7 +6,9 @@
 	"scripts": {
 		"dev": "tsx watch server.ts",
 		"build": "tsc -p tsconfig.json",
-		"start": "node server.js"
+		"start": "node server.js",
+		"openapi:export": "tsx scripts/export-openapi.ts",
+		"test": "vitest"
 	},
 	"author": "Your Name",
 	"license": "MIT",
@@ -14,19 +16,25 @@
 	"dependencies": {
 		"@fastify/cookie": "^11.0.2",
 		"@fastify/jwt": "^10.0.0",
+		"@fastify/swagger": "^9.7.0",
+		"@fastify/swagger-ui": "^5.2.5",
 		"@prisma/client": "^7.4.0",
 		"@repo/db": "workspace:*",
 		"@repo/helpers": "workspace:*",
 		"@types/bcrypt": "^6.0.0",
 		"@types/slug": "^5.0.9",
 		"bcrypt": "^6.0.0",
+		"bullmq": "^5.71.0",
 		"dotenv": "^17.2.3",
 		"fastify": "^5.7.2",
+		"fastify-plugin": "^5.1.0",
+		"ioredis": "^5.10.0",
 		"slug": "^11.0.1"
 	},
 	"devDependencies": {
 		"@types/node": "^25.1.0",
 		"tsx": "^4.21.0",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0"
 	}
 }
