@@ -6,13 +6,13 @@ import emailWorkerPlugin from './src/jobs/email-worker.plugin';
 import { AppError } from './src/lib/errors';
 import { auditRoutes } from './src/modules/audit/audit.routes';
 import { authRoutes } from './src/modules/auth/auth.routes';
-import { carePlanRoutes } from './src/modules/care-plan/care-plan.routes';
-import { dailyNoteRoutes } from './src/modules/daily-note/daily-note.routes';
-import { incidentReportRoutes } from './src/modules/incident-report/incident-report.routes';
+// import { carePlanRoutes } from './src/modules/care-plan/care-plan.routes';
+// import { dailyNoteRoutes } from './src/modules/daily-note/daily-note.routes';
+// import { incidentReportRoutes } from './src/modules/incident-report/incident-report.routes';
 // import { carerRoutes } from './src/modules/carer/carer.routes';
 // import { orgRoutes } from './src/modules/organisation/org.routes';
-import { patientRoutes } from './src/modules/patient/patient.routes';
-import { visitRoutes } from './src/modules/visit/visit.routes';
+// import { patientRoutes } from './src/modules/patient/patient.routes';
+// import { visitRoutes } from './src/modules/visit/visit.routes';
 import { swaggerPlugin } from './src/plugins/swagger';
 // import type { RequestOrg } from './src/types/fastify.js';
 
@@ -84,13 +84,13 @@ app.get(
 
 app.register(emailWorkerPlugin);
 app.register(authRoutes, { prefix: '/v1/auth' });
-app.register(patientRoutes, { prefix: '/v1/orgs' });
 // app.register(orgRoutes, { prefix: '/v1/orgs' });
 // app.register(carerRoutes, { prefix: '/v1/orgs' });
-app.register(visitRoutes, { prefix: '/v1/orgs' });
-app.register(carePlanRoutes, { prefix: '/v1/orgs' });
-app.register(dailyNoteRoutes, { prefix: '/v1/orgs' });
-app.register(incidentReportRoutes, { prefix: '/v1/orgs' });
+// app.register(patientRoutes, { prefix: '/v1/orgs' });
+// app.register(visitRoutes, { prefix: '/v1/orgs' });
+// app.register(carePlanRoutes, { prefix: '/v1/orgs' });
+// app.register(dailyNoteRoutes, { prefix: '/v1/orgs' });
+// app.register(incidentReportRoutes, { prefix: '/v1/orgs' });
 app.register(auditRoutes, { prefix: '/v1/orgs' });
 
 // start the server
