@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export function generateInvitationToken() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return crypto.randomBytes(32).toString('hex');
 }

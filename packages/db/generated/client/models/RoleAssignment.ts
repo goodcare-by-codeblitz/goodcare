@@ -14,10 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model RoleAssignment
- * *
- *  * RoleAssignment represents the assignment of a role to a user within the system, allowing for tracking of which users have which roles and their associated permissions.
- *  * Each record includes the user ID, role ID, and optionally the organization ID (if the role is organization-scoped), as well as relationships to the User and Role models.
- *  * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the role assignment, the role that is assigned, and any permissions associated with that role. The indexes on userId and roleId facilitate efficient querying of role assignments by user and by role, which are common use cases in managing user access and permissions within healthcare applications. The optional organizationId field allows for flexibility in assigning roles that are specific to an organization, while still supporting platform-wide roles that do not require an organization context
+ * 
  */
 export type RoleAssignmentModel = runtime.Types.Result.DefaultSelection<Prisma.$RoleAssignmentPayload>
 
@@ -389,10 +386,6 @@ export type RoleAssignmentUncheckedUpdateManyWithoutRoleNestedInput = {
   update?: Prisma.RoleAssignmentUpdateWithWhereUniqueWithoutRoleInput | Prisma.RoleAssignmentUpdateWithWhereUniqueWithoutRoleInput[]
   updateMany?: Prisma.RoleAssignmentUpdateManyWithWhereWithoutRoleInput | Prisma.RoleAssignmentUpdateManyWithWhereWithoutRoleInput[]
   deleteMany?: Prisma.RoleAssignmentScalarWhereInput | Prisma.RoleAssignmentScalarWhereInput[]
-}
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
 }
 
 export type RoleAssignmentCreateWithoutUserInput = {
