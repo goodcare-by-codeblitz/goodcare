@@ -79,7 +79,6 @@ export async function resolveOrganizationFromRequest(
 			id: org.id,
 			slug: org.slug,
 			name: org.name,
-<<<<<<< Updated upstream
 			...(userId && {
 				organizationUser:
 					(
@@ -93,9 +92,6 @@ export async function resolveOrganizationFromRequest(
 						}
 					).users?.[0] ?? null,
 			}),
-=======
-			...(userId && { organizationUser: (org as { users?: { id: string; status: string; joinedAt: Date | null; invitedAt: Date }[] }).users?.[0] ?? null }),
->>>>>>> Stashed changes
 		};
 	} catch (error) {
 		request.log.error({ error }, 'Error resolving organization from request');
