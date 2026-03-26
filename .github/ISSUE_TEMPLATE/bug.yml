@@ -1,4 +1,4 @@
-name: Bug Report
+name: 🐛 Bug Report
 description: Report a bug found in Tengago (internal team use)
 title: '[BUG] <short summary>'
 labels: ['type: bug', 'status: triage-needed']
@@ -78,7 +78,7 @@ body:
     attributes:
       label: Actual Behavior
       description: What actually happened? Be specific.
-      placeholder: 'Example: Server returns 500 error. Page shows "Something went wrong" message. No report is generated.'
+      placeholder: "Example: Server returns 500 error. Page shows 'Something went wrong' message. No report is generated."
     validations:
       required: true
 
@@ -131,7 +131,7 @@ body:
         Error: Cannot read property 'data' of undefined
           at ReportGenerator.generate (report.js:45)
           at async POST /api/reports (handler.js:120)
-      validations:
+    validations:
       required: false
 
   - type: textarea
