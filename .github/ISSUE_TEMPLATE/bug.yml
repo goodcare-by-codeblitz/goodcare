@@ -1,4 +1,4 @@
-name: 🐛 Bug Report
+name: Bug Report
 description: Report a bug found in Tengago (internal team use)
 title: '[BUG] <short summary>'
 labels: ['type: bug', 'status: triage-needed']
