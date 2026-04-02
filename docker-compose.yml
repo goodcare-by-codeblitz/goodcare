@@ -1,0 +1,230 @@
+version: '3.9'
+
+# ============================================================================
+# Goodcare Local Development Environment
+#
+# This Docker Compose configuration orchestrates the full local development
+# environment with PostgreSQL, Redis, and the Fastify backend before.
+#
+# Usage:
+#   docker compose up --build     # Start all services with fresh build
+#   docker compose up             # Start all services (use cached images)
+#   docker compose down           # Stop and remove containers (keep volumes)
+#   docker compose down -v        # Stop and remove containers + volumes
+#   docker compose logs -f        # Stream logs from all services
+#   docker compose logs <service> # View logs for a specific service
+#
+# Environment Variables:
+#   All required environment variables should be defined in a .env file
+#   at the repository root. See .env.example for available options.
+#
+# ============================================================================
+
+services:
+  # =========================================================================
+  # PostgreSQL Database Service
+  # =========================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: goodcare-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-goodcare}
+
+    # Mount persistent volume for database data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Health check to determine when the service is ready
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # Only expose to Docker network, not to host (security)
+    networks:
+      - goodcare_network
+
+    # Optional: expose port to host for local development debugging
+    # ports:
+    #   - "5432:5432"
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Resource limits (tune based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # =========================================================================
+  # Redis Cache Service
+  # =========================================================================
+  redis:
+    image: redis:8-alpine
+    container_name: goodcare-redis
+    command: redis-server --appendonly yes
+
+    # Mount persistent volume for Redis data (optional but recommended)
+    volumes:
+      - redis_data:/data
+
+    # Health check
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # Only expose to Docker network
+    networks:
+      - goodcare_network
+
+    # Optional: expose port to host for debugging
+    # ports:
+    #   - "6379:6379"
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # =========================================================================
+  # Database Initialization Service (one-shot)
+  # =========================================================================
+  # This service runs migrations and seeds the database on first startup.
+  # It depends on postgres being healthy and exits after completion.
+  db-init:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: dev
+    container_name: goodcare-db-init
+    environment:
+      DIRECT_URL: ${DIRECT_URL:-postgresql://postgres:postgres@postgres:5432/goodcare}
+      NODE_ENV: development
+      PLATFORM_SUPERUSER_EMAIL: ${PLATFORM_SUPERUSER_EMAIL:-admin@goodcare.local}
+      PLATFORM_SUPERUSER_PASSWORD: ${PLATFORM_SUPERUSER_PASSWORD}
+
+    # Commands to run: generate Prisma client, run migrations, seed data
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 2 &&
+        pnpm -F @repo/db db:generate &&
+        echo 'Running database migrations...' &&
+        pnpm -F @repo/db db:migrate &&
+        echo 'Seeding database with initial data...' &&
+        pnpm -F @repo/db db:seed &&
+        echo 'Database initialization completed successfully!'
+      "
+
+    # Depend on postgres being healthy before starting
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # Only connect to internal network
+    networks:
+      - goodcare_network
+
+    # Exit after migrations/seed complete (do not restart)
+    restart: 'no'
+
+    # Do not expose any ports
+    expose: []
+
+  # =========================================================================
+  # Fastify Backend Service
+  # =========================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: dev # Use 'production' for production builds
+    container_name: goodcare-backend
+
+    # All required environment variables
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      DIRECT_URL: ${DIRECT_URL:-postgresql://postgres:postgres@postgres:5432/goodcare}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      TOKEN_HASH_SECRET: ${TOKEN_HASH_SECRET}
+      PLATFORM_SUPERUSER_EMAIL: ${PLATFORM_SUPERUSER_EMAIL:-admin@goodcare.local}
+      PLATFORM_SUPERUSER_PASSWORD: ${PLATFORM_SUPERUSER_PASSWORD}
+
+    # Mount application code for hot reload in development
+    volumes:
+      - ./apps/backend/src:/app/apps/backend/src
+      - ./packages/db/src:/app/packages/db/src
+      - ./packages/helpers/src:/app/packages/helpers/src
+      # Exclude node_modules to prevent conflicts
+      - /app/node_modules
+      - /app/apps/backend/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/helpers/node_modules
+
+    # Expose backend port to host
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+
+    # Depend on healthchecks of postgres, redis, and db-init completion
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+
+    # Connect to shared network
+    networks:
+      - goodcare_network
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+# ============================================================================
+# Volumes: Persistent storage for databases
+# ============================================================================
+# These named volumes persist across container lifecycles without bind mounts,
+# avoiding permission issues common in Docker on Windows/Mac.
+volumes:
+  postgres_data:
+    driver: local
+
+  redis_data:
+    driver: local
+
+# ============================================================================
+# Networks: Isolated Docker network for inter-service communication
+# ============================================================================
+networks:
+  goodcare_network:
+    driver: bridge
