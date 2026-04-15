@@ -6,7 +6,6 @@ export default function DashboardFooter() {
 					&copy; 2026 Good Care. All rights reserved.
 				</p>
 			</footer>
-			;
 		</>
 	);
 }

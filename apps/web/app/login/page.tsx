@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import axios from 'axios';
+import clsx from 'clsx';
 import {
 	ArrowRight,
 	Eye,
@@ -16,10 +18,84 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { FormEvent, useEffect, useState } from 'react';
+import { loginSchema } from './login-validation';
+
+const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 export default function LoginPage() {
+	const router = useRouter();
 	const [showPassword, setShowPassword] = useState(false);
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
+	const [successMessage, setSuccessMessage] = useState('');
+	const [fieldErrors, setFieldErrors] = useState<{
+		email?: string;
+		password?: string;
+	}>({});
+	const [touched, setTouched] = useState<{
+		email?: boolean;
+		password?: boolean;
+	}>({});
+
+	const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setErrorMessage('');
+		setSuccessMessage('');
+
+		if (!backendBaseUrl) {
+			setErrorMessage('Missing NEXT_PUBLIC_BACKEND_BASE_URL in apps/web/.env');
+			return;
+		}
+
+		try {
+			setTouched({ email: true, password: true });
+			setIsSubmitting(true);
+			const baseUrlWithoutTrailingSlash = backendBaseUrl.replace(/\/+$/, '');
+			const response = await axios.post(
+				`${baseUrlWithoutTrailingSlash}/v1/auth/login`,
+				{
+					email,
+					password,
+				},
+				{
+					withCredentials: true,
+				},
+			);
+			console.log('Login response:', response.data);
+			setSuccessMessage(response.data?.message ?? 'Login successful');
+			router.push('/dashboard');
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				const serverError = error.response?.data?.error;
+				setErrorMessage(
+					typeof serverError === 'string' ? serverError : error.message,
+				);
+				return;
+			}
+			setErrorMessage('Unexpected error while logging in');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	useEffect(() => {
+		const validationResult = loginSchema.safeParse({ email, password });
+		if (!validationResult.success) {
+			const { fieldErrors } = validationResult.error.flatten();
+			setFieldErrors({
+				email: fieldErrors.email?.[0],
+				password: fieldErrors.password?.[0],
+			});
+			setErrorMessage('');
+		} else {
+			setFieldErrors({});
+		}
+	}, [email, password]);
 
 	return (
 		<div className='flex min-h-screen flex-col bg-page-bg'>
@@ -34,7 +110,7 @@ export default function LoginPage() {
 			{/* Main */}
 			<main className='flex flex-1 items-center justify-center px-6 py-12'>
 				<div className='flex w-full max-w-[1200px] min-h-[700px] overflow-hidden rounded-xl border border-border bg-white shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]'>
-					{/* Left Panel — Hero */}
+					{/* Left Panel - Hero */}
 					<div className='relative hidden flex-1 lg:flex'>
 						<div className='absolute inset-0 bg-care-blue' />
 						<Image
@@ -61,7 +137,7 @@ export default function LoginPage() {
 							{/* Hero Text + Badges */}
 							<div className='flex flex-col gap-6'>
 								<div className='flex flex-col gap-6'>
-									<h1 className='text-4xl font-bold leading-[1.25] text-white'>
+									<h1 className='text-4xl font-bold leading-tight text-white'>
 										Empowering Quality
 										<br />
 										Patient Care.
@@ -91,7 +167,7 @@ export default function LoginPage() {
 						</div>
 					</div>
 
-					{/* Right Panel — Form */}
+					{/* Right Panel - Form */}
 					<div className='flex flex-1 flex-col justify-center p-10 sm:p-16 lg:p-20'>
 						{/* Heading */}
 						<div className='pb-10'>
@@ -106,9 +182,7 @@ export default function LoginPage() {
 						</div>
 
 						{/* Form */}
-						<form
-							className='flex flex-col gap-6'
-							onSubmit={(e) => e.preventDefault()}>
+						<form className='flex flex-col gap-4' onSubmit={handleLogin}>
 							{/* Email Field */}
 							<div className='flex flex-col gap-2'>
 								<Label
@@ -121,9 +195,25 @@ export default function LoginPage() {
 									<Input
 										id='email'
 										type='email'
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										onBlur={() => setTouched((t) => ({ ...t, email: true }))}
 										placeholder='name@healthcare.org'
 										className='h-12 rounded-lg border-border bg-muted pl-10 pr-4 text-base placeholder:text-slate-400'
 									/>
+								</div>
+								<div className='h-4'>
+									{fieldErrors.email && (
+										<p
+											className={clsx(
+												'min-h-[5px] text-sm font-medium',
+												touched.email && fieldErrors.email
+													? 'text-red-600 visible'
+													: 'text-transparent ',
+											)}>
+											{fieldErrors.email}
+										</p>
+									)}
 								</div>
 							</div>
 
@@ -146,8 +236,11 @@ export default function LoginPage() {
 									<Input
 										id='password'
 										type={showPassword ? 'text' : 'password'}
-										placeholder='••••••••'
+										value={password}
+										placeholder='........'
 										className='h-12 rounded-lg border-border bg-muted pl-10 pr-12 text-base placeholder:text-slate-400'
+										onChange={(e) => setPassword(e.target.value)}
+										onBlur={() => setTouched((t) => ({ ...t, password: true }))}
 									/>
 									<button
 										type='button'
@@ -163,11 +256,31 @@ export default function LoginPage() {
 										)}
 									</button>
 								</div>
+
+								<div className='h-4'>
+									{fieldErrors.password && (
+										<p
+											className={clsx(
+												'min-h-[5px] text-sm font-medium',
+												touched.password && fieldErrors.password
+													? 'text-red-600 visible'
+													: 'text-transparent ',
+											)}>
+											{fieldErrors.password}
+										</p>
+									)}
+								</div>
 							</div>
 
 							{/* Remember Me */}
 							<div className='flex items-center gap-2'>
-								<Checkbox id='remember' />
+								<Checkbox
+									id='remember'
+									checked={keepLoggedIn}
+									onCheckedChange={(checked) =>
+										setKeepLoggedIn(checked === true)
+									}
+								/>
 								<Label
 									htmlFor='remember'
 									className='text-sm font-normal text-slate-600'>
@@ -175,12 +288,26 @@ export default function LoginPage() {
 								</Label>
 							</div>
 
+							<div className='h-4'>
+								{errorMessage && (
+									<p className='text-sm font-medium text-red-600'>
+										{errorMessage}
+									</p>
+								)}
+								{successMessage && (
+									<p className='text-sm font-medium text-green-600'>
+										{successMessage}
+									</p>
+								)}
+							</div>
+
 							{/* Submit Button */}
 							<Button
 								type='submit'
+								disabled={isSubmitting}
 								className='h-14 w-full rounded-lg bg-care-blue text-base font-bold text-white shadow-[0px_10px_15px_-3px_rgba(0,95,184,0.2),0px_4px_6px_-4px_rgba(0,95,184,0.2)] hover:bg-care-blue-hover'>
-								Secure Login
-								<ArrowRight className='ml-2 size-[18px]' />
+								{isSubmitting ? 'Signing in...' : 'Secure Login'}
+								<ArrowRight className='ml-2 size-4' />
 							</Button>
 						</form>
 
@@ -206,9 +333,7 @@ export default function LoginPage() {
 										</span>
 									</div>
 								</div>
-								<span className='text-xs text-slate-400'>
-									&copy; 2026 Good Care Pro.
-								</span>
+								<DashboardFooter />
 							</div>
 						</div>
 					</div>

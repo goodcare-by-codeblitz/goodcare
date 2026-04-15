@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
 	AlertTriangle,
 	Check,
@@ -15,6 +14,7 @@ import {
 	Search,
 	X,
 } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -62,12 +62,12 @@ interface Carer {
    Constants
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const HOUR_WIDTH = 100;
+const HOUR_WIDTH = 300;
 const DAY_START = 7;
 const DAY_END = 21;
 const TOTAL_HOURS = DAY_END - DAY_START;
 const TOTAL_WIDTH = TOTAL_HOURS * HOUR_WIDTH;
-const ROW_H = 60;
+const ROW_H = 80;
 const CARER_COL = 256;
 const HOURS = Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => i + DAY_START);
 
@@ -88,7 +88,7 @@ const COLORS = [
 ];
 
 const CARER_NAMES: [string, string][] = [
-	['Sarah Jenkins', 'SJ'],
+	['Simbarashe Mapisa', 'SM'],
 	['David Chen', 'DC'],
 	['Elena Rodriguez', 'ER'],
 	['Thomas Wade', 'TW'],

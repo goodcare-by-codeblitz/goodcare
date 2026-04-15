@@ -1,0 +1,1 @@
+{"version":3,"file":"send-email.js","sourceRoot":"","sources":["send-email.ts"],"names":[],"mappings":"AAAA,MAAM,UAAU,SAAS,CAAC,EAAU,EAAE,OAAe,EAAE,IAAY;IACjE,+EAA+E;IAC/E,OAAO,CAAC,GAAG,CAAC,oBAAoB,EAAE,KAAK,OAAO,EAAE,CAAC,CAAC;IAClD,OAAO,CAAC,GAAG,CAAC,IAAI,CAAC,CAAC;AACpB,CAAC"}
