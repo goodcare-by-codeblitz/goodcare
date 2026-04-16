@@ -22,7 +22,7 @@ export const app = Fastify({
 });
 
 const corsOrigins = (
-	process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://127.0.0.1:3000'
+	process.env.CORS_ORIGIN ?? 'http://goodcare.local:3000,http://127.0.0.1:3000'
 )
 	.split(',')
 	.map((origin) => origin.trim())
@@ -33,8 +33,22 @@ const corsOrigins = (
 // app.decorateRequest('org', null as unknown as RequestOrg);
 
 await app.register(swaggerPlugin);
+// await app.register(cors, {
+// 	origin: corsOrigins,
+// 	credentials: true,
+// });
+
 await app.register(cors, {
-	origin: corsOrigins,
+	origin: (origin, cb) => {
+		if (!origin) return cb(null, true);
+		if (origin === 'http://goodcare.local:3000') return cb(null, true);
+		if (/^http:\/\/[a-z0-9-]+\.goodcare\.local:3000$/.test(origin)) {
+			return cb(null, true);
+		}
+		return cb(new Error('CORS not allowed'), false);
+	},
+	methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'X-Org-Slug'],
 	credentials: true,
 });
 

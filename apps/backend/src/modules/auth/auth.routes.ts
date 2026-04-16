@@ -2,24 +2,32 @@ import type { FastifyInstance } from 'fastify';
 import {
 	acceptInviteController,
 	forgotPasswordController,
+	currentOrgAccessController,
 	loginController,
 	logoutController,
 	refreshController,
 	registerController,
 	changePasswordController,
+	myOrganizationsController,
 } from './auth.controller';
 import {
 	acceptInviteOpts,
 	changePasswordOpts,
+	currentOrgAccessOpts,
 	forgotPasswordOpts,
 	loginOpts,
+	orgSlugCheckOpts,
 	registerOpts,
 	resetPasswordOpts,
 } from './auth.schemas';
 import { authenticate } from '../../middleware/authenticate';
+import { meController } from './auth.controller';
+import { meOpts } from './auth.schemas';
+import { orgSlugCheckHandler } from '../../../utils/generate-slug';
 
 export async function authRoutes(app: FastifyInstance) {
 	app.post('/register', registerOpts, registerController(app));
+	app.post('/org-slug/check', orgSlugCheckOpts, orgSlugCheckHandler);
 	app.post('/login', loginOpts, loginController(app));
 	app.delete(
 		'/logout',
@@ -38,4 +46,21 @@ export async function authRoutes(app: FastifyInstance) {
 	);
 	app.post('/accept-invite', acceptInviteOpts, acceptInviteController(app));
 	app.post('/refresh', refreshController(app));
+
+	app.get(
+		'/my-organizations',
+		{ preHandler: [authenticate(app)] },
+		myOrganizationsController(app),
+	);
+
+	app.get(
+		'/me',
+		{ ...meOpts, preHandler: [authenticate(app)] },
+		meController(),
+	);
+	app.get(
+		'/current-org-access',
+		{ ...currentOrgAccessOpts, preHandler: [authenticate(app)] },
+		currentOrgAccessController(),
+	);
 }

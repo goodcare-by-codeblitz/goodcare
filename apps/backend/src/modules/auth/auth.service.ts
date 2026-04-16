@@ -338,3 +338,14 @@ export async function refreshService(
 
 	return { userId: session.user.id, email: session.user.email };
 }
+
+export async function myOrganizationsService(userId: string) {
+	const orgs = await prisma.organizationUser.findMany({
+		where: { userId, status: 'ACTIVE' },
+		select: {
+			organization: { select: { id: true, name: true, slug: true } },
+		},
+	});
+
+	return orgs;
+}

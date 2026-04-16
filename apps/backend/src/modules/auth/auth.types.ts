@@ -4,7 +4,7 @@ export type RegisterBody = {
 	email: string;
 	password: string;
 	organizationName: string;
-	slug: string;
+	slug?: string;
 };
 
 export type LoginBody = {

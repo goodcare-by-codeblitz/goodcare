@@ -18,7 +18,12 @@ export const registerSchema: FastifySchema = {
 			email: { type: 'string', format: 'email' },
 			password: { type: 'string', minLength: 8 },
 			organizationName: { type: 'string', minLength: 2 },
-			slug: { type: 'string', minLength: 2 },
+			slug: {
+				type: 'string',
+				minLength: 2,
+				maxLength: 63,
+				pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+			},
 		},
 		additionalProperties: false,
 	},
@@ -69,12 +74,47 @@ export const loginSchema: FastifySchema = {
 				email: { type: 'string' },
 				refreshToken: { type: 'string' },
 				organizations: {
-					type: 'object',
-					properties: {
-						id: { type: 'string' },
-						name: { type: 'string' },
-						slug: { type: 'string' },
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							id: { type: 'string' },
+							name: { type: 'string' },
+							slug: { type: 'string' },
+						},
 					},
+				},
+			},
+		},
+		400: errorResponse,
+	},
+};
+
+export const orgSlugCheckSchema: FastifySchema = {
+	tags: ['Auth'],
+	body: {
+		type: 'object',
+		properties: {
+			organizationName: { type: 'string', minLength: 2 },
+			slug: {
+				type: 'string',
+				minLength: 2,
+				maxLength: 63,
+				pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+			},
+		},
+		additionalProperties: false,
+		anyOf: [{ required: ['organizationName'] }, { required: ['slug'] }],
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {
+				available: { type: 'boolean' },
+				suggestedSlug: { type: 'string' },
+				suggestions: {
+					type: 'array',
+					items: { type: 'string' },
 				},
 			},
 		},
@@ -151,9 +191,43 @@ export const changePasswordSchema: FastifySchema = {
 	},
 };
 
+export const meSchema: FastifySchema = {
+	tags: ['Auth'],
+	response: {
+		200: {
+			type: 'object',
+			properties: {
+				id: { type: 'string' },
+				email: { type: 'string' },
+			},
+		},
+		401: errorResponse,
+	},
+};
+
+export const currentOrgAccessSchema: FastifySchema = {
+	tags: ['Auth'],
+	response: {
+		200: {
+			type: 'object',
+			properties: {
+				authorized: { type: 'boolean' },
+				organizationId: { type: ['string', 'null'] },
+				organizationSlug: { type: ['string', 'null'] },
+				organizationName: { type: ['string', 'null'] },
+			},
+		},
+		401: errorResponse,
+	},
+};
+
+export const meOpts = { schema: meSchema };
+export const currentOrgAccessOpts = { schema: currentOrgAccessSchema };
+
 export const changePasswordOpts = { schema: changePasswordSchema };
 export const loginOpts = { schema: loginSchema };
 export const registerOpts = { schema: registerSchema };
+export const orgSlugCheckOpts = { schema: orgSlugCheckSchema };
 export const forgotPasswordOpts = { schema: forgotPasswordSchema };
 export const resetPasswordOpts = { schema: resetPasswordSchema };
 export const acceptInviteOpts = { schema: acceptInviteSchema };

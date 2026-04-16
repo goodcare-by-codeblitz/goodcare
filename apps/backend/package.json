@@ -2,11 +2,11 @@
 	"name": "@repo/backend",
 	"version": "1.0.0",
 	"description": "A care management backend application that helps in organizing and managing care services efficiently and compliant with regulations.",
-	"main": "index.js",
+	"main": "dist/server.js",
 	"scripts": {
 		"dev": "tsx watch server.ts",
 		"build": "tsc -p tsconfig.json",
-		"start": "node server.js",
+		"start": "node dist/server.js",
 		"openapi:export": "tsx scripts/export-openapi.ts",
 		"test": "vitest"
 	},

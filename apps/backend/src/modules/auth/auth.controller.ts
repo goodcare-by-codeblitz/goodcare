@@ -4,6 +4,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
 	ACCESS_TTL,
 	REFRESH_DAYS,
+	getCookieDomain,
 	refreshExpiryDate,
 	setAuthCookies,
 } from '../../../utils/cookies';
@@ -21,6 +22,7 @@ import {
 	forgotPasswordService,
 	loginService,
 	logoutService,
+	myOrganizationsService,
 	refreshService,
 	registerService,
 } from './auth.service';
@@ -153,6 +155,7 @@ export function loginController(app: FastifyInstance) {
 			setAuthCookies(reply, { accessToken, refreshToken });
 
 			const org = await resolveOrganizationFromRequest(request, result.userId);
+			const orgs = result.organizations;
 
 			const resolvedOrgId = org?.id;
 			const actorOrganizationUserId = org?.organizationUser?.id;
@@ -171,7 +174,7 @@ export function loginController(app: FastifyInstance) {
 			return reply.send({
 				message: 'Login successful',
 				email: body.email.toLowerCase().trim(),
-				organizations: org,
+				organizations: orgs,
 				refreshToken,
 			});
 		} catch (error) {
@@ -214,6 +217,7 @@ export function forgotPasswordController(app: FastifyInstance) {
 
 export function logoutController(app: FastifyInstance) {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
+		const cookieDomain = getCookieDomain();
 		const token = request.cookies.access_token;
 		if (!token) {
 			return reply.status(401).send({ error: 'No access token provided' });
@@ -247,8 +251,14 @@ export function logoutController(app: FastifyInstance) {
 			userAgent: request.headers['user-agent'] ?? undefined,
 		});
 
-		reply.clearCookie('access_token', { path: '/' });
-		reply.clearCookie('refresh_token', { path: '/auth/refresh' });
+		reply.clearCookie('access_token', {
+			path: '/',
+			...(cookieDomain ? { domain: cookieDomain } : {}),
+		});
+		reply.clearCookie('refresh_token', {
+			path: '/auth/refresh',
+			...(cookieDomain ? { domain: cookieDomain } : {}),
+		});
 
 		return reply.send({ message: 'Logged out successfully' });
 	};
@@ -256,6 +266,7 @@ export function logoutController(app: FastifyInstance) {
 
 export function changePasswordController(app: FastifyInstance) {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
+		const cookieDomain = getCookieDomain();
 		const body = request.body as ChangePasswordBody;
 
 		const uid = (request.user as { id: string }).id;
@@ -276,8 +287,14 @@ export function changePasswordController(app: FastifyInstance) {
 				userAgent: request.headers['user-agent'] ?? undefined,
 			});
 
-			reply.clearCookie('access_token', { path: '/' });
-			reply.clearCookie('refresh_token', { path: '/auth/refresh' });
+			reply.clearCookie('access_token', {
+				path: '/',
+				...(cookieDomain ? { domain: cookieDomain } : {}),
+			});
+			reply.clearCookie('refresh_token', {
+				path: '/auth/refresh',
+				...(cookieDomain ? { domain: cookieDomain } : {}),
+			});
 
 			return reply.send({ message: 'Password changed successfully' });
 		} catch (err: any) {
@@ -393,5 +410,43 @@ export function refreshController(app: FastifyInstance) {
 				error: err?.message ?? 'Refresh failed',
 			});
 		}
+	};
+}
+
+// Get current user's organizations and redirect to org selection if >1, otherwise redirect to dashboard
+export function myOrganizationsController(app: FastifyInstance) {
+	return async function handler(request: FastifyRequest, reply: FastifyReply) {
+		const userId = (request.user as { id: string }).id;
+
+		const orgs = await myOrganizationsService(userId);
+
+		return reply.send({
+			organizations: orgs.map((ou) => ou.organization),
+		});
+	};
+}
+
+export function meController() {
+	return async function handler(request: FastifyRequest, reply: FastifyReply) {
+		const user = request.user as { id: string; email: string };
+		return reply.send({
+			id: user.id,
+			email: user.email,
+		});
+	};
+}
+
+export function currentOrgAccessController() {
+	return async function handler(request: FastifyRequest, reply: FastifyReply) {
+		const user = request.user as { id: string };
+		const org = await resolveOrganizationFromRequest(request, user.id);
+		const authorized = org?.organizationUser?.status === 'ACTIVE';
+
+		return reply.send({
+			authorized,
+			organizationId: authorized ? org.id : null,
+			organizationSlug: authorized ? org.slug : null,
+			organizationName: authorized ? org.name : null,
+		});
 	};
 }
