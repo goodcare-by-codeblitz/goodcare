@@ -9,19 +9,56 @@ const secret = encoder.encode(process.env.JWT_SECRET ?? '');
 async function isValidAccessToken(token: string | undefined) {
 	if (!token || !process.env.JWT_SECRET) return false;
 	try {
-		await jwtVerify(token, secret); // HS256 by default from fastify-jwt
+		await jwtVerify(token, secret);
 		return true;
 	} catch {
 		return false;
 	}
 }
 
+function getHost(req: NextRequest) {
+	return req.headers.get('host') ?? '';
+}
+
+function getBaseDomain() {
+	const raw = process.env.NEXT_PUBLIC_APP_BASE_DOMAIN ?? '';
+	return raw.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+}
+
+function hasSubdomain(host: string, baseDomain: string) {
+	if (!host || !baseDomain) return false;
+	if (host === baseDomain) return false;
+	return host.endsWith(`.${baseDomain}`);
+}
+
 export async function middleware(req: NextRequest) {
 	const accessToken = req.cookies.get('access_token')?.value;
-	const isLoginRoute = req.nextUrl.pathname.startsWith('/login');
-	const isDashboardRoute = req.nextUrl.pathname.startsWith('/dashboard');
-
 	const valid = await isValidAccessToken(accessToken);
+
+	const host = getHost(req);
+	const baseDomain = getBaseDomain();
+	const orgSubdomainPresent = hasSubdomain(host, baseDomain);
+
+	const pathname = req.nextUrl.pathname;
+	const isLoginRoute = pathname.startsWith('/login');
+	const isDashboardRoute = pathname.startsWith('/dashboard');
+	const isSelectOrgRoute = pathname.startsWith('/select-org');
+
+	// If no subdomain, force users away from org-only routes
+	if (!orgSubdomainPresent && isDashboardRoute) {
+		const url = req.nextUrl.clone();
+		url.pathname = valid ? '/select-org' : '/login';
+		return NextResponse.redirect(url);
+	}
+
+	// If subdomain exists, skip org selection
+	if (orgSubdomainPresent && isSelectOrgRoute) {
+		const url = req.nextUrl.clone();
+		url.pathname = '/dashboard';
+		return NextResponse.redirect(url);
+	}
+
+	// Standard auth gating
 	if (isLoginRoute && valid) {
 		const url = req.nextUrl.clone();
 		url.pathname = '/dashboard';
@@ -38,5 +75,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-	matcher: ['/login', '/dashboard/:path*'],
+	matcher: ['/login', '/dashboard/:path*', '/select-org'],
 };

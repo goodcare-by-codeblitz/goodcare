@@ -1,12 +1,14 @@
 import { Bell, Search } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function Header() {
 	return (
 		<header className='flex h-14 shrink-0 items-center justify-between border-b border-border bg-white px-6 lg:px-10'>
 			{/* Logo */}
-			<Image src='/logo.svg' alt='Good Care' width={146} height={30} />
-
+			<Link href='/' className='flex items-center gap-2'>
+				<Image src='/logo.svg' alt='Good Care' width={146} height={30} />
+			</Link>
 			{/* Right section */}
 			<div className='flex items-center gap-4'>
 				{/* Search */}

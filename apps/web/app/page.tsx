@@ -1,6 +1,9 @@
 'use client';
 
+import { broadcastAuthEvent, buildBaseAppUrl } from '@/lib/auth-session';
 import { cn } from '@/lib/utils';
+import { useSessionStore } from '@/lib/stores/session-store';
+import axios from 'axios';
 import {
 	Activity,
 	AlertTriangle,
@@ -35,6 +38,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Global animations
@@ -1304,6 +1308,38 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
 function Nav() {
 	const [scrolled, setScrolled] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+
+	const router = useRouter();
+	const clearSession = useSessionStore((state) => state.clear);
+
+	console.log('Auth status:', isAuthed);
+
+	const handleLogout = async () => {
+		try {
+			const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL?.replace(
+				/\/+$/,
+				'',
+			);
+
+			await axios.delete(`${baseUrl}/v1/auth/logout`, {
+				withCredentials: true,
+			});
+			setIsAuthed(false);
+			clearSession();
+			broadcastAuthEvent('logout');
+
+			const loginUrl = buildBaseAppUrl('/login');
+			if (loginUrl) {
+				window.location.replace(loginUrl);
+				return;
+			}
+
+			router.replace('/login');
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	};
 
 	useEffect(() => {
 		const el = document.getElementById('page-scroll');
@@ -1312,6 +1348,25 @@ function Nav() {
 		el.addEventListener('scroll', onScroll, { passive: true });
 		return () => el.removeEventListener('scroll', onScroll);
 	}, []);
+
+	useEffect(() => {
+		const checkAuth = async () => {
+			try {
+				const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL?.replace(
+					/\/+$/,
+					'',
+				);
+				await axios.get(`${baseUrl}/v1/auth/me`, {
+					withCredentials: true,
+				});
+				setIsAuthed(true);
+			} catch {
+				setIsAuthed(false);
+			}
+		};
+
+		checkAuth();
+	}, [isAuthed]);
 
 	return (
 		<header
@@ -1340,18 +1395,36 @@ function Nav() {
 						</Link>
 					))}
 				</nav>
-				<div className='hidden items-center gap-3 md:flex'>
-					<Link
-						href='/login'
-						className='text-sm font-semibold text-[#64748b] transition-colors hover:text-[#0f172a]'>
-						Log in
-					</Link>
-					<Link
-						href='/register'
-						className='flex h-9 items-center rounded-lg bg-[#005fb8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004d96]'>
-						Get started free
-					</Link>
-				</div>
+
+				{/* Conditionally render buttons */}
+				{isAuthed ? (
+					<div className='hidden items-center gap-3 md:flex'>
+						<Link
+							href='/dashboard'
+							className='text-sm font-semibold text-[#64748b] transition-colors hover:text-[#0f172a]'>
+							Dashboard
+						</Link>
+						<button
+							type='button'
+							onClick={handleLogout}
+							className='flex h-9 items-center rounded-lg bg-[#005fb8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004d96]'>
+							Log out
+						</button>
+					</div>
+				) : (
+					<div className='hidden items-center gap-3 md:flex'>
+						<Link
+							href='/login'
+							className='text-sm font-semibold text-[#64748b] transition-colors hover:text-[#0f172a]'>
+							Log in
+						</Link>
+						<Link
+							href='/register'
+							className='flex h-9 items-center rounded-lg bg-[#005fb8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004d96]'>
+							Get started free
+						</Link>
+					</div>
+				)}
 				<button
 					className='flex h-9 w-9 items-center justify-center rounded-lg border border-[#e2e8f0] md:hidden'
 					onClick={() => setMenuOpen(!menuOpen)}>

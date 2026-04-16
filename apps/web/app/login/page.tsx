@@ -5,6 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+	broadcastAuthEvent,
+	buildBaseAppUrl,
+	buildOrgAppUrl,
+} from '@/lib/auth-session';
+import { useSessionStore } from '@/lib/stores/session-store';
 import axios from 'axios';
 import clsx from 'clsx';
 import {
@@ -18,14 +24,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { loginSchema } from './login-validation';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 export default function LoginPage() {
-	const router = useRouter();
 	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -41,6 +45,8 @@ export default function LoginPage() {
 		email?: boolean;
 		password?: boolean;
 	}>({});
+
+	const setOrganizations = useSessionStore((state) => state.setOrganisations);
 
 	const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -66,9 +72,41 @@ export default function LoginPage() {
 					withCredentials: true,
 				},
 			);
-			console.log('Login response:', response.data);
-			setSuccessMessage(response.data?.message ?? 'Login successful');
-			router.push('/dashboard');
+			const { organizations } = response.data;
+
+			setOrganizations(organizations); // Store organizations in Zustand
+			broadcastAuthEvent('login');
+
+			if (organizations.length === 0) {
+				setErrorMessage(
+					'Your account is not associated with any organization. Please contact your administrator.',
+				);
+				return;
+			}
+
+			if (organizations.length === 1) {
+				setSuccessMessage(response.data?.message ?? 'Login successful');
+				const org = organizations[0];
+				const dashboardUrl = buildOrgAppUrl(org.slug, '/dashboard');
+
+				if (!dashboardUrl) {
+					setErrorMessage(
+						'Missing NEXT_PUBLIC_APP_BASE_DOMAIN in apps/web/.env',
+					);
+					return;
+				}
+
+				window.location.replace(dashboardUrl);
+				return;
+			}
+
+			const selectOrgUrl = buildBaseAppUrl('/select-org');
+			if (!selectOrgUrl) {
+				setErrorMessage('Missing NEXT_PUBLIC_APP_BASE_DOMAIN in apps/web/.env');
+				return;
+			}
+
+			window.location.replace(selectOrgUrl);
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
 				const serverError = error.response?.data?.error;

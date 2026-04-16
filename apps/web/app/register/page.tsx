@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import axios from 'axios';
 import {
 	ArrowRight,
 	Building2,
@@ -18,39 +16,263 @@ import {
 	Mail,
 	User,
 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import slug from 'slug';
+import {
+	registerValidation,
+	slugValidationSchema,
+} from './register-validation';
 
-function toSlug(s: string) {
-	return s
-		.toLowerCase()
-		.trim()
-		.replace(/[^a-z0-9\s-]/g, '')
-		.replace(/\s+/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '');
+const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+
+function normalizeSlug(value: string) {
+	return slug(value, { lower: true });
 }
 
 export default function RegisterPage() {
+	const [fullName, setFullName] = useState('');
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
 	const [agencyName, setAgencyName] = useState('');
 	const [slug, setSlug] = useState('');
 	const [slugEdited, setSlugEdited] = useState(false);
+	const [slugAvailability, setSlugAvailability] = useState<{
+		status: 'idle' | 'checking' | 'available' | 'unavailable' | 'error';
+		message: string;
+		suggestions: string[];
+	}>({ status: 'idle', message: '', suggestions: [] });
 	const [showPassword, setShowPassword] = useState(false);
 	const [agreed, setAgreed] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
+	const [formError, setFormError] = useState('');
+	const [touched, setTouched] = useState<{
+		email?: boolean;
+		password?: boolean;
+		organizationName?: boolean;
+		slug?: boolean;
+	}>({});
+
+	const slugValidationResult = useMemo(
+		() => slugValidationSchema.safeParse(slug),
+		[slug],
+	);
+	const fieldErrors = useMemo(() => {
+		const validationResult = registerValidation.safeParse({
+			email,
+			password,
+			organizationName: agencyName,
+			slug,
+		});
+
+		if (validationResult.success) {
+			return {} as {
+				email?: string;
+				password?: string;
+				organizationName?: string;
+				slug?: string;
+			};
+		}
+
+		const { fieldErrors } = validationResult.error.flatten();
+		return {
+			email: fieldErrors.email?.[0],
+			password: fieldErrors.password?.[0],
+			organizationName: fieldErrors.organizationName?.[0],
+			slug: fieldErrors.slug?.[0],
+		};
+	}, [email, password, agencyName, slug]);
+
+	const derivedSlugStatus = useMemo(() => {
+		if (!slug) {
+			return { status: 'idle', message: '' } as const;
+		}
+
+		if (!slugValidationResult.success) {
+			return {
+				status: 'invalid',
+				message: slugValidationResult.error.issues[0].message,
+			} as const;
+		}
+
+		if (!backendBaseUrl) {
+			return {
+				status: 'invalid',
+				message: 'Missing NEXT_PUBLIC_BACKEND_BASE_URL in apps/web/.env',
+			} as const;
+		}
+
+		if (slugAvailability.status === 'idle') {
+			return {
+				status: 'checking',
+				message: 'Checking availability...',
+			} as const;
+		}
+
+		if (slugAvailability.status === 'error') {
+			return {
+				status: 'invalid',
+				message:
+					slugAvailability.message || 'Unable to check slug availability',
+			} as const;
+		}
+
+		return {
+			status: slugAvailability.status,
+			message: slugAvailability.message,
+		} as const;
+	}, [slug, slugAvailability, slugValidationResult]);
 
 	function handleAgencyChange(val: string) {
 		setAgencyName(val);
 		if (!slugEdited) {
-			setSlug(toSlug(val));
+			setSlug(normalizeSlug(val));
 		}
 	}
 
 	function handleSlugChange(val: string) {
 		setSlugEdited(true);
-		setSlug(toSlug(val));
+		setSlug(normalizeSlug(val));
+	}
+
+	useEffect(() => {
+		if (!slug) {
+			return;
+		}
+
+		if (!slugValidationResult.success) {
+			return;
+		}
+
+		if (!backendBaseUrl) {
+			return;
+		}
+
+		const baseUrlWithoutTrailingSlash = backendBaseUrl.replace(/\/+$/, '');
+		const timer = setTimeout(async () => {
+			try {
+				setSlugAvailability({
+					status: 'checking',
+					message: 'Checking availability...',
+					suggestions: [],
+				});
+				const response = await axios.post(
+					`${baseUrlWithoutTrailingSlash}/v1/auth/org-slug/check`,
+					{
+						organizationName: agencyName || undefined,
+						slug: slugEdited ? slug : undefined,
+					},
+					{ withCredentials: false },
+				);
+
+				const { available, suggestedSlug, suggestions } = response.data ?? {};
+
+				if (suggestedSlug && !slugEdited) {
+					setSlug(suggestedSlug);
+				}
+
+				if (available) {
+					setSlugAvailability({
+						status: 'available',
+						message: 'Available',
+						suggestions: [],
+					});
+					return;
+				}
+
+				setSlugAvailability({
+					status: 'unavailable',
+					message: 'Slug already in use',
+					suggestions: Array.isArray(suggestions) ? suggestions : [],
+				});
+			} catch (error) {
+				setSlugAvailability({
+					status: 'error',
+					message: 'Unable to check slug availability',
+					suggestions: [],
+				});
+
+				console.log(error);
+			}
+		}, 400);
+
+		return () => clearTimeout(timer);
+	}, [agencyName, slug, slugEdited, slugValidationResult]);
+
+	const canSubmit =
+		agreed &&
+		derivedSlugStatus.status === 'available' &&
+		slugValidationResult.success;
+	const submissionMessage = useMemo(() => {
+		if (!agreed) {
+			return 'Please accept the Terms of Service to continue.';
+		}
+
+		if (derivedSlugStatus.status === 'checking') {
+			return 'Checking slug availability. Please wait.';
+		}
+
+		if (derivedSlugStatus.status !== 'available') {
+			return 'Please choose an available URL slug.';
+		}
+
+		return '';
+	}, [agreed, derivedSlugStatus.status]);
+
+	async function handleFormSubmit() {
+		if (!canSubmit) {
+			setFormError(submissionMessage);
+			return false;
+		}
+
+		if (!backendBaseUrl) {
+			setFormError('Missing NEXT_PUBLIC_BACKEND_BASE_URL in apps/web/.env');
+			return false;
+		}
+
+		const trimmedName = fullName.trim();
+		const [firstName, ...rest] = trimmedName.split(/\s+/);
+		const lastName = rest.join(' ');
+
+		if (!firstName || !lastName) {
+			setFormError('Please enter both first and last name.');
+			return false;
+		}
+
+		try {
+			setFormError('');
+			const response = await axios.post(
+				`${backendBaseUrl.replace(/\/+$/, '')}/v1/auth/register`,
+				{
+					firstName,
+					lastName,
+					email,
+					password,
+					organizationName: agencyName,
+					slug,
+				},
+				{ withCredentials: true },
+			);
+
+			if (response.status === 201 || response.status === 200) {
+				return true;
+			}
+
+			setFormError('An unexpected error occurred. Please try again.');
+			return false;
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				setFormError(error.message);
+			} else {
+				setFormError('An unexpected error occurred. Please try again.');
+			}
+			return false;
+		}
 	}
 
 	return (
-		<div className='flex min-h-screen flex-col bg-[#f5f7f8]'>
+		<div className='flex min-h-screen flex-col bg-page-bg'>
 			{/* Header */}
 			<header className='flex items-center justify-between border-b border-[#e2e8f0] bg-white px-6 py-3'>
 				<Image src='/logo.svg' alt='Good Care Pro' width={140} height={28} />
@@ -65,7 +287,7 @@ export default function RegisterPage() {
 					<div className='rounded-xl bg-white p-8 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.07),0px_2px_4px_-2px_rgba(0,0,0,0.05)]'>
 						{submitted ? (
 							<div className='flex flex-col items-center gap-4 py-8 text-center'>
-								<CheckCircle2 className='size-14 text-[#10b981]' />
+								<CheckCircle2 className='size-14 text-success' />
 								<h2 className='text-xl font-bold text-[#0f172a]'>
 									Account Created!
 								</h2>
@@ -75,7 +297,7 @@ export default function RegisterPage() {
 								</p>
 								<Link
 									href='/login'
-									className='mt-2 text-sm font-semibold text-[#005fb8] hover:underline'>
+									className='mt-2 text-sm font-semibold text-care-blue hover:underline'>
 									Go to Login
 								</Link>
 							</div>
@@ -93,9 +315,19 @@ export default function RegisterPage() {
 
 								<form
 									className='flex flex-col gap-5'
-									onSubmit={(e) => {
+									onSubmit={async (e) => {
 										e.preventDefault();
-										setSubmitted(true);
+										setTouched({
+											email: true,
+											password: true,
+											organizationName: true,
+											slug: true,
+										});
+
+										const ok = await handleFormSubmit();
+										if (ok) {
+											setSubmitted(true);
+										}
 									}}>
 									{/* Full Name */}
 									<div className='flex flex-col gap-1.5'>
@@ -110,6 +342,8 @@ export default function RegisterPage() {
 												id='fullName'
 												type='text'
 												placeholder='Jane Smith'
+												value={fullName}
+												onChange={(e) => setFullName(e.target.value)}
 												className='h-12 rounded-lg border-[#e2e8f0] bg-[#f8fafc] pl-10 text-sm placeholder:text-[#cbd5e1]'
 											/>
 										</div>
@@ -128,9 +362,19 @@ export default function RegisterPage() {
 												id='email'
 												type='email'
 												placeholder='jane@agency.co.uk'
+												value={email}
+												onChange={(e) => setEmail(e.target.value)}
+												onBlur={() =>
+													setTouched((prev) => ({ ...prev, email: true }))
+												}
 												className='h-12 rounded-lg border-[#e2e8f0] bg-[#f8fafc] pl-10 text-sm placeholder:text-[#cbd5e1]'
 											/>
 										</div>
+										{touched.email && fieldErrors.email && (
+											<p className='text-xs text-red-600'>
+												{fieldErrors.email}
+											</p>
+										)}
 									</div>
 
 									{/* Agency Name + Slug */}
@@ -149,9 +393,21 @@ export default function RegisterPage() {
 													placeholder='Sunrise Care'
 													value={agencyName}
 													onChange={(e) => handleAgencyChange(e.target.value)}
+													onBlur={() =>
+														setTouched((prev) => ({
+															...prev,
+															organizationName: true,
+														}))
+													}
 													className='h-12 rounded-lg border-[#e2e8f0] bg-[#f8fafc] pl-10 text-sm placeholder:text-[#cbd5e1]'
 												/>
 											</div>
+											{touched.organizationName &&
+												fieldErrors.organizationName && (
+													<p className='text-xs text-red-600'>
+														{fieldErrors.organizationName}
+													</p>
+												)}
 										</div>
 										<div className='flex flex-1 flex-col gap-1.5'>
 											<Label
@@ -165,26 +421,70 @@ export default function RegisterPage() {
 												placeholder='sunrise-care'
 												value={slug}
 												onChange={(e) => handleSlugChange(e.target.value)}
+												onBlur={() =>
+													setTouched((prev) => ({ ...prev, slug: true }))
+												}
 												className='h-12 rounded-lg border-[#e2e8f0] bg-[#f8fafc] font-mono text-sm placeholder:text-[#cbd5e1]'
 											/>
+											{touched.slug && fieldErrors.slug && (
+												<p className='text-xs text-red-600'>
+													{fieldErrors.slug}
+												</p>
+											)}
 										</div>
 									</div>
 
 									{/* URL preview */}
 									{slug && (
-										<div className='flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2.5'>
-											<span className='text-xs text-[#94a3b8]'>
-												goodcarepro.co.uk/
-											</span>
-											<span className='text-xs font-semibold text-[#005fb8]'>
-												{slug}
-											</span>
-											<div className='ml-auto flex items-center gap-1.5'>
-												<span className='h-1.5 w-1.5 rounded-full bg-[#10b981]' />
-												<span className='text-[11px] font-medium text-[#10b981]'>
-													Available
+										<div className='flex flex-col gap-2 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2.5'>
+											<div className='flex items-center gap-1.5'>
+												<span className='text-xs text-[#94a3b8]'>
+													goodcarepro.co.uk/
 												</span>
+												<span className='text-xs font-semibold text-care-blue'>
+													{slug}
+												</span>
+												<div className='ml-auto flex items-center gap-1.5'>
+													<span
+														className={
+															derivedSlugStatus.status === 'available'
+																? 'h-1.5 w-1.5 rounded-full bg-success'
+																: derivedSlugStatus.status === 'unavailable' ||
+																	  derivedSlugStatus.status === 'invalid'
+																	? 'h-1.5 w-1.5 rounded-full bg-error'
+																	: 'h-1.5 w-1.5 rounded-full bg-warning'
+														}
+													/>
+													<span
+														className={
+															derivedSlugStatus.status === 'available'
+																? 'text-[11px] font-medium text-success'
+																: derivedSlugStatus.status === 'unavailable' ||
+																	  derivedSlugStatus.status === 'invalid'
+																	? 'text-[11px] font-medium text-error'
+																	: 'text-[11px] font-medium text-warning'
+														}>
+														{derivedSlugStatus.message || 'Checking...'}
+													</span>
+												</div>
 											</div>
+											{derivedSlugStatus.status === 'unavailable' &&
+												slugAvailability.suggestions.length > 0 && (
+													<div className='flex flex-wrap gap-2'>
+														{slugAvailability.suggestions.map((suggestion) => (
+															<button
+																type='button'
+																key={suggestion}
+																onClick={() => {
+																	setSlugEdited(true);
+																	setSlug(suggestion);
+																}}
+																className='rounded-full border border-[#e2e8f0] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0f172a] hover:border-care-blue'>
+																{suggestion}
+															</button>
+														))}
+													</div>
+												)}
 										</div>
 									)}
 
@@ -201,6 +501,11 @@ export default function RegisterPage() {
 												id='password'
 												type={showPassword ? 'text' : 'password'}
 												placeholder='••••••••'
+												value={password}
+												onChange={(e) => setPassword(e.target.value)}
+												onBlur={() =>
+													setTouched((prev) => ({ ...prev, password: true }))
+												}
 												className='h-12 rounded-lg border-[#e2e8f0] bg-[#f8fafc] pl-10 pr-10 text-sm placeholder:text-[#cbd5e1]'
 											/>
 											<button
@@ -220,6 +525,11 @@ export default function RegisterPage() {
 										<p className='text-[11px] text-[#94a3b8]'>
 											Minimum 8 characters with at least one number
 										</p>
+										{touched.password && fieldErrors.password && (
+											<p className='text-xs text-red-600'>
+												{fieldErrors.password}
+											</p>
+										)}
 									</div>
 
 									{/* Terms */}
@@ -236,13 +546,13 @@ export default function RegisterPage() {
 											I agree to the{' '}
 											<Link
 												href='#'
-												className='font-semibold text-[#005fb8] hover:underline'>
+												className='font-semibold text-care-blue hover:underline'>
 												Terms of Service
 											</Link>{' '}
 											and{' '}
 											<Link
 												href='#'
-												className='font-semibold text-[#005fb8] hover:underline'>
+												className='font-semibold text-care-blue hover:underline'>
 												Privacy Policy
 											</Link>
 										</Label>
@@ -251,10 +561,14 @@ export default function RegisterPage() {
 									{/* Submit */}
 									<Button
 										type='submit'
-										className='mt-1 h-12 w-full rounded-lg bg-[#005fb8] text-sm font-bold text-white shadow-[0px_4px_6px_-1px_rgba(0,95,184,0.2)] hover:bg-[#004d96]'>
+										disabled={!canSubmit}
+										className='mt-1 h-12 w-full rounded-lg bg-care-blue text-sm font-bold text-white shadow-[0px_4px_6px_-1px_rgba(0,95,184,0.2)] hover:bg-care-blue-dark'>
 										Sign Up
 										<ArrowRight className='ml-2 size-4' />
 									</Button>
+									{formError && (
+										<p className='text-xs text-red-600'>{formError}</p>
+									)}
 								</form>
 							</>
 						)}
@@ -265,7 +579,7 @@ export default function RegisterPage() {
 							Already have an account?{' '}
 							<Link
 								href='/login'
-								className='font-semibold text-[#005fb8] hover:underline'>
+								className='font-semibold text-care-blue hover:underline'>
 								Log In
 							</Link>
 						</p>
