@@ -1,34 +1,45 @@
-import '@fastify/cookie'
-import type { FastifyReply } from 'fastify'
+import '@fastify/cookie';
+import type { FastifyReply } from 'fastify';
 
-export const ACCESS_TTL = '10m'
-export const REFRESH_DAYS = 30
+export const ACCESS_TTL = '10m';
+export const REFRESH_DAYS = 30;
 
 interface IAuthTokens {
-  accessToken: string
-  refreshToken: string
+	accessToken: string;
+	refreshToken: string;
+}
+
+export function getCookieDomain() {
+	return process.env.COOKIE_DOMAIN;
 }
 
 export function refreshExpiryDate() {
-  const d = new Date()
-  d.setDate(d.getDate() + REFRESH_DAYS)
-  return d
+	const d = new Date();
+	d.setDate(d.getDate() + REFRESH_DAYS);
+	return d;
 }
 
-export function setAuthCookies(reply: FastifyReply, { accessToken, refreshToken }: IAuthTokens) {
-  const isProd = process.env.NODE_ENV === 'production'
+export function setAuthCookies(
+	reply: FastifyReply,
+	{ accessToken, refreshToken }: IAuthTokens,
+) {
+	const isProd = process.env.NODE_ENV === 'production';
 
-  reply.setCookie('access_token', accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/',
-  })
+	const cookieDomain = getCookieDomain(); // e.g. ".goodcare.com" or "localhost"
 
-  reply.setCookie('refresh_token', refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
-    path: '/auth/refresh', // important: refresh only sent here
-  })
+	reply.setCookie('access_token', accessToken, {
+		httpOnly: true,
+		secure: isProd,
+		sameSite: 'lax',
+		path: '/',
+		...(cookieDomain ? { domain: cookieDomain } : {}),
+	});
+
+	reply.setCookie('refresh_token', refreshToken, {
+		httpOnly: true,
+		secure: isProd,
+		sameSite: 'lax',
+		path: '/auth/refresh', // important: refresh only sent here
+		...(cookieDomain ? { domain: cookieDomain } : {}),
+	});
 }

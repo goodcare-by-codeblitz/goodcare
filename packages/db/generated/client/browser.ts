@@ -19,11 +19,7 @@ export * as $Enums from './enums'
 export * from './enums';
 /**
  * Model User
- * *
- *  * User represents a user of the system, which can be a caregiver, healthcare provider, or administrator.
- *  * It includes fields for email, password hash, status, and timestamps for creation and updates.
- *  * Each user can be associated with multiple organizations through the OrganizationUser join table, allowing for multi-tenancy and flexible user management across different organizations using the platform.
- *  * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as visits assigned by the user, incident reports they have reported, and audit logs of their actions within the system.
+ * 
  */
 export type User = Prisma.UserModel
 /**
@@ -33,24 +29,17 @@ export type User = Prisma.UserModel
 export type Organization = Prisma.OrganizationModel
 /**
  * Model OrganizationUser
- * *
- *  * OrganizationUser represents the membership of a user within an organization, allowing for tracking of which users belong to which organizations and their status within those organizations.
- *  * Each record includes the user ID, organization ID, membership status (invited, active, suspended, left), and timestamps for when the user was invited, joined, and left the organization.
- *  * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the membership, the organization they belong to, and any audit logs or invite tokens related to their membership in the organization. The unique constraints and indexes on the combination of userId and organizationId ensure that a user cannot have duplicate memberships within the same organization, while allowing for efficient querying of memberships by user and organization, which are common use cases in managing user access and roles within healthcare applications.
+ * 
  */
 export type OrganizationUser = Prisma.OrganizationUserModel
 /**
  * Model Role
- * *
- *  * Role represents a role that can be assigned to users within the system, allowing for role-based access control and permissions management.
- *  * Each role has a name, a scope (either PLATFORM or ORGANIZATION), and is associated with an organization (if the scope is ORGANIZATION).
+ * 
  */
 export type Role = Prisma.RoleModel
 /**
  * Model Permission
- * *
- *  * Permission represents a specific permission or action that can be assigned to roles within the system, allowing for granular control over what actions users with specific roles can perform.
- *  * Each permission has a unique key and a description, and can be associated with multiple roles through the RolePermission join table, enabling a many-to-many relationship between roles and permissions. This allows for flexible permission assignments and management within the system, as permissions can be reused across different roles and roles can have multiple permissions assigned to them. The unique constraint on the key field ensures that each permission is distinct and can be easily referenced when assigning permissions to roles, while the relationships defined in this model allow for easy navigation and management of related data across the platform, such as the roles associated with a permission and the permissions assigned to a role.
+ * 
  */
 export type Permission = Prisma.PermissionModel
 /**
@@ -60,22 +49,79 @@ export type Permission = Prisma.PermissionModel
 export type RolePermission = Prisma.RolePermissionModel
 /**
  * Model RoleAssignment
- * *
- *  * RoleAssignment represents the assignment of a role to a user within the system, allowing for tracking of which users have which roles and their associated permissions.
- *  * Each record includes the user ID, role ID, and optionally the organization ID (if the role is organization-scoped), as well as relationships to the User and Role models.
- *  * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the role assignment, the role that is assigned, and any permissions associated with that role. The indexes on userId and roleId facilitate efficient querying of role assignments by user and by role, which are common use cases in managing user access and permissions within healthcare applications. The optional organizationId field allows for flexibility in assigning roles that are specific to an organization, while still supporting platform-wide roles that do not require an organization context
+ * 
  */
 export type RoleAssignment = Prisma.RoleAssignmentModel
 /**
+ * Model Carer
+ * 
+ */
+export type Carer = Prisma.CarerModel
+/**
+ * Model Qualification
+ * 
+ */
+export type Qualification = Prisma.QualificationModel
+/**
+ * Model QualificationType
+ * 
+ */
+export type QualificationType = Prisma.QualificationTypeModel
+/**
  * Model Patient
- * *
- *  * Patient represents a patient receiving care within the organization.
- *  * It includes fields for personal information (first name, last name, date of birth, gender) and status (active, inactive, deceased).
- *  * Each patient is associated with an organization and can have an optional address.
- *  * Patients can have multiple visits and care plans, allowing for comprehensive tracking of their care history and ongoing care needs within the organization.
- *  * The unique constraint on the combination of id and organizationId ensures that patient records are unique within each organization, while allowing for the possibility of patients with the same name or other attributes across different organizations. The indexes on organizationId and lastName, firstName facilitate efficient querying of patients by organization and by name, which are common use cases in healthcare applications.
+ * 
  */
 export type Patient = Prisma.PatientModel
+/**
+ * Model Visit
+ * 
+ */
+export type Visit = Prisma.VisitModel
+/**
+ * Model VisitAssignment
+ * 
+ */
+export type VisitAssignment = Prisma.VisitAssignmentModel
+/**
+ * Model CarePlan
+ * 
+ */
+export type CarePlan = Prisma.CarePlanModel
+/**
+ * Model VisitTask
+ * 
+ */
+export type VisitTask = Prisma.VisitTaskModel
+/**
+ * Model DailyNote
+ * 
+ */
+export type DailyNote = Prisma.DailyNoteModel
+/**
+ * Model IncidentReport
+ * 
+ */
+export type IncidentReport = Prisma.IncidentReportModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model Address
+ * 
+ */
+export type Address = Prisma.AddressModel
+/**
+ * Model InviteToken
+ * 
+ */
+export type InviteToken = Prisma.InviteTokenModel
+/**
+ * Model PasswordResetToken
+ * 
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel
 /**
  * Model Session
  * 

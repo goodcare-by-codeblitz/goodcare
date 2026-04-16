@@ -14,10 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model OrganizationUser
- * *
- *  * OrganizationUser represents the membership of a user within an organization, allowing for tracking of which users belong to which organizations and their status within those organizations.
- *  * Each record includes the user ID, organization ID, membership status (invited, active, suspended, left), and timestamps for when the user was invited, joined, and left the organization.
- *  * The relationships defined in this model allow for easy navigation and management of related data across the platform, such as the user associated with the membership, the organization they belong to, and any audit logs or invite tokens related to their membership in the organization. The unique constraints and indexes on the combination of userId and organizationId ensure that a user cannot have duplicate memberships within the same organization, while allowing for efficient querying of memberships by user and organization, which are common use cases in managing user access and roles within healthcare applications.
+ * 
  */
 export type OrganizationUserModel = runtime.Types.Result.DefaultSelection<Prisma.$OrganizationUserPayload>
 
@@ -174,7 +171,7 @@ export type OrganizationUserGroupByOutputType = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt: Date
-  joinedAt: Date
+  joinedAt: Date | null
   leftAt: Date | null
   invitedById: string
   _count: OrganizationUserCountAggregateOutputType | null
@@ -206,12 +203,15 @@ export type OrganizationUserWhereInput = {
   organizationId?: Prisma.StringFilter<"OrganizationUser"> | string
   status?: Prisma.EnumMembershipStatusFilter<"OrganizationUser"> | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
-  joinedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
+  joinedAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   leftAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   invitedById?: Prisma.StringFilter<"OrganizationUser"> | string
+  carer?: Prisma.XOR<Prisma.CarerNullableScalarRelationFilter, Prisma.CarerWhereInput> | null
   invitedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  inviteTokens?: Prisma.InviteTokenListRelationFilter
 }
 
 export type OrganizationUserOrderByWithRelationInput = {
@@ -220,12 +220,15 @@ export type OrganizationUserOrderByWithRelationInput = {
   organizationId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   invitedAt?: Prisma.SortOrder
-  joinedAt?: Prisma.SortOrder
+  joinedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   leftAt?: Prisma.SortOrderInput | Prisma.SortOrder
   invitedById?: Prisma.SortOrder
+  carer?: Prisma.CarerOrderByWithRelationInput
   invitedBy?: Prisma.UserOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   organization?: Prisma.OrganizationOrderByWithRelationInput
+  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  inviteTokens?: Prisma.InviteTokenOrderByRelationAggregateInput
 }
 
 export type OrganizationUserWhereUniqueInput = Prisma.AtLeast<{
@@ -239,12 +242,15 @@ export type OrganizationUserWhereUniqueInput = Prisma.AtLeast<{
   organizationId?: Prisma.StringFilter<"OrganizationUser"> | string
   status?: Prisma.EnumMembershipStatusFilter<"OrganizationUser"> | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
-  joinedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
+  joinedAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   leftAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   invitedById?: Prisma.StringFilter<"OrganizationUser"> | string
+  carer?: Prisma.XOR<Prisma.CarerNullableScalarRelationFilter, Prisma.CarerWhereInput> | null
   invitedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  inviteTokens?: Prisma.InviteTokenListRelationFilter
 }, "id" | "userId_organizationId" | "id_organizationId">
 
 export type OrganizationUserOrderByWithAggregationInput = {
@@ -253,7 +259,7 @@ export type OrganizationUserOrderByWithAggregationInput = {
   organizationId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   invitedAt?: Prisma.SortOrder
-  joinedAt?: Prisma.SortOrder
+  joinedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   leftAt?: Prisma.SortOrderInput | Prisma.SortOrder
   invitedById?: Prisma.SortOrder
   _count?: Prisma.OrganizationUserCountOrderByAggregateInput
@@ -270,7 +276,7 @@ export type OrganizationUserScalarWhereWithAggregatesInput = {
   organizationId?: Prisma.StringWithAggregatesFilter<"OrganizationUser"> | string
   status?: Prisma.EnumMembershipStatusWithAggregatesFilter<"OrganizationUser"> | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeWithAggregatesFilter<"OrganizationUser"> | Date | string
-  joinedAt?: Prisma.DateTimeWithAggregatesFilter<"OrganizationUser"> | Date | string
+  joinedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrganizationUser"> | Date | string | null
   leftAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrganizationUser"> | Date | string | null
   invitedById?: Prisma.StringWithAggregatesFilter<"OrganizationUser"> | string
 }
@@ -279,11 +285,14 @@ export type OrganizationUserCreateInput = {
   id?: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
   invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
   user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserUncheckedCreateInput = {
@@ -292,20 +301,26 @@ export type OrganizationUserUncheckedCreateInput = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
   invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateInput = {
@@ -314,9 +329,12 @@ export type OrganizationUserUncheckedUpdateInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserCreateManyInput = {
@@ -325,7 +343,7 @@ export type OrganizationUserCreateManyInput = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
 }
@@ -334,7 +352,7 @@ export type OrganizationUserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -344,7 +362,7 @@ export type OrganizationUserUncheckedUpdateManyInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -400,6 +418,16 @@ export type OrganizationUserMinOrderByAggregateInput = {
   joinedAt?: Prisma.SortOrder
   leftAt?: Prisma.SortOrder
   invitedById?: Prisma.SortOrder
+}
+
+export type OrganizationUserScalarRelationFilter = {
+  is?: Prisma.OrganizationUserWhereInput
+  isNot?: Prisma.OrganizationUserWhereInput
+}
+
+export type OrganizationUserNullableScalarRelationFilter = {
+  is?: Prisma.OrganizationUserWhereInput | null
+  isNot?: Prisma.OrganizationUserWhereInput | null
 }
 
 export type OrganizationUserCreateNestedManyWithoutUserInput = {
@@ -532,14 +560,63 @@ export type EnumMembershipStatusFieldUpdateOperationsInput = {
   set?: $Enums.MembershipStatus
 }
 
+export type OrganizationUserCreateNestedOneWithoutCarerInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutCarerInput, Prisma.OrganizationUserUncheckedCreateWithoutCarerInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutCarerInput
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+}
+
+export type OrganizationUserUpdateOneRequiredWithoutCarerNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutCarerInput, Prisma.OrganizationUserUncheckedCreateWithoutCarerInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutCarerInput
+  upsert?: Prisma.OrganizationUserUpsertWithoutCarerInput
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUserUpdateToOneWithWhereWithoutCarerInput, Prisma.OrganizationUserUpdateWithoutCarerInput>, Prisma.OrganizationUserUncheckedUpdateWithoutCarerInput>
+}
+
+export type OrganizationUserCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutAuditLogsInput
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+}
+
+export type OrganizationUserUpdateOneWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutAuditLogsInput
+  upsert?: Prisma.OrganizationUserUpsertWithoutAuditLogsInput
+  disconnect?: Prisma.OrganizationUserWhereInput | boolean
+  delete?: Prisma.OrganizationUserWhereInput | boolean
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.OrganizationUserUpdateWithoutAuditLogsInput>, Prisma.OrganizationUserUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type OrganizationUserCreateNestedOneWithoutInviteTokensInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedCreateWithoutInviteTokensInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutInviteTokensInput
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+}
+
+export type OrganizationUserUpdateOneWithoutInviteTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationUserCreateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedCreateWithoutInviteTokensInput>
+  connectOrCreate?: Prisma.OrganizationUserCreateOrConnectWithoutInviteTokensInput
+  upsert?: Prisma.OrganizationUserUpsertWithoutInviteTokensInput
+  disconnect?: Prisma.OrganizationUserWhereInput | boolean
+  delete?: Prisma.OrganizationUserWhereInput | boolean
+  connect?: Prisma.OrganizationUserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUserUpdateToOneWithWhereWithoutInviteTokensInput, Prisma.OrganizationUserUpdateWithoutInviteTokensInput>, Prisma.OrganizationUserUncheckedUpdateWithoutInviteTokensInput>
+}
+
 export type OrganizationUserCreateWithoutUserInput = {
   id?: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
   invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserUncheckedCreateWithoutUserInput = {
@@ -547,9 +624,12 @@ export type OrganizationUserUncheckedCreateWithoutUserInput = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserCreateOrConnectWithoutUserInput = {
@@ -566,10 +646,13 @@ export type OrganizationUserCreateWithoutInvitedByInput = {
   id?: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
   user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserUncheckedCreateWithoutInvitedByInput = {
@@ -578,8 +661,11 @@ export type OrganizationUserUncheckedCreateWithoutInvitedByInput = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserCreateOrConnectWithoutInvitedByInput = {
@@ -617,7 +703,7 @@ export type OrganizationUserScalarWhereInput = {
   organizationId?: Prisma.StringFilter<"OrganizationUser"> | string
   status?: Prisma.EnumMembershipStatusFilter<"OrganizationUser"> | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
-  joinedAt?: Prisma.DateTimeFilter<"OrganizationUser"> | Date | string
+  joinedAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   leftAt?: Prisma.DateTimeNullableFilter<"OrganizationUser"> | Date | string | null
   invitedById?: Prisma.StringFilter<"OrganizationUser"> | string
 }
@@ -642,10 +728,13 @@ export type OrganizationUserCreateWithoutOrganizationInput = {
   id?: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
   invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
   user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserUncheckedCreateWithoutOrganizationInput = {
@@ -653,9 +742,12 @@ export type OrganizationUserUncheckedCreateWithoutOrganizationInput = {
   userId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
 }
 
 export type OrganizationUserCreateOrConnectWithoutOrganizationInput = {
@@ -684,12 +776,216 @@ export type OrganizationUserUpdateManyWithWhereWithoutOrganizationInput = {
   data: Prisma.XOR<Prisma.OrganizationUserUpdateManyMutationInput, Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationInput>
 }
 
+export type OrganizationUserCreateWithoutCarerInput = {
+  id?: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
+  user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
+}
+
+export type OrganizationUserUncheckedCreateWithoutCarerInput = {
+  id?: string
+  userId: string
+  organizationId: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  invitedById: string
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
+}
+
+export type OrganizationUserCreateOrConnectWithoutCarerInput = {
+  where: Prisma.OrganizationUserWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutCarerInput, Prisma.OrganizationUserUncheckedCreateWithoutCarerInput>
+}
+
+export type OrganizationUserUpsertWithoutCarerInput = {
+  update: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutCarerInput, Prisma.OrganizationUserUncheckedUpdateWithoutCarerInput>
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutCarerInput, Prisma.OrganizationUserUncheckedCreateWithoutCarerInput>
+  where?: Prisma.OrganizationUserWhereInput
+}
+
+export type OrganizationUserUpdateToOneWithWhereWithoutCarerInput = {
+  where?: Prisma.OrganizationUserWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutCarerInput, Prisma.OrganizationUserUncheckedUpdateWithoutCarerInput>
+}
+
+export type OrganizationUserUpdateWithoutCarerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
+}
+
+export type OrganizationUserUncheckedUpdateWithoutCarerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
+}
+
+export type OrganizationUserCreateWithoutAuditLogsInput = {
+  id?: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
+  invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
+  user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationUserInput
+}
+
+export type OrganizationUserUncheckedCreateWithoutAuditLogsInput = {
+  id?: string
+  userId: string
+  organizationId: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  invitedById: string
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationUserInput
+}
+
+export type OrganizationUserCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.OrganizationUserWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedCreateWithoutAuditLogsInput>
+}
+
+export type OrganizationUserUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedUpdateWithoutAuditLogsInput>
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedCreateWithoutAuditLogsInput>
+  where?: Prisma.OrganizationUserWhereInput
+}
+
+export type OrganizationUserUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.OrganizationUserWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutAuditLogsInput, Prisma.OrganizationUserUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type OrganizationUserUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
+  invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
+}
+
+export type OrganizationUserUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
+}
+
+export type OrganizationUserCreateWithoutInviteTokensInput = {
+  id?: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  carer?: Prisma.CarerCreateNestedOneWithoutOrganizationUserInput
+  invitedBy: Prisma.UserCreateNestedOneWithoutInvitedMembersInput
+  user: Prisma.UserCreateNestedOneWithoutOrganizationUsersInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorOrganizationUserInput
+}
+
+export type OrganizationUserUncheckedCreateWithoutInviteTokensInput = {
+  id?: string
+  userId: string
+  organizationId: string
+  status: $Enums.MembershipStatus
+  invitedAt?: Date | string
+  joinedAt?: Date | string | null
+  leftAt?: Date | string | null
+  invitedById: string
+  carer?: Prisma.CarerUncheckedCreateNestedOneWithoutOrganizationUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorOrganizationUserInput
+}
+
+export type OrganizationUserCreateOrConnectWithoutInviteTokensInput = {
+  where: Prisma.OrganizationUserWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedCreateWithoutInviteTokensInput>
+}
+
+export type OrganizationUserUpsertWithoutInviteTokensInput = {
+  update: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedUpdateWithoutInviteTokensInput>
+  create: Prisma.XOR<Prisma.OrganizationUserCreateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedCreateWithoutInviteTokensInput>
+  where?: Prisma.OrganizationUserWhereInput
+}
+
+export type OrganizationUserUpdateToOneWithWhereWithoutInviteTokensInput = {
+  where?: Prisma.OrganizationUserWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUserUpdateWithoutInviteTokensInput, Prisma.OrganizationUserUncheckedUpdateWithoutInviteTokensInput>
+}
+
+export type OrganizationUserUpdateWithoutInviteTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
+  invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+}
+
+export type OrganizationUserUncheckedUpdateWithoutInviteTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+}
+
 export type OrganizationUserCreateManyUserInput = {
   id?: string
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
 }
@@ -700,7 +996,7 @@ export type OrganizationUserCreateManyInvitedByInput = {
   organizationId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
 }
 
@@ -708,10 +1004,13 @@ export type OrganizationUserUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
   invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateWithoutUserInput = {
@@ -719,9 +1018,12 @@ export type OrganizationUserUncheckedUpdateWithoutUserInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateManyWithoutUserInput = {
@@ -729,7 +1031,7 @@ export type OrganizationUserUncheckedUpdateManyWithoutUserInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -738,10 +1040,13 @@ export type OrganizationUserUpdateWithoutInvitedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateWithoutInvitedByInput = {
@@ -750,8 +1055,11 @@ export type OrganizationUserUncheckedUpdateWithoutInvitedByInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateManyWithoutInvitedByInput = {
@@ -760,7 +1068,7 @@ export type OrganizationUserUncheckedUpdateManyWithoutInvitedByInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -769,7 +1077,7 @@ export type OrganizationUserCreateManyOrganizationInput = {
   userId: string
   status: $Enums.MembershipStatus
   invitedAt?: Date | string
-  joinedAt: Date | string
+  joinedAt?: Date | string | null
   leftAt?: Date | string | null
   invitedById: string
 }
@@ -778,10 +1086,13 @@ export type OrganizationUserUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  carer?: Prisma.CarerUpdateOneWithoutOrganizationUserNestedInput
   invitedBy?: Prisma.UserUpdateOneRequiredWithoutInvitedMembersNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutOrganizationUsersNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateWithoutOrganizationInput = {
@@ -789,9 +1100,12 @@ export type OrganizationUserUncheckedUpdateWithoutOrganizationInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
+  carer?: Prisma.CarerUncheckedUpdateOneWithoutOrganizationUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorOrganizationUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationUserNestedInput
 }
 
 export type OrganizationUserUncheckedUpdateManyWithoutOrganizationInput = {
@@ -799,11 +1113,49 @@ export type OrganizationUserUncheckedUpdateManyWithoutOrganizationInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
   invitedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  joinedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
+
+/**
+ * Count Type OrganizationUserCountOutputType
+ */
+
+export type OrganizationUserCountOutputType = {
+  auditLogs: number
+  inviteTokens: number
+}
+
+export type OrganizationUserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  auditLogs?: boolean | OrganizationUserCountOutputTypeCountAuditLogsArgs
+  inviteTokens?: boolean | OrganizationUserCountOutputTypeCountInviteTokensArgs
+}
+
+/**
+ * OrganizationUserCountOutputType without action
+ */
+export type OrganizationUserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrganizationUserCountOutputType
+   */
+  select?: Prisma.OrganizationUserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * OrganizationUserCountOutputType without action
+ */
+export type OrganizationUserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * OrganizationUserCountOutputType without action
+ */
+export type OrganizationUserCountOutputTypeCountInviteTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InviteTokenWhereInput
+}
 
 
 export type OrganizationUserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -815,9 +1167,13 @@ export type OrganizationUserSelect<ExtArgs extends runtime.Types.Extensions.Inte
   joinedAt?: boolean
   leftAt?: boolean
   invitedById?: boolean
+  carer?: boolean | Prisma.OrganizationUser$carerArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.OrganizationUser$auditLogsArgs<ExtArgs>
+  inviteTokens?: boolean | Prisma.OrganizationUser$inviteTokensArgs<ExtArgs>
+  _count?: boolean | Prisma.OrganizationUserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organizationUser"]>
 
 export type OrganizationUserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -861,9 +1217,13 @@ export type OrganizationUserSelectScalar = {
 
 export type OrganizationUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "organizationId" | "status" | "invitedAt" | "joinedAt" | "leftAt" | "invitedById", ExtArgs["result"]["organizationUser"]>
 export type OrganizationUserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  carer?: boolean | Prisma.OrganizationUser$carerArgs<ExtArgs>
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.OrganizationUser$auditLogsArgs<ExtArgs>
+  inviteTokens?: boolean | Prisma.OrganizationUser$inviteTokensArgs<ExtArgs>
+  _count?: boolean | Prisma.OrganizationUserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationUserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -879,9 +1239,12 @@ export type OrganizationUserIncludeUpdateManyAndReturn<ExtArgs extends runtime.T
 export type $OrganizationUserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "OrganizationUser"
   objects: {
+    carer: Prisma.$CarerPayload<ExtArgs> | null
     invitedBy: Prisma.$UserPayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
     organization: Prisma.$OrganizationPayload<ExtArgs>
+    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    inviteTokens: Prisma.$InviteTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -889,7 +1252,7 @@ export type $OrganizationUserPayload<ExtArgs extends runtime.Types.Extensions.In
     organizationId: string
     status: $Enums.MembershipStatus
     invitedAt: Date
-    joinedAt: Date
+    joinedAt: Date | null
     leftAt: Date | null
     invitedById: string
   }, ExtArgs["result"]["organizationUser"]>
@@ -1286,9 +1649,12 @@ readonly fields: OrganizationUserFieldRefs;
  */
 export interface Prisma__OrganizationUserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  carer<T extends Prisma.OrganizationUser$carerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationUser$carerArgs<ExtArgs>>): Prisma.Prisma__CarerClient<runtime.Types.Result.GetResult<Prisma.$CarerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   invitedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  auditLogs<T extends Prisma.OrganizationUser$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationUser$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  inviteTokens<T extends Prisma.OrganizationUser$inviteTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationUser$inviteTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1719,6 +2085,73 @@ export type OrganizationUserDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many OrganizationUsers to delete.
    */
   limit?: number
+}
+
+/**
+ * OrganizationUser.carer
+ */
+export type OrganizationUser$carerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Carer
+   */
+  select?: Prisma.CarerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Carer
+   */
+  omit?: Prisma.CarerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarerInclude<ExtArgs> | null
+  where?: Prisma.CarerWhereInput
+}
+
+/**
+ * OrganizationUser.auditLogs
+ */
+export type OrganizationUser$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditLog
+   */
+  select?: Prisma.AuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditLog
+   */
+  omit?: Prisma.AuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditLogInclude<ExtArgs> | null
+  where?: Prisma.AuditLogWhereInput
+  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * OrganizationUser.inviteTokens
+ */
+export type OrganizationUser$inviteTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InviteToken
+   */
+  select?: Prisma.InviteTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InviteToken
+   */
+  omit?: Prisma.InviteTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InviteTokenInclude<ExtArgs> | null
+  where?: Prisma.InviteTokenWhereInput
+  orderBy?: Prisma.InviteTokenOrderByWithRelationInput | Prisma.InviteTokenOrderByWithRelationInput[]
+  cursor?: Prisma.InviteTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InviteTokenScalarFieldEnum | Prisma.InviteTokenScalarFieldEnum[]
 }
 
 /**

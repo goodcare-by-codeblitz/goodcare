@@ -14,9 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Permission
- * *
- *  * Permission represents a specific permission or action that can be assigned to roles within the system, allowing for granular control over what actions users with specific roles can perform.
- *  * Each permission has a unique key and a description, and can be associated with multiple roles through the RolePermission join table, enabling a many-to-many relationship between roles and permissions. This allows for flexible permission assignments and management within the system, as permissions can be reused across different roles and roles can have multiple permissions assigned to them. The unique constraint on the key field ensures that each permission is distinct and can be easily referenced when assigning permissions to roles, while the relationships defined in this model allow for easy navigation and management of related data across the platform, such as the roles associated with a permission and the permissions assigned to a role.
+ * 
  */
 export type PermissionModel = runtime.Types.Result.DefaultSelection<Prisma.$PermissionPayload>
 

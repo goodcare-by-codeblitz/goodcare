@@ -58,7 +58,20 @@ export const ModelName = {
   Permission: 'Permission',
   RolePermission: 'RolePermission',
   RoleAssignment: 'RoleAssignment',
+  Carer: 'Carer',
+  Qualification: 'Qualification',
+  QualificationType: 'QualificationType',
   Patient: 'Patient',
+  Visit: 'Visit',
+  VisitAssignment: 'VisitAssignment',
+  CarePlan: 'CarePlan',
+  VisitTask: 'VisitTask',
+  DailyNote: 'DailyNote',
+  IncidentReport: 'IncidentReport',
+  AuditLog: 'AuditLog',
+  Address: 'Address',
+  InviteToken: 'InviteToken',
+  PasswordResetToken: 'PasswordResetToken',
   Session: 'Session'
 } as const
 
@@ -100,7 +113,8 @@ export const OrganizationScalarFieldEnum = {
   slug: 'slug',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  addressId: 'addressId'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -156,6 +170,48 @@ export const RoleAssignmentScalarFieldEnum = {
 export type RoleAssignmentScalarFieldEnum = (typeof RoleAssignmentScalarFieldEnum)[keyof typeof RoleAssignmentScalarFieldEnum]
 
 
+export const CarerScalarFieldEnum = {
+  id: 'id',
+  hireDate: 'hireDate',
+  employmentType: 'employmentType',
+  experienceYears: 'experienceYears',
+  availability: 'availability',
+  updatedAt: 'updatedAt',
+  status: 'status',
+  organizationUserId: 'organizationUserId',
+  organizationId: 'organizationId'
+} as const
+
+export type CarerScalarFieldEnum = (typeof CarerScalarFieldEnum)[keyof typeof CarerScalarFieldEnum]
+
+
+export const QualificationScalarFieldEnum = {
+  id: 'id',
+  carerId: 'carerId',
+  typeId: 'typeId',
+  fileUrl: 'fileUrl',
+  organizationId: 'organizationId',
+  status: 'status',
+  issuedAt: 'issuedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QualificationScalarFieldEnum = (typeof QualificationScalarFieldEnum)[keyof typeof QualificationScalarFieldEnum]
+
+
+export const QualificationTypeScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  description: 'description',
+  expires: 'expires'
+} as const
+
+export type QualificationTypeScalarFieldEnum = (typeof QualificationTypeScalarFieldEnum)[keyof typeof QualificationTypeScalarFieldEnum]
+
+
 export const PatientScalarFieldEnum = {
   id: 'id',
   firstName: 'firstName',
@@ -172,6 +228,156 @@ export const PatientScalarFieldEnum = {
 } as const
 
 export type PatientScalarFieldEnum = (typeof PatientScalarFieldEnum)[keyof typeof PatientScalarFieldEnum]
+
+
+export const VisitScalarFieldEnum = {
+  id: 'id',
+  scheduledStart: 'scheduledStart',
+  scheduledEnd: 'scheduledEnd',
+  actualStart: 'actualStart',
+  actualEnd: 'actualEnd',
+  status: 'status',
+  organizationId: 'organizationId',
+  patientId: 'patientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type VisitScalarFieldEnum = (typeof VisitScalarFieldEnum)[keyof typeof VisitScalarFieldEnum]
+
+
+export const VisitAssignmentScalarFieldEnum = {
+  id: 'id',
+  assignedAt: 'assignedAt',
+  unassignedAt: 'unassignedAt',
+  isActive: 'isActive',
+  visitId: 'visitId',
+  carerId: 'carerId',
+  assignedById: 'assignedById',
+  organizationId: 'organizationId'
+} as const
+
+export type VisitAssignmentScalarFieldEnum = (typeof VisitAssignmentScalarFieldEnum)[keyof typeof VisitAssignmentScalarFieldEnum]
+
+
+export const CarePlanScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  goals: 'goals',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  createdById: 'createdById'
+} as const
+
+export type CarePlanScalarFieldEnum = (typeof CarePlanScalarFieldEnum)[keyof typeof CarePlanScalarFieldEnum]
+
+
+export const VisitTaskScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  status: 'status',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt',
+  completedByCarerId: 'completedByCarerId',
+  visitId: 'visitId',
+  organizationId: 'organizationId'
+} as const
+
+export type VisitTaskScalarFieldEnum = (typeof VisitTaskScalarFieldEnum)[keyof typeof VisitTaskScalarFieldEnum]
+
+
+export const DailyNoteScalarFieldEnum = {
+  id: 'id',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  visitId: 'visitId',
+  carerId: 'carerId',
+  organizationId: 'organizationId'
+} as const
+
+export type DailyNoteScalarFieldEnum = (typeof DailyNoteScalarFieldEnum)[keyof typeof DailyNoteScalarFieldEnum]
+
+
+export const IncidentReportScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  severity: 'severity',
+  organizationId: 'organizationId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  patientId: 'patientId',
+  visitId: 'visitId',
+  reportedById: 'reportedById',
+  status: 'status'
+} as const
+
+export type IncidentReportScalarFieldEnum = (typeof IncidentReportScalarFieldEnum)[keyof typeof IncidentReportScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  oldValues: 'oldValues',
+  newValues: 'newValues',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  organizationId: 'organizationId',
+  actorUserId: 'actorUserId',
+  actorOrganizationUserId: 'actorOrganizationUserId'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AddressScalarFieldEnum = {
+  id: 'id',
+  line1: 'line1',
+  line2: 'line2',
+  city: 'city',
+  postcode: 'postcode',
+  country: 'country'
+} as const
+
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
+
+
+export const InviteTokenScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  organizationUserId: 'organizationUserId',
+  email: 'email',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  createdByUserId: 'createdByUserId'
+} as const
+
+export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
+
+
+export const PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
 
 
 export const SessionScalarFieldEnum = {
@@ -197,6 +403,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -211,4 +425,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

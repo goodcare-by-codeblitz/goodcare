@@ -6,3 +6,8 @@ dist
 .env
 .env.*
 !.env.example
+.d.ts
+.d.js
+.d.ts.map
+.d.js.map
+data

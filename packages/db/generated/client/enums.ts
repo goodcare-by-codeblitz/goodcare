@@ -116,6 +116,20 @@ export const VisitTaskStatus = {
 export type VisitTaskStatus = (typeof VisitTaskStatus)[keyof typeof VisitTaskStatus]
 
 
+export const AuditAction = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  PASSWORD_CHANGE: 'PASSWORD_CHANGE',
+  ROLE_ASSIGNMENT: 'ROLE_ASSIGNMENT',
+  OTHER: 'OTHER'
+} as const
+
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
 export const IncidentReportStatus = {
   OPEN: 'OPEN',
   INVESTIGATING: 'INVESTIGATING',

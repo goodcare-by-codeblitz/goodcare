@@ -1,0 +1,79 @@
+// apps/web/middleware.ts
+import { jwtVerify } from 'jose';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+const encoder = new TextEncoder();
+const secret = encoder.encode(process.env.JWT_SECRET ?? '');
+
+async function isValidAccessToken(token: string | undefined) {
+	if (!token || !process.env.JWT_SECRET) return false;
+	try {
+		await jwtVerify(token, secret);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function getHost(req: NextRequest) {
+	return req.headers.get('host') ?? '';
+}
+
+function getBaseDomain() {
+	const raw = process.env.NEXT_PUBLIC_APP_BASE_DOMAIN ?? '';
+	return raw.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+}
+
+function hasSubdomain(host: string, baseDomain: string) {
+	if (!host || !baseDomain) return false;
+	if (host === baseDomain) return false;
+	return host.endsWith(`.${baseDomain}`);
+}
+
+export async function middleware(req: NextRequest) {
+	const accessToken = req.cookies.get('access_token')?.value;
+	const valid = await isValidAccessToken(accessToken);
+
+	const host = getHost(req);
+	const baseDomain = getBaseDomain();
+	const orgSubdomainPresent = hasSubdomain(host, baseDomain);
+
+	const pathname = req.nextUrl.pathname;
+	const isLoginRoute = pathname.startsWith('/login');
+	const isDashboardRoute = pathname.startsWith('/dashboard');
+	const isSelectOrgRoute = pathname.startsWith('/select-org');
+
+	// If no subdomain, force users away from org-only routes
+	if (!orgSubdomainPresent && isDashboardRoute) {
+		const url = req.nextUrl.clone();
+		url.pathname = valid ? '/select-org' : '/login';
+		return NextResponse.redirect(url);
+	}
+
+	// If subdomain exists, skip org selection
+	if (orgSubdomainPresent && isSelectOrgRoute) {
+		const url = req.nextUrl.clone();
+		url.pathname = '/dashboard';
+		return NextResponse.redirect(url);
+	}
+
+	// Standard auth gating
+	if (isLoginRoute && valid) {
+		const url = req.nextUrl.clone();
+		url.pathname = '/dashboard';
+		return NextResponse.redirect(url);
+	}
+
+	if (isDashboardRoute && !valid) {
+		const url = req.nextUrl.clone();
+		url.pathname = '/login';
+		return NextResponse.redirect(url);
+	}
+
+	return NextResponse.next();
+}
+
+export const config = {
+	matcher: ['/login', '/dashboard/:path*', '/select-org'],
+};
