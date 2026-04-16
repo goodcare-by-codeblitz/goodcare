@@ -88,6 +88,7 @@ export default function LoginPage() {
 				setSuccessMessage(response.data?.message ?? 'Login successful');
 				const org = organizations[0];
 				const dashboardUrl = buildOrgAppUrl(org.slug, '/dashboard');
+				const homeUrl = buildBaseAppUrl('/');
 
 				if (!dashboardUrl) {
 					setErrorMessage(
@@ -96,17 +97,32 @@ export default function LoginPage() {
 					return;
 				}
 
-				window.location.replace(dashboardUrl);
+				const dashboardWindow = window.open(
+					dashboardUrl,
+					'_blank',
+					'noopener,noreferrer',
+				);
+
+				if (dashboardWindow && homeUrl) {
+					window.location.replace(homeUrl);
+					return;
+				}
+
+				window.location.replace('/');
 				return;
 			}
 
-			const selectOrgUrl = buildBaseAppUrl('/select-org');
-			if (!selectOrgUrl) {
-				setErrorMessage('Missing NEXT_PUBLIC_APP_BASE_DOMAIN in apps/web/.env');
-				return;
-			}
+			if (organizations.length > 1) {
+				const selectOrgUrl = buildBaseAppUrl('/select-org');
+				if (!selectOrgUrl) {
+					setErrorMessage(
+						'Missing NEXT_PUBLIC_APP_BASE_DOMAIN in apps/web/.env',
+					);
+					return;
+				}
 
-			window.location.replace(selectOrgUrl);
+				window.location.replace(selectOrgUrl);
+			}
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
 				const serverError = error.response?.data?.error;

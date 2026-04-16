@@ -1,44 +1,29 @@
 'use client';
 
 import { broadcastAuthEvent, buildBaseAppUrl } from '@/lib/auth-session';
-import { cn } from '@/lib/utils';
 import { useSessionStore } from '@/lib/stores/session-store';
+import { cn } from '@/lib/utils';
 import axios from 'axios';
 import {
 	Activity,
-	AlertTriangle,
 	ArrowRight,
-	Bell,
 	CalendarDays,
 	Check,
 	CheckCircle2,
-	ChevronDown,
 	ChevronRight,
 	ClipboardList,
-	Clock,
 	FileText,
-	Home,
 	Lock,
-	MapPin,
 	Menu,
-	MoreHorizontal,
-	Pill,
-	Plus,
-	Search,
-	Settings,
 	Shield,
 	Star,
-	TrendingDown,
-	TrendingUp,
-	UserCheck,
 	Users,
 	X,
-	Zap,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Global animations
@@ -1331,11 +1316,11 @@ function Nav() {
 
 			const loginUrl = buildBaseAppUrl('/login');
 			if (loginUrl) {
-				window.location.replace(loginUrl);
+				window.location.replace('/');
 				return;
 			}
 
-			router.replace('/login');
+			router.replace('/');
 		} catch (error) {
 			console.error('Logout failed:', error);
 		}

@@ -29,16 +29,32 @@ function SelectOrg() {
 		}
 
 		const dashboardUrl = buildOrgAppUrl(selectedOrg.slug, '/dashboard');
+		const homeUrl = buildBaseAppUrl('/');
 		if (!dashboardUrl) {
 			setErrorMessage('Missing NEXT_PUBLIC_APP_BASE_DOMAIN in apps/web/.env');
 			return;
 		}
 
-		window.open(dashboardUrl, '_blank', 'noopener,noreferrer');
+		const dashboardWindow = window.open(
+			dashboardUrl,
+			'_blank',
+			'noopener,noreferrer',
+		);
+
+		if (dashboardWindow && homeUrl) {
+			window.location.replace(homeUrl);
+			return;
+		}
+
+		window.location.replace('/');
+		return;
 	};
 
 	const loadOrgs = useCallback(async () => {
-		const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL?.replace(/\/+$/, '');
+		const baseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL?.replace(
+			/\/+$/,
+			'',
+		);
 		if (!baseUrl) {
 			setErrorMessage('Missing NEXT_PUBLIC_BACKEND_BASE_URL in apps/web/.env');
 			setOrganisations([]);
@@ -68,7 +84,9 @@ function SelectOrg() {
 				}
 			}
 
-			setErrorMessage('Unable to load organizations. Please refresh and try again.');
+			setErrorMessage(
+				'Unable to load organizations. Please refresh and try again.',
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -112,7 +130,9 @@ function SelectOrg() {
 						onChange={handleChange}
 						disabled={isLoading || organisations.length === 0}>
 						<NativeSelectOption value=''>
-							{isLoading ? 'Loading organizations...' : 'Select an organization'}
+							{isLoading
+								? 'Loading organizations...'
+								: 'Select an organization'}
 						</NativeSelectOption>
 						{!isLoading &&
 							organisations.map((org) => (
