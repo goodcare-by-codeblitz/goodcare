@@ -3,11 +3,12 @@ import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
 import { orgScope } from '../../middleware/org-scope';
 import {
+  createCarerInviteController,
   createInviteController,
   listInvitesController,
   revokeInviteController,
 } from './invitation.controller';
-import { createInviteOpts, inviteListOpts, revokeInviteOpts } from './invitation.schemas';
+import { createCarerInviteOpts, createInviteOpts, inviteListOpts, revokeInviteOpts } from './invitation.schemas';
 
 export async function invitationRoutes(app: FastifyInstance) {
   const auth = authenticate(app);
@@ -15,8 +16,14 @@ export async function invitationRoutes(app: FastifyInstance) {
   // POST /orgs/:organizationId/invitations — send invite
   app.post(
     '/:organizationId/invitations',
-    { ...createInviteOpts, preHandler: [auth, orgScope, authorize('manage_members')] },
+    { ...createInviteOpts, preHandler: [auth, orgScope, authorize('manage_members', 'manage_roles')] },
     createInviteController,
+  );
+
+  app.post(
+    '/:organizationId/carer-invitations',
+    { ...createCarerInviteOpts, preHandler: [auth, orgScope, authorize('manage_carers')] },
+    createCarerInviteController,
   );
 
   // GET /orgs/:organizationId/invitations — list pending invites

@@ -2,19 +2,33 @@ import crypto from 'crypto';
 import { prisma } from '@repo/db';
 import { hashToken } from '../../../utils/token-hash';
 import { ConflictError, ForbiddenError, NotFoundError } from '../../lib/errors';
-import type { CreateInviteInput } from './invitation.types';
+import {
+  CARER_ROLE_NAME,
+  isCarerRoleName,
+  isTeamRoleName,
+  listOrganizationRoles,
+} from '../organisation/org-role.utils';
+import type { CreateInviteInput, InviteKind, InviteSummary } from './invitation.types';
 
 export async function createInviteService(input: CreateInviteInput) {
-  const { email, roleId, firstName, lastName, organizationId, invitedByUserId } = input;
+  const { email, roleId, firstName, lastName, organizationId, invitedByUserId, kind } = input;
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Validate role is organization-scoped
-  const role = await prisma.role.findUnique({
-    where: { id: roleId },
-    select: { id: true, scope: true, name: true },
-  });
+  const teamRoles = await listOrganizationRoles('team');
+  const carerRoles = await listOrganizationRoles('carer');
+  const teamRoleIds = teamRoles.map((role) => role.id);
+  const carerRole = carerRoles[0];
 
-  if (!role || role.scope !== 'ORGANIZATION') {
+  if (!carerRole) {
+    throw new NotFoundError('Caregiver role not found');
+  }
+
+  const role =
+    kind === 'TEAM'
+      ? teamRoles.find((candidate) => candidate.id === roleId)
+      : carerRole;
+
+  if (!role) {
     throw new ForbiddenError('Invalid organization role');
   }
 
@@ -27,11 +41,14 @@ export async function createInviteService(input: CreateInviteInput) {
       revokedAt: null,
       expiresAt: { gt: new Date() },
     },
-    select: { id: true, email: true, expiresAt: true, createdAt: true },
+    select: { id: true },
   });
 
   if (existingInvite) {
-    return { invite: existingInvite, alreadyPending: true as const };
+    return {
+      invite: await getInviteSummaryById(existingInvite.id, organizationId),
+      alreadyPending: true as const,
+    };
   }
 
   // Check if user is already an active member
@@ -82,7 +99,12 @@ export async function createInviteService(input: CreateInviteInput) {
           organizationId,
         },
       },
-      update: { status: 'INVITED', invitedById: invitedByUserId },
+      update: {
+        status: 'INVITED',
+        invitedById: invitedByUserId,
+        leftAt: null,
+        joinedAt: null,
+      },
       create: {
         userId: user.id,
         organizationId,
@@ -92,19 +114,28 @@ export async function createInviteService(input: CreateInviteInput) {
       select: { id: true },
     });
 
-    // Assign requested role
+    if (kind === 'TEAM') {
+      await tx.roleAssignment.deleteMany({
+        where: {
+          userId: user.id,
+          organizationId,
+          roleId: { in: teamRoleIds },
+        },
+      });
+    }
+
     await tx.roleAssignment.upsert({
       where: {
         userId_roleId_organizationId: {
           userId: user.id,
-          roleId,
+          roleId: role.id,
           organizationId,
         },
       },
       update: {},
       create: {
         userId: user.id,
-        roleId,
+        roleId: role.id,
         organizationId,
       },
     });
@@ -119,17 +150,21 @@ export async function createInviteService(input: CreateInviteInput) {
         expiresAt,
         createdByUserId: invitedByUserId,
       },
-      select: { id: true, email: true, expiresAt: true, createdAt: true },
+      select: { id: true },
     });
 
     return { invite, rawToken, user };
   });
 
-  return { ...result, alreadyPending: false as const };
+  return {
+    invite: await getInviteSummaryById(result.invite.id, organizationId),
+    rawToken: result.rawToken,
+    alreadyPending: false as const,
+  };
 }
 
 export async function listInvitesService(organizationId: string) {
-  return prisma.inviteToken.findMany({
+  const invites = await prisma.inviteToken.findMany({
     where: {
       organizationId,
       usedAt: null,
@@ -140,10 +175,30 @@ export async function listInvitesService(organizationId: string) {
       email: true,
       expiresAt: true,
       createdAt: true,
+      organizationUser: {
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              roles: {
+                where: { organizationId },
+                select: {
+                  role: { select: { id: true, name: true } },
+                },
+              },
+            },
+          },
+        },
+      },
       createdBy: { select: { firstName: true, lastName: true, email: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  return invites
+    .map((invite) => summarizeInviteRecord(invite))
+    .filter((invite): invite is InviteSummary => invite?.kind === 'TEAM');
 }
 
 export async function revokeInviteService(organizationId: string, inviteId: string) {
@@ -154,7 +209,26 @@ export async function revokeInviteService(organizationId: string, inviteId: stri
       usedAt: null,
       revokedAt: null,
     },
-    select: { id: true, organizationUserId: true },
+    select: {
+      id: true,
+      organizationUserId: true,
+      organizationUser: {
+        select: {
+          userId: true,
+          user: {
+            select: {
+              roles: {
+                where: { organizationId },
+                select: {
+                  roleId: true,
+                  role: { select: { name: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!invite) {
@@ -166,6 +240,32 @@ export async function revokeInviteService(organizationId: string, inviteId: stri
       where: { id: invite.id },
       data: { revokedAt: new Date() },
     });
+
+    const userRoleAssignments = invite.organizationUser?.user.roles ?? [];
+    const pendingTeamRoleIds = userRoleAssignments
+      .filter((assignment) => isTeamRoleName(assignment.role.name))
+      .map((assignment) => assignment.roleId);
+    const pendingCarerRoleIds = userRoleAssignments
+      .filter((assignment) => isCarerRoleName(assignment.role.name))
+      .map((assignment) => assignment.roleId);
+
+    if (invite.organizationUser?.userId && pendingTeamRoleIds.length > 0) {
+      await tx.roleAssignment.deleteMany({
+        where: {
+          userId: invite.organizationUser.userId,
+          organizationId,
+          roleId: { in: pendingTeamRoleIds },
+        },
+      });
+    } else if (invite.organizationUser?.userId && pendingCarerRoleIds.length > 0) {
+      await tx.roleAssignment.deleteMany({
+        where: {
+          userId: invite.organizationUser.userId,
+          organizationId,
+          roleId: { in: pendingCarerRoleIds },
+        },
+      });
+    }
 
     // Revert membership to LEFT if it was INVITED
     if (invite.organizationUserId) {
@@ -184,4 +284,94 @@ export async function revokeInviteService(organizationId: string, inviteId: stri
   });
 
   return { message: 'Invite revoked successfully' };
+}
+
+async function getInviteSummaryById(
+  inviteId: string,
+  organizationId: string,
+): Promise<InviteSummary> {
+  const invite = await prisma.inviteToken.findFirst({
+    where: { id: inviteId, organizationId },
+    select: {
+      id: true,
+      email: true,
+      expiresAt: true,
+      createdAt: true,
+      organizationUser: {
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              roles: {
+                where: { organizationId },
+                select: {
+                  role: { select: { id: true, name: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+      createdBy: { select: { firstName: true, lastName: true, email: true } },
+    },
+  });
+
+  const summary = summarizeInviteRecord(invite);
+  if (!summary) {
+    throw new NotFoundError('Invite not found');
+  }
+
+  return summary;
+}
+
+function summarizeInviteRecord(
+  invite:
+    | {
+        id: string;
+        email: string;
+        expiresAt: Date;
+        createdAt: Date;
+        createdBy: { firstName: string; lastName: string; email: string };
+        organizationUser: {
+          user: {
+            firstName: string;
+            lastName: string;
+            roles: Array<{ role: { id: string; name: string } }>;
+          };
+        } | null;
+      }
+    | null,
+): InviteSummary | null {
+  if (!invite?.organizationUser) {
+    return null;
+  }
+
+  const roles = invite.organizationUser.user.roles.map((assignment) => assignment.role);
+  const role =
+    roles.find((candidate) => isTeamRoleName(candidate.name)) ??
+    roles.find((candidate) => candidate.name === CARER_ROLE_NAME);
+
+  if (!role) {
+    return null;
+  }
+
+  return {
+    id: invite.id,
+    email: invite.email,
+    firstName: invite.organizationUser.user.firstName,
+    lastName: invite.organizationUser.user.lastName,
+    role: {
+      id: role.id,
+      name: role.name,
+    },
+    invitedAt: invite.createdAt,
+    expiresAt: invite.expiresAt,
+    invitedBy: invite.createdBy,
+    kind: resolveInviteKind(role.name),
+  };
+}
+
+function resolveInviteKind(roleName: string): InviteKind {
+  return isCarerRoleName(roleName) ? 'CARER' : 'TEAM';
 }

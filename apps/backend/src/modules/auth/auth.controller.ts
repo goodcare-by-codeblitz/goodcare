@@ -61,7 +61,7 @@ export function registerController(app: FastifyInstance) {
 				email: body.email,
 				password: body.password,
 				organizationName: body.organizationName,
-				slug: body.slug,
+				...(body.slug ? { slug: body.slug } : {}),
 				session: { sessionId, tokenHash, expiresAt, userAgent, ip },
 			});
 

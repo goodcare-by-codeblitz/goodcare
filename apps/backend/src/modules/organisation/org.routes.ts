@@ -4,12 +4,13 @@ import { authorize } from '../../middleware/authorize';
 import { orgScope } from '../../middleware/org-scope';
 import {
   getOrgController,
+  listRolesController,
   listMembersController,
   removeMemberController,
   updateMemberController,
   updateOrgController,
 } from './org.controller';
-import { memberParamsOpts, orgIdParamsOpts, updateMemberOpts, updateOrgOpts } from './org.schemas';
+import { listRolesOpts, memberParamsOpts, orgIdParamsOpts, updateMemberOpts, updateOrgOpts } from './org.schemas';
 import { invitationRoutes } from '../invitation/invitation.routes';
 
 export async function orgRoutes(app: FastifyInstance) {
@@ -37,10 +38,16 @@ export async function orgRoutes(app: FastifyInstance) {
     listMembersController,
   );
 
+  app.get(
+    '/:organizationId/roles',
+    { ...listRolesOpts, preHandler: [auth, orgScope, authorize('view_roles')] },
+    listRolesController,
+  );
+
   // PATCH /orgs/:organizationId/members/:userId — update member
   app.patch(
     '/:organizationId/members/:userId',
-    { ...updateMemberOpts, preHandler: [auth, orgScope, authorize('manage_members')] },
+    { ...updateMemberOpts, preHandler: [auth, orgScope, authorize('manage_members', 'manage_roles')] },
     updateMemberController,
   );
 
