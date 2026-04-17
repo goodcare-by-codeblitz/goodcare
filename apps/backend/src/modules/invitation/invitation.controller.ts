@@ -6,7 +6,7 @@ import {
   listInvitesService,
   revokeInviteService,
 } from './invitation.service';
-import type { CreateInviteBody } from './invitation.types';
+import type { CreateCarerInviteBody, CreateInviteBody } from './invitation.types';
 
 export async function createInviteController(request: FastifyRequest, reply: FastifyReply) {
   const { organizationId } = request.params as { organizationId: string };
@@ -14,6 +14,7 @@ export async function createInviteController(request: FastifyRequest, reply: Fas
 
   const result = await createInviteService({
     ...body,
+    kind: 'TEAM',
     organizationId,
     invitedByUserId: request.user.id,
   });
@@ -46,6 +47,49 @@ export async function createInviteController(request: FastifyRequest, reply: Fas
 
   return reply.status(201).send({
     message: 'Invitation sent successfully',
+    invite: result.invite,
+  });
+}
+
+export async function createCarerInviteController(request: FastifyRequest, reply: FastifyReply) {
+  const { organizationId } = request.params as { organizationId: string };
+  const body = request.body as CreateCarerInviteBody;
+
+  const result = await createInviteService({
+    ...body,
+    kind: 'CARER',
+    organizationId,
+    invitedByUserId: request.user.id,
+  });
+
+  if (result.alreadyPending) {
+    return reply.status(200).send({
+      message: 'An invitation is already pending for this email',
+      invite: result.invite,
+    });
+  }
+
+  await enqueueInvitationEmail({
+    to: result.invite.email,
+    firstName: body.firstName,
+    organizationName: request.org.name,
+    slug: request.org.slug,
+    inviteToken: result.rawToken,
+  });
+
+  logAudit({
+    action: 'CREATE',
+    entityType: 'InviteToken',
+    entityId: result.invite.id,
+    newValues: { email: result.invite.email, kind: result.invite.kind },
+    organizationId,
+    actorUserId: request.user.id,
+    ipAddress: request.ip,
+    userAgent: request.headers['user-agent'] ?? undefined,
+  });
+
+  return reply.status(201).send({
+    message: 'Carer invitation sent successfully',
     invite: result.invite,
   });
 }

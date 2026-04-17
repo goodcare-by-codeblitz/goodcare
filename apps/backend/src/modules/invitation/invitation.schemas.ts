@@ -22,6 +22,27 @@ export const createInviteSchema: FastifySchema = {
   },
 };
 
+export const createCarerInviteSchema: FastifySchema = {
+  tags: ['Invitations'],
+  body: {
+    type: 'object',
+    required: ['email', 'firstName', 'lastName'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      firstName: { type: 'string', minLength: 1 },
+      lastName: { type: 'string', minLength: 1 },
+    },
+    additionalProperties: false,
+  },
+  params: {
+    type: 'object',
+    required: ['organizationId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+    },
+  },
+};
+
 export const inviteListSchema: FastifySchema = {
   tags: ['Invitations'],
   params: {
@@ -46,6 +67,7 @@ export const revokeInviteSchema: FastifySchema = {
 };
 
 export const createInviteOpts = { schema: createInviteSchema };
+export const createCarerInviteOpts = { schema: createCarerInviteSchema };
 export const inviteListOpts = { schema: inviteListSchema };
 export const revokeInviteOpts = { schema: revokeInviteSchema };
 export const carerInviteListOpts = { schema: inviteListSchema };
