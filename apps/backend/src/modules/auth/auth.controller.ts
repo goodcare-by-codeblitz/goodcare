@@ -1,4 +1,5 @@
 import '@fastify/jwt';
+import { prisma } from '@repo/db';
 import crypto from 'crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
@@ -441,12 +442,86 @@ export function currentOrgAccessController() {
 		const user = request.user as { id: string };
 		const org = await resolveOrganizationFromRequest(request, user.id);
 		const authorized = org?.organizationUser?.status === 'ACTIVE';
+		let permissions: string[] = [];
+
+		if (authorized) {
+			const roleAssignments = await prisma.roleAssignment.findMany({
+				where: {
+					userId: user.id,
+					organizationId: org.id,
+				},
+				select: {
+					role: {
+						select: {
+							name: true,
+							scope: true,
+							permissions: {
+								select: {
+									permission: {
+										select: {
+											key: true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			});
+
+			permissions = [
+				...new Set(
+					roleAssignments.flatMap((assignment) =>
+						assignment.role.permissions.map((entry) => entry.permission.key),
+					),
+				),
+			];
+
+			// Compatibility bridge: older environments may not have been reseeded yet
+			// with the new medication permissions, but Admin/Manager/Caregiver/Viewer
+			// should still retain the expected access model.
+			const roleKeys = new Set(
+				roleAssignments.map((assignment) =>
+					assignment.role.scope === 'ORGANIZATION'
+						? assignment.role.name
+						: `${assignment.role.scope}:${assignment.role.name}`,
+				),
+			);
+
+			if (!permissions.includes('view_medications')) {
+				if (
+					roleKeys.has('Admin') ||
+					roleKeys.has('Manager') ||
+					roleKeys.has('Caregiver') ||
+					roleKeys.has('ORGANIZATION:Viewer')
+				) {
+					permissions.push('view_medications');
+				}
+			}
+
+			if (!permissions.includes('manage_medications')) {
+				if (roleKeys.has('Admin') || roleKeys.has('Manager')) {
+					permissions.push('manage_medications');
+				}
+			}
+
+			if (!permissions.includes('administer_medications')) {
+				if (
+					roleKeys.has('Admin') ||
+					roleKeys.has('Manager') ||
+					roleKeys.has('Caregiver')
+				) {
+					permissions.push('administer_medications');
+				}
+			}
+		}
 
 		return reply.send({
 			authorized,
 			organizationId: authorized ? org.id : null,
 			organizationSlug: authorized ? org.slug : null,
 			organizationName: authorized ? org.name : null,
+			permissions,
 		});
 	};
 }

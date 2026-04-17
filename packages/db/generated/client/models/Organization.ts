@@ -217,6 +217,11 @@ export type OrganizationWhereInput = {
   carers?: Prisma.CarerListRelationFilter
   qualifications?: Prisma.QualificationListRelationFilter
   inviteTokens?: Prisma.InviteTokenListRelationFilter
+  patientProfiles?: Prisma.PatientProfileListRelationFilter
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactListRelationFilter
+  patientAllergies?: Prisma.PatientAllergyListRelationFilter
+  medications?: Prisma.MedicationListRelationFilter
+  medicationAdministrations?: Prisma.MedicationAdministrationListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -239,6 +244,11 @@ export type OrganizationOrderByWithRelationInput = {
   carers?: Prisma.CarerOrderByRelationAggregateInput
   qualifications?: Prisma.QualificationOrderByRelationAggregateInput
   inviteTokens?: Prisma.InviteTokenOrderByRelationAggregateInput
+  patientProfiles?: Prisma.PatientProfileOrderByRelationAggregateInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactOrderByRelationAggregateInput
+  patientAllergies?: Prisma.PatientAllergyOrderByRelationAggregateInput
+  medications?: Prisma.MedicationOrderByRelationAggregateInput
+  medicationAdministrations?: Prisma.MedicationAdministrationOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -264,6 +274,11 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   carers?: Prisma.CarerListRelationFilter
   qualifications?: Prisma.QualificationListRelationFilter
   inviteTokens?: Prisma.InviteTokenListRelationFilter
+  patientProfiles?: Prisma.PatientProfileListRelationFilter
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactListRelationFilter
+  patientAllergies?: Prisma.PatientAllergyListRelationFilter
+  medications?: Prisma.MedicationListRelationFilter
+  medicationAdministrations?: Prisma.MedicationAdministrationListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -313,6 +328,11 @@ export type OrganizationCreateInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -334,6 +354,11 @@ export type OrganizationUncheckedCreateInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -355,6 +380,11 @@ export type OrganizationUpdateInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -376,6 +406,11 @@ export type OrganizationUncheckedUpdateInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -527,6 +562,48 @@ export type OrganizationUpdateOneRequiredWithoutPatientsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPatientsInput, Prisma.OrganizationUpdateWithoutPatientsInput>, Prisma.OrganizationUncheckedUpdateWithoutPatientsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutPatientProfilesInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedCreateWithoutPatientProfilesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientProfilesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutPatientProfilesNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedCreateWithoutPatientProfilesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientProfilesInput
+  upsert?: Prisma.OrganizationUpsertWithoutPatientProfilesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPatientProfilesInput, Prisma.OrganizationUpdateWithoutPatientProfilesInput>, Prisma.OrganizationUncheckedUpdateWithoutPatientProfilesInput>
+}
+
+export type OrganizationCreateNestedOneWithoutPatientEmergencyContactsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedCreateWithoutPatientEmergencyContactsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientEmergencyContactsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutPatientEmergencyContactsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedCreateWithoutPatientEmergencyContactsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientEmergencyContactsInput
+  upsert?: Prisma.OrganizationUpsertWithoutPatientEmergencyContactsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPatientEmergencyContactsInput, Prisma.OrganizationUpdateWithoutPatientEmergencyContactsInput>, Prisma.OrganizationUncheckedUpdateWithoutPatientEmergencyContactsInput>
+}
+
+export type OrganizationCreateNestedOneWithoutPatientAllergiesInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedCreateWithoutPatientAllergiesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientAllergiesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutPatientAllergiesNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedCreateWithoutPatientAllergiesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPatientAllergiesInput
+  upsert?: Prisma.OrganizationUpsertWithoutPatientAllergiesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPatientAllergiesInput, Prisma.OrganizationUpdateWithoutPatientAllergiesInput>, Prisma.OrganizationUncheckedUpdateWithoutPatientAllergiesInput>
+}
+
 export type OrganizationCreateNestedOneWithoutVisitsInput = {
   create?: Prisma.XOR<Prisma.OrganizationCreateWithoutVisitsInput, Prisma.OrganizationUncheckedCreateWithoutVisitsInput>
   connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutVisitsInput
@@ -553,6 +630,34 @@ export type OrganizationUpdateOneRequiredWithoutCarePlansNestedInput = {
   upsert?: Prisma.OrganizationUpsertWithoutCarePlansInput
   connect?: Prisma.OrganizationWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutCarePlansInput, Prisma.OrganizationUpdateWithoutCarePlansInput>, Prisma.OrganizationUncheckedUpdateWithoutCarePlansInput>
+}
+
+export type OrganizationCreateNestedOneWithoutMedicationsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMedicationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutMedicationsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMedicationsInput
+  upsert?: Prisma.OrganizationUpsertWithoutMedicationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutMedicationsInput, Prisma.OrganizationUpdateWithoutMedicationsInput>, Prisma.OrganizationUncheckedUpdateWithoutMedicationsInput>
+}
+
+export type OrganizationCreateNestedOneWithoutMedicationAdministrationsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationAdministrationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMedicationAdministrationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutMedicationAdministrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationAdministrationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMedicationAdministrationsInput
+  upsert?: Prisma.OrganizationUpsertWithoutMedicationAdministrationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutMedicationAdministrationsInput, Prisma.OrganizationUpdateWithoutMedicationAdministrationsInput>, Prisma.OrganizationUncheckedUpdateWithoutMedicationAdministrationsInput>
 }
 
 export type OrganizationCreateNestedOneWithoutDailyNotesInput = {
@@ -673,6 +778,11 @@ export type OrganizationCreateWithoutUsersInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -693,6 +803,11 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -729,6 +844,11 @@ export type OrganizationUpdateWithoutUsersInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -749,6 +869,11 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCarersInput = {
@@ -769,6 +894,11 @@ export type OrganizationCreateWithoutCarersInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCarersInput = {
@@ -789,6 +919,11 @@ export type OrganizationUncheckedCreateWithoutCarersInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCarersInput = {
@@ -825,6 +960,11 @@ export type OrganizationUpdateWithoutCarersInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCarersInput = {
@@ -845,6 +985,11 @@ export type OrganizationUncheckedUpdateWithoutCarersInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutQualificationsInput = {
@@ -865,6 +1010,11 @@ export type OrganizationCreateWithoutQualificationsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutQualificationsInput = {
@@ -885,6 +1035,11 @@ export type OrganizationUncheckedCreateWithoutQualificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutQualificationsInput = {
@@ -921,6 +1076,11 @@ export type OrganizationUpdateWithoutQualificationsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutQualificationsInput = {
@@ -941,6 +1101,11 @@ export type OrganizationUncheckedUpdateWithoutQualificationsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPatientsInput = {
@@ -961,6 +1126,11 @@ export type OrganizationCreateWithoutPatientsInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPatientsInput = {
@@ -981,6 +1151,11 @@ export type OrganizationUncheckedCreateWithoutPatientsInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPatientsInput = {
@@ -1017,6 +1192,11 @@ export type OrganizationUpdateWithoutPatientsInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPatientsInput = {
@@ -1037,6 +1217,359 @@ export type OrganizationUncheckedUpdateWithoutPatientsInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutPatientProfilesInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  address?: Prisma.AddressCreateNestedOneWithoutOrganizationsInput
+  users?: Prisma.OrganizationUserCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutPatientProfilesInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  addressId?: string | null
+  users?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitUncheckedCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutPatientProfilesInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedCreateWithoutPatientProfilesInput>
+}
+
+export type OrganizationUpsertWithoutPatientProfilesInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedUpdateWithoutPatientProfilesInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedCreateWithoutPatientProfilesInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutPatientProfilesInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientProfilesInput, Prisma.OrganizationUncheckedUpdateWithoutPatientProfilesInput>
+}
+
+export type OrganizationUpdateWithoutPatientProfilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  address?: Prisma.AddressUpdateOneWithoutOrganizationsNestedInput
+  users?: Prisma.OrganizationUserUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutPatientProfilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUncheckedUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutPatientEmergencyContactsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  address?: Prisma.AddressCreateNestedOneWithoutOrganizationsInput
+  users?: Prisma.OrganizationUserCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutPatientEmergencyContactsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  addressId?: string | null
+  users?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitUncheckedCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutPatientEmergencyContactsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedCreateWithoutPatientEmergencyContactsInput>
+}
+
+export type OrganizationUpsertWithoutPatientEmergencyContactsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedUpdateWithoutPatientEmergencyContactsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedCreateWithoutPatientEmergencyContactsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutPatientEmergencyContactsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientEmergencyContactsInput, Prisma.OrganizationUncheckedUpdateWithoutPatientEmergencyContactsInput>
+}
+
+export type OrganizationUpdateWithoutPatientEmergencyContactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  address?: Prisma.AddressUpdateOneWithoutOrganizationsNestedInput
+  users?: Prisma.OrganizationUserUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutPatientEmergencyContactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUncheckedUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutPatientAllergiesInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  address?: Prisma.AddressCreateNestedOneWithoutOrganizationsInput
+  users?: Prisma.OrganizationUserCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutPatientAllergiesInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  addressId?: string | null
+  users?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitUncheckedCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutPatientAllergiesInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedCreateWithoutPatientAllergiesInput>
+}
+
+export type OrganizationUpsertWithoutPatientAllergiesInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedUpdateWithoutPatientAllergiesInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedCreateWithoutPatientAllergiesInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutPatientAllergiesInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutPatientAllergiesInput, Prisma.OrganizationUncheckedUpdateWithoutPatientAllergiesInput>
+}
+
+export type OrganizationUpdateWithoutPatientAllergiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  address?: Prisma.AddressUpdateOneWithoutOrganizationsNestedInput
+  users?: Prisma.OrganizationUserUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutPatientAllergiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUncheckedUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutVisitsInput = {
@@ -1057,6 +1590,11 @@ export type OrganizationCreateWithoutVisitsInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutVisitsInput = {
@@ -1077,6 +1615,11 @@ export type OrganizationUncheckedCreateWithoutVisitsInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutVisitsInput = {
@@ -1113,6 +1656,11 @@ export type OrganizationUpdateWithoutVisitsInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutVisitsInput = {
@@ -1133,6 +1681,11 @@ export type OrganizationUncheckedUpdateWithoutVisitsInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCarePlansInput = {
@@ -1153,6 +1706,11 @@ export type OrganizationCreateWithoutCarePlansInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCarePlansInput = {
@@ -1173,6 +1731,11 @@ export type OrganizationUncheckedCreateWithoutCarePlansInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCarePlansInput = {
@@ -1209,6 +1772,11 @@ export type OrganizationUpdateWithoutCarePlansInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCarePlansInput = {
@@ -1229,6 +1797,243 @@ export type OrganizationUncheckedUpdateWithoutCarePlansInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutMedicationsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  address?: Prisma.AddressCreateNestedOneWithoutOrganizationsInput
+  users?: Prisma.OrganizationUserCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutMedicationsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  addressId?: string | null
+  users?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitUncheckedCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutMedicationsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationsInput>
+}
+
+export type OrganizationUpsertWithoutMedicationsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutMedicationsInput, Prisma.OrganizationUncheckedUpdateWithoutMedicationsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutMedicationsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutMedicationsInput, Prisma.OrganizationUncheckedUpdateWithoutMedicationsInput>
+}
+
+export type OrganizationUpdateWithoutMedicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  address?: Prisma.AddressUpdateOneWithoutOrganizationsNestedInput
+  users?: Prisma.OrganizationUserUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutMedicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUncheckedUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutMedicationAdministrationsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  address?: Prisma.AddressCreateNestedOneWithoutOrganizationsInput
+  users?: Prisma.OrganizationUserCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutMedicationAdministrationsInput = {
+  id?: string
+  name: string
+  status?: $Enums.OrganizationStatus
+  slug: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  addressId?: string | null
+  users?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutOrganizationInput
+  patients?: Prisma.PatientUncheckedCreateNestedManyWithoutOrganizationInput
+  visits?: Prisma.VisitUncheckedCreateNestedManyWithoutOrganizationInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutOrganizationInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutOrganizationInput
+  incidents?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutOrganizationInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+  carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutMedicationAdministrationsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationAdministrationsInput>
+}
+
+export type OrganizationUpsertWithoutMedicationAdministrationsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedUpdateWithoutMedicationAdministrationsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedCreateWithoutMedicationAdministrationsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutMedicationAdministrationsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutMedicationAdministrationsInput, Prisma.OrganizationUncheckedUpdateWithoutMedicationAdministrationsInput>
+}
+
+export type OrganizationUpdateWithoutMedicationAdministrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  address?: Prisma.AddressUpdateOneWithoutOrganizationsNestedInput
+  users?: Prisma.OrganizationUserUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutMedicationAdministrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumOrganizationStatusFieldUpdateOperationsInput | $Enums.OrganizationStatus
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.OrganizationUserUncheckedUpdateManyWithoutOrganizationNestedInput
+  patients?: Prisma.PatientUncheckedUpdateManyWithoutOrganizationNestedInput
+  visits?: Prisma.VisitUncheckedUpdateManyWithoutOrganizationNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutOrganizationNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutOrganizationNestedInput
+  incidents?: Prisma.IncidentReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutDailyNotesInput = {
@@ -1249,6 +2054,11 @@ export type OrganizationCreateWithoutDailyNotesInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutDailyNotesInput = {
@@ -1269,6 +2079,11 @@ export type OrganizationUncheckedCreateWithoutDailyNotesInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutDailyNotesInput = {
@@ -1305,6 +2120,11 @@ export type OrganizationUpdateWithoutDailyNotesInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutDailyNotesInput = {
@@ -1325,6 +2145,11 @@ export type OrganizationUncheckedUpdateWithoutDailyNotesInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutIncidentsInput = {
@@ -1345,6 +2170,11 @@ export type OrganizationCreateWithoutIncidentsInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutIncidentsInput = {
@@ -1365,6 +2195,11 @@ export type OrganizationUncheckedCreateWithoutIncidentsInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutIncidentsInput = {
@@ -1401,6 +2236,11 @@ export type OrganizationUpdateWithoutIncidentsInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutIncidentsInput = {
@@ -1421,6 +2261,11 @@ export type OrganizationUncheckedUpdateWithoutIncidentsInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutAuditLogsInput = {
@@ -1441,6 +2286,11 @@ export type OrganizationCreateWithoutAuditLogsInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutAuditLogsInput = {
@@ -1461,6 +2311,11 @@ export type OrganizationUncheckedCreateWithoutAuditLogsInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutAuditLogsInput = {
@@ -1497,6 +2352,11 @@ export type OrganizationUpdateWithoutAuditLogsInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutAuditLogsInput = {
@@ -1517,6 +2377,11 @@ export type OrganizationUncheckedUpdateWithoutAuditLogsInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutAddressInput = {
@@ -1537,6 +2402,11 @@ export type OrganizationCreateWithoutAddressInput = {
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutAddressInput = {
@@ -1557,6 +2427,11 @@ export type OrganizationUncheckedCreateWithoutAddressInput = {
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutAddressInput = {
@@ -1617,6 +2492,11 @@ export type OrganizationCreateWithoutInviteTokensInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutOrganizationInput
   carers?: Prisma.CarerCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutInviteTokensInput = {
@@ -1637,6 +2517,11 @@ export type OrganizationUncheckedCreateWithoutInviteTokensInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
   carers?: Prisma.CarerUncheckedCreateNestedManyWithoutOrganizationInput
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutOrganizationInput
+  patientProfiles?: Prisma.PatientProfileUncheckedCreateNestedManyWithoutOrganizationInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedCreateNestedManyWithoutOrganizationInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedCreateNestedManyWithoutOrganizationInput
+  medications?: Prisma.MedicationUncheckedCreateNestedManyWithoutOrganizationInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutInviteTokensInput = {
@@ -1673,6 +2558,11 @@ export type OrganizationUpdateWithoutInviteTokensInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutOrganizationNestedInput
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutInviteTokensInput = {
@@ -1693,6 +2583,11 @@ export type OrganizationUncheckedUpdateWithoutInviteTokensInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyAddressInput = {
@@ -1723,6 +2618,11 @@ export type OrganizationUpdateWithoutAddressInput = {
   carers?: Prisma.CarerUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutAddressInput = {
@@ -1743,6 +2643,11 @@ export type OrganizationUncheckedUpdateWithoutAddressInput = {
   carers?: Prisma.CarerUncheckedUpdateManyWithoutOrganizationNestedInput
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutOrganizationNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientProfiles?: Prisma.PatientProfileUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientEmergencyContacts?: Prisma.PatientEmergencyContactUncheckedUpdateManyWithoutOrganizationNestedInput
+  patientAllergies?: Prisma.PatientAllergyUncheckedUpdateManyWithoutOrganizationNestedInput
+  medications?: Prisma.MedicationUncheckedUpdateManyWithoutOrganizationNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateManyWithoutAddressInput = {
@@ -1771,6 +2676,11 @@ export type OrganizationCountOutputType = {
   carers: number
   qualifications: number
   inviteTokens: number
+  patientProfiles: number
+  patientEmergencyContacts: number
+  patientAllergies: number
+  medications: number
+  medicationAdministrations: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1784,6 +2694,11 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   carers?: boolean | OrganizationCountOutputTypeCountCarersArgs
   qualifications?: boolean | OrganizationCountOutputTypeCountQualificationsArgs
   inviteTokens?: boolean | OrganizationCountOutputTypeCountInviteTokensArgs
+  patientProfiles?: boolean | OrganizationCountOutputTypeCountPatientProfilesArgs
+  patientEmergencyContacts?: boolean | OrganizationCountOutputTypeCountPatientEmergencyContactsArgs
+  patientAllergies?: boolean | OrganizationCountOutputTypeCountPatientAllergiesArgs
+  medications?: boolean | OrganizationCountOutputTypeCountMedicationsArgs
+  medicationAdministrations?: boolean | OrganizationCountOutputTypeCountMedicationAdministrationsArgs
 }
 
 /**
@@ -1866,6 +2781,41 @@ export type OrganizationCountOutputTypeCountInviteTokensArgs<ExtArgs extends run
   where?: Prisma.InviteTokenWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountPatientProfilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PatientProfileWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountPatientEmergencyContactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PatientEmergencyContactWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountPatientAllergiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PatientAllergyWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountMedicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MedicationWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountMedicationAdministrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MedicationAdministrationWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1887,6 +2837,11 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   carers?: boolean | Prisma.Organization$carersArgs<ExtArgs>
   qualifications?: boolean | Prisma.Organization$qualificationsArgs<ExtArgs>
   inviteTokens?: boolean | Prisma.Organization$inviteTokensArgs<ExtArgs>
+  patientProfiles?: boolean | Prisma.Organization$patientProfilesArgs<ExtArgs>
+  patientEmergencyContacts?: boolean | Prisma.Organization$patientEmergencyContactsArgs<ExtArgs>
+  patientAllergies?: boolean | Prisma.Organization$patientAllergiesArgs<ExtArgs>
+  medications?: boolean | Prisma.Organization$medicationsArgs<ExtArgs>
+  medicationAdministrations?: boolean | Prisma.Organization$medicationAdministrationsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -1938,6 +2893,11 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   carers?: boolean | Prisma.Organization$carersArgs<ExtArgs>
   qualifications?: boolean | Prisma.Organization$qualificationsArgs<ExtArgs>
   inviteTokens?: boolean | Prisma.Organization$inviteTokensArgs<ExtArgs>
+  patientProfiles?: boolean | Prisma.Organization$patientProfilesArgs<ExtArgs>
+  patientEmergencyContacts?: boolean | Prisma.Organization$patientEmergencyContactsArgs<ExtArgs>
+  patientAllergies?: boolean | Prisma.Organization$patientAllergiesArgs<ExtArgs>
+  medications?: boolean | Prisma.Organization$medicationsArgs<ExtArgs>
+  medicationAdministrations?: boolean | Prisma.Organization$medicationAdministrationsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1961,6 +2921,11 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     carers: Prisma.$CarerPayload<ExtArgs>[]
     qualifications: Prisma.$QualificationPayload<ExtArgs>[]
     inviteTokens: Prisma.$InviteTokenPayload<ExtArgs>[]
+    patientProfiles: Prisma.$PatientProfilePayload<ExtArgs>[]
+    patientEmergencyContacts: Prisma.$PatientEmergencyContactPayload<ExtArgs>[]
+    patientAllergies: Prisma.$PatientAllergyPayload<ExtArgs>[]
+    medications: Prisma.$MedicationPayload<ExtArgs>[]
+    medicationAdministrations: Prisma.$MedicationAdministrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2376,6 +3341,11 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   carers<T extends Prisma.Organization$carersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$carersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   qualifications<T extends Prisma.Organization$qualificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$qualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inviteTokens<T extends Prisma.Organization$inviteTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$inviteTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  patientProfiles<T extends Prisma.Organization$patientProfilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$patientProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  patientEmergencyContacts<T extends Prisma.Organization$patientEmergencyContactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$patientEmergencyContactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientEmergencyContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  patientAllergies<T extends Prisma.Organization$patientAllergiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$patientAllergiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PatientAllergyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  medications<T extends Prisma.Organization$medicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$medicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MedicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  medicationAdministrations<T extends Prisma.Organization$medicationAdministrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$medicationAdministrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MedicationAdministrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3065,6 +4035,126 @@ export type Organization$inviteTokensArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.InviteTokenScalarFieldEnum | Prisma.InviteTokenScalarFieldEnum[]
+}
+
+/**
+ * Organization.patientProfiles
+ */
+export type Organization$patientProfilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PatientProfile
+   */
+  select?: Prisma.PatientProfileSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PatientProfile
+   */
+  omit?: Prisma.PatientProfileOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PatientProfileInclude<ExtArgs> | null
+  where?: Prisma.PatientProfileWhereInput
+  orderBy?: Prisma.PatientProfileOrderByWithRelationInput | Prisma.PatientProfileOrderByWithRelationInput[]
+  cursor?: Prisma.PatientProfileWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PatientProfileScalarFieldEnum | Prisma.PatientProfileScalarFieldEnum[]
+}
+
+/**
+ * Organization.patientEmergencyContacts
+ */
+export type Organization$patientEmergencyContactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PatientEmergencyContact
+   */
+  select?: Prisma.PatientEmergencyContactSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PatientEmergencyContact
+   */
+  omit?: Prisma.PatientEmergencyContactOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PatientEmergencyContactInclude<ExtArgs> | null
+  where?: Prisma.PatientEmergencyContactWhereInput
+  orderBy?: Prisma.PatientEmergencyContactOrderByWithRelationInput | Prisma.PatientEmergencyContactOrderByWithRelationInput[]
+  cursor?: Prisma.PatientEmergencyContactWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PatientEmergencyContactScalarFieldEnum | Prisma.PatientEmergencyContactScalarFieldEnum[]
+}
+
+/**
+ * Organization.patientAllergies
+ */
+export type Organization$patientAllergiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PatientAllergy
+   */
+  select?: Prisma.PatientAllergySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PatientAllergy
+   */
+  omit?: Prisma.PatientAllergyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PatientAllergyInclude<ExtArgs> | null
+  where?: Prisma.PatientAllergyWhereInput
+  orderBy?: Prisma.PatientAllergyOrderByWithRelationInput | Prisma.PatientAllergyOrderByWithRelationInput[]
+  cursor?: Prisma.PatientAllergyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PatientAllergyScalarFieldEnum | Prisma.PatientAllergyScalarFieldEnum[]
+}
+
+/**
+ * Organization.medications
+ */
+export type Organization$medicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Medication
+   */
+  select?: Prisma.MedicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Medication
+   */
+  omit?: Prisma.MedicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MedicationInclude<ExtArgs> | null
+  where?: Prisma.MedicationWhereInput
+  orderBy?: Prisma.MedicationOrderByWithRelationInput | Prisma.MedicationOrderByWithRelationInput[]
+  cursor?: Prisma.MedicationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MedicationScalarFieldEnum | Prisma.MedicationScalarFieldEnum[]
+}
+
+/**
+ * Organization.medicationAdministrations
+ */
+export type Organization$medicationAdministrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MedicationAdministration
+   */
+  select?: Prisma.MedicationAdministrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MedicationAdministration
+   */
+  omit?: Prisma.MedicationAdministrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MedicationAdministrationInclude<ExtArgs> | null
+  where?: Prisma.MedicationAdministrationWhereInput
+  orderBy?: Prisma.MedicationAdministrationOrderByWithRelationInput | Prisma.MedicationAdministrationOrderByWithRelationInput[]
+  cursor?: Prisma.MedicationAdministrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MedicationAdministrationScalarFieldEnum | Prisma.MedicationAdministrationScalarFieldEnum[]
 }
 
 /**

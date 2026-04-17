@@ -259,6 +259,10 @@ export type CarePlanWhereInput = {
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   patient?: Prisma.XOR<Prisma.PatientScalarRelationFilter, Prisma.PatientWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
+  conditions?: Prisma.CarePlanConditionListRelationFilter
+  risks?: Prisma.CarePlanRiskListRelationFilter
+  tasks?: Prisma.CarePlanTaskListRelationFilter
+  goalItems?: Prisma.CarePlanGoalListRelationFilter
 }
 
 export type CarePlanOrderByWithRelationInput = {
@@ -275,10 +279,15 @@ export type CarePlanOrderByWithRelationInput = {
   createdBy?: Prisma.UserOrderByWithRelationInput
   patient?: Prisma.PatientOrderByWithRelationInput
   organization?: Prisma.OrganizationOrderByWithRelationInput
+  conditions?: Prisma.CarePlanConditionOrderByRelationAggregateInput
+  risks?: Prisma.CarePlanRiskOrderByRelationAggregateInput
+  tasks?: Prisma.CarePlanTaskOrderByRelationAggregateInput
+  goalItems?: Prisma.CarePlanGoalOrderByRelationAggregateInput
 }
 
 export type CarePlanWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  id_organizationId?: Prisma.CarePlanIdOrganizationIdCompoundUniqueInput
   patientId_organizationId_version?: Prisma.CarePlanPatientIdOrganizationIdVersionCompoundUniqueInput
   AND?: Prisma.CarePlanWhereInput | Prisma.CarePlanWhereInput[]
   OR?: Prisma.CarePlanWhereInput[]
@@ -295,7 +304,11 @@ export type CarePlanWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   patient?: Prisma.XOR<Prisma.PatientScalarRelationFilter, Prisma.PatientWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-}, "id" | "patientId_organizationId_version">
+  conditions?: Prisma.CarePlanConditionListRelationFilter
+  risks?: Prisma.CarePlanRiskListRelationFilter
+  tasks?: Prisma.CarePlanTaskListRelationFilter
+  goalItems?: Prisma.CarePlanGoalListRelationFilter
+}, "id" | "id_organizationId" | "patientId_organizationId_version">
 
 export type CarePlanOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -342,6 +355,10 @@ export type CarePlanCreateInput = {
   createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
   patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
   organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanUncheckedCreateInput = {
@@ -355,6 +372,10 @@ export type CarePlanUncheckedCreateInput = {
   patientId: string
   organizationId: string
   createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanUpdateInput = {
@@ -368,6 +389,10 @@ export type CarePlanUpdateInput = {
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
   patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateInput = {
@@ -381,6 +406,10 @@ export type CarePlanUncheckedUpdateInput = {
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanCreateManyInput = {
@@ -427,6 +456,11 @@ export type CarePlanListRelationFilter = {
 
 export type CarePlanOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type CarePlanIdOrganizationIdCompoundUniqueInput = {
+  id: string
+  organizationId: string
 }
 
 export type CarePlanPatientIdOrganizationIdVersionCompoundUniqueInput = {
@@ -480,6 +514,11 @@ export type CarePlanMinOrderByAggregateInput = {
 
 export type CarePlanSumOrderByAggregateInput = {
   version?: Prisma.SortOrder
+}
+
+export type CarePlanScalarRelationFilter = {
+  is?: Prisma.CarePlanWhereInput
+  isNot?: Prisma.CarePlanWhereInput
 }
 
 export type CarePlanCreateNestedManyWithoutCreatedByInput = {
@@ -612,6 +651,62 @@ export type EnumCarePlanStatusFieldUpdateOperationsInput = {
   set?: $Enums.CarePlanStatus
 }
 
+export type CarePlanCreateNestedOneWithoutConditionsInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutConditionsInput, Prisma.CarePlanUncheckedCreateWithoutConditionsInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutConditionsInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+}
+
+export type CarePlanUpdateOneRequiredWithoutConditionsNestedInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutConditionsInput, Prisma.CarePlanUncheckedCreateWithoutConditionsInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutConditionsInput
+  upsert?: Prisma.CarePlanUpsertWithoutConditionsInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarePlanUpdateToOneWithWhereWithoutConditionsInput, Prisma.CarePlanUpdateWithoutConditionsInput>, Prisma.CarePlanUncheckedUpdateWithoutConditionsInput>
+}
+
+export type CarePlanCreateNestedOneWithoutRisksInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutRisksInput, Prisma.CarePlanUncheckedCreateWithoutRisksInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutRisksInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+}
+
+export type CarePlanUpdateOneRequiredWithoutRisksNestedInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutRisksInput, Prisma.CarePlanUncheckedCreateWithoutRisksInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutRisksInput
+  upsert?: Prisma.CarePlanUpsertWithoutRisksInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarePlanUpdateToOneWithWhereWithoutRisksInput, Prisma.CarePlanUpdateWithoutRisksInput>, Prisma.CarePlanUncheckedUpdateWithoutRisksInput>
+}
+
+export type CarePlanCreateNestedOneWithoutTasksInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutTasksInput, Prisma.CarePlanUncheckedCreateWithoutTasksInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutTasksInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+}
+
+export type CarePlanUpdateOneRequiredWithoutTasksNestedInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutTasksInput, Prisma.CarePlanUncheckedCreateWithoutTasksInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutTasksInput
+  upsert?: Prisma.CarePlanUpsertWithoutTasksInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarePlanUpdateToOneWithWhereWithoutTasksInput, Prisma.CarePlanUpdateWithoutTasksInput>, Prisma.CarePlanUncheckedUpdateWithoutTasksInput>
+}
+
+export type CarePlanCreateNestedOneWithoutGoalItemsInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutGoalItemsInput, Prisma.CarePlanUncheckedCreateWithoutGoalItemsInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutGoalItemsInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+}
+
+export type CarePlanUpdateOneRequiredWithoutGoalItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.CarePlanCreateWithoutGoalItemsInput, Prisma.CarePlanUncheckedCreateWithoutGoalItemsInput>
+  connectOrCreate?: Prisma.CarePlanCreateOrConnectWithoutGoalItemsInput
+  upsert?: Prisma.CarePlanUpsertWithoutGoalItemsInput
+  connect?: Prisma.CarePlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarePlanUpdateToOneWithWhereWithoutGoalItemsInput, Prisma.CarePlanUpdateWithoutGoalItemsInput>, Prisma.CarePlanUncheckedUpdateWithoutGoalItemsInput>
+}
+
 export type CarePlanCreateWithoutCreatedByInput = {
   id?: string
   version: number
@@ -622,6 +717,10 @@ export type CarePlanCreateWithoutCreatedByInput = {
   deletedAt?: Date | string | null
   patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
   organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanUncheckedCreateWithoutCreatedByInput = {
@@ -634,6 +733,10 @@ export type CarePlanUncheckedCreateWithoutCreatedByInput = {
   deletedAt?: Date | string | null
   patientId: string
   organizationId: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanCreateOrConnectWithoutCreatedByInput = {
@@ -688,6 +791,10 @@ export type CarePlanCreateWithoutOrganizationInput = {
   deletedAt?: Date | string | null
   createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
   patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanUncheckedCreateWithoutOrganizationInput = {
@@ -700,6 +807,10 @@ export type CarePlanUncheckedCreateWithoutOrganizationInput = {
   deletedAt?: Date | string | null
   patientId: string
   createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanCreateOrConnectWithoutOrganizationInput = {
@@ -738,6 +849,10 @@ export type CarePlanCreateWithoutPatientInput = {
   deletedAt?: Date | string | null
   createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
   organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanUncheckedCreateWithoutPatientInput = {
@@ -749,6 +864,10 @@ export type CarePlanUncheckedCreateWithoutPatientInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
 }
 
 export type CarePlanCreateOrConnectWithoutPatientInput = {
@@ -777,6 +896,326 @@ export type CarePlanUpdateManyWithWhereWithoutPatientInput = {
   data: Prisma.XOR<Prisma.CarePlanUpdateManyMutationInput, Prisma.CarePlanUncheckedUpdateManyWithoutPatientInput>
 }
 
+export type CarePlanCreateWithoutConditionsInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
+  patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanUncheckedCreateWithoutConditionsInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  patientId: string
+  organizationId: string
+  createdById: string
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanCreateOrConnectWithoutConditionsInput = {
+  where: Prisma.CarePlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutConditionsInput, Prisma.CarePlanUncheckedCreateWithoutConditionsInput>
+}
+
+export type CarePlanUpsertWithoutConditionsInput = {
+  update: Prisma.XOR<Prisma.CarePlanUpdateWithoutConditionsInput, Prisma.CarePlanUncheckedUpdateWithoutConditionsInput>
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutConditionsInput, Prisma.CarePlanUncheckedCreateWithoutConditionsInput>
+  where?: Prisma.CarePlanWhereInput
+}
+
+export type CarePlanUpdateToOneWithWhereWithoutConditionsInput = {
+  where?: Prisma.CarePlanWhereInput
+  data: Prisma.XOR<Prisma.CarePlanUpdateWithoutConditionsInput, Prisma.CarePlanUncheckedUpdateWithoutConditionsInput>
+}
+
+export type CarePlanUpdateWithoutConditionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
+  patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanUncheckedUpdateWithoutConditionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  patientId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanCreateWithoutRisksInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
+  patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanUncheckedCreateWithoutRisksInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  patientId: string
+  organizationId: string
+  createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanCreateOrConnectWithoutRisksInput = {
+  where: Prisma.CarePlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutRisksInput, Prisma.CarePlanUncheckedCreateWithoutRisksInput>
+}
+
+export type CarePlanUpsertWithoutRisksInput = {
+  update: Prisma.XOR<Prisma.CarePlanUpdateWithoutRisksInput, Prisma.CarePlanUncheckedUpdateWithoutRisksInput>
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutRisksInput, Prisma.CarePlanUncheckedCreateWithoutRisksInput>
+  where?: Prisma.CarePlanWhereInput
+}
+
+export type CarePlanUpdateToOneWithWhereWithoutRisksInput = {
+  where?: Prisma.CarePlanWhereInput
+  data: Prisma.XOR<Prisma.CarePlanUpdateWithoutRisksInput, Prisma.CarePlanUncheckedUpdateWithoutRisksInput>
+}
+
+export type CarePlanUpdateWithoutRisksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
+  patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanUncheckedUpdateWithoutRisksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  patientId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanCreateWithoutTasksInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
+  patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanUncheckedCreateWithoutTasksInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  patientId: string
+  organizationId: string
+  createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  goalItems?: Prisma.CarePlanGoalUncheckedCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanCreateOrConnectWithoutTasksInput = {
+  where: Prisma.CarePlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutTasksInput, Prisma.CarePlanUncheckedCreateWithoutTasksInput>
+}
+
+export type CarePlanUpsertWithoutTasksInput = {
+  update: Prisma.XOR<Prisma.CarePlanUpdateWithoutTasksInput, Prisma.CarePlanUncheckedUpdateWithoutTasksInput>
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutTasksInput, Prisma.CarePlanUncheckedCreateWithoutTasksInput>
+  where?: Prisma.CarePlanWhereInput
+}
+
+export type CarePlanUpdateToOneWithWhereWithoutTasksInput = {
+  where?: Prisma.CarePlanWhereInput
+  data: Prisma.XOR<Prisma.CarePlanUpdateWithoutTasksInput, Prisma.CarePlanUncheckedUpdateWithoutTasksInput>
+}
+
+export type CarePlanUpdateWithoutTasksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
+  patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanUncheckedUpdateWithoutTasksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  patientId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanCreateWithoutGoalItemsInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy: Prisma.UserCreateNestedOneWithoutCarePlansInput
+  patient: Prisma.PatientCreateNestedOneWithoutCarePlansInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCarePlansInput
+  conditions?: Prisma.CarePlanConditionCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanUncheckedCreateWithoutGoalItemsInput = {
+  id?: string
+  version: number
+  goals: string
+  status: $Enums.CarePlanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  patientId: string
+  organizationId: string
+  createdById: string
+  conditions?: Prisma.CarePlanConditionUncheckedCreateNestedManyWithoutCarePlanInput
+  risks?: Prisma.CarePlanRiskUncheckedCreateNestedManyWithoutCarePlanInput
+  tasks?: Prisma.CarePlanTaskUncheckedCreateNestedManyWithoutCarePlanInput
+}
+
+export type CarePlanCreateOrConnectWithoutGoalItemsInput = {
+  where: Prisma.CarePlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutGoalItemsInput, Prisma.CarePlanUncheckedCreateWithoutGoalItemsInput>
+}
+
+export type CarePlanUpsertWithoutGoalItemsInput = {
+  update: Prisma.XOR<Prisma.CarePlanUpdateWithoutGoalItemsInput, Prisma.CarePlanUncheckedUpdateWithoutGoalItemsInput>
+  create: Prisma.XOR<Prisma.CarePlanCreateWithoutGoalItemsInput, Prisma.CarePlanUncheckedCreateWithoutGoalItemsInput>
+  where?: Prisma.CarePlanWhereInput
+}
+
+export type CarePlanUpdateToOneWithWhereWithoutGoalItemsInput = {
+  where?: Prisma.CarePlanWhereInput
+  data: Prisma.XOR<Prisma.CarePlanUpdateWithoutGoalItemsInput, Prisma.CarePlanUncheckedUpdateWithoutGoalItemsInput>
+}
+
+export type CarePlanUpdateWithoutGoalItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
+  patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+}
+
+export type CarePlanUncheckedUpdateWithoutGoalItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  goals?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCarePlanStatusFieldUpdateOperationsInput | $Enums.CarePlanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  patientId?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+}
+
 export type CarePlanCreateManyCreatedByInput = {
   id?: string
   version: number
@@ -799,6 +1238,10 @@ export type CarePlanUpdateWithoutCreatedByInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateWithoutCreatedByInput = {
@@ -811,6 +1254,10 @@ export type CarePlanUncheckedUpdateWithoutCreatedByInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateManyWithoutCreatedByInput = {
@@ -847,6 +1294,10 @@ export type CarePlanUpdateWithoutOrganizationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
   patient?: Prisma.PatientUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateWithoutOrganizationInput = {
@@ -859,6 +1310,10 @@ export type CarePlanUncheckedUpdateWithoutOrganizationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateManyWithoutOrganizationInput = {
@@ -894,6 +1349,10 @@ export type CarePlanUpdateWithoutPatientInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCarePlansNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarePlansNestedInput
+  conditions?: Prisma.CarePlanConditionUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateWithoutPatientInput = {
@@ -905,6 +1364,10 @@ export type CarePlanUncheckedUpdateWithoutPatientInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  conditions?: Prisma.CarePlanConditionUncheckedUpdateManyWithoutCarePlanNestedInput
+  risks?: Prisma.CarePlanRiskUncheckedUpdateManyWithoutCarePlanNestedInput
+  tasks?: Prisma.CarePlanTaskUncheckedUpdateManyWithoutCarePlanNestedInput
+  goalItems?: Prisma.CarePlanGoalUncheckedUpdateManyWithoutCarePlanNestedInput
 }
 
 export type CarePlanUncheckedUpdateManyWithoutPatientInput = {
@@ -918,6 +1381,62 @@ export type CarePlanUncheckedUpdateManyWithoutPatientInput = {
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
+
+/**
+ * Count Type CarePlanCountOutputType
+ */
+
+export type CarePlanCountOutputType = {
+  conditions: number
+  risks: number
+  tasks: number
+  goalItems: number
+}
+
+export type CarePlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  conditions?: boolean | CarePlanCountOutputTypeCountConditionsArgs
+  risks?: boolean | CarePlanCountOutputTypeCountRisksArgs
+  tasks?: boolean | CarePlanCountOutputTypeCountTasksArgs
+  goalItems?: boolean | CarePlanCountOutputTypeCountGoalItemsArgs
+}
+
+/**
+ * CarePlanCountOutputType without action
+ */
+export type CarePlanCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarePlanCountOutputType
+   */
+  select?: Prisma.CarePlanCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CarePlanCountOutputType without action
+ */
+export type CarePlanCountOutputTypeCountConditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarePlanConditionWhereInput
+}
+
+/**
+ * CarePlanCountOutputType without action
+ */
+export type CarePlanCountOutputTypeCountRisksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarePlanRiskWhereInput
+}
+
+/**
+ * CarePlanCountOutputType without action
+ */
+export type CarePlanCountOutputTypeCountTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarePlanTaskWhereInput
+}
+
+/**
+ * CarePlanCountOutputType without action
+ */
+export type CarePlanCountOutputTypeCountGoalItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarePlanGoalWhereInput
+}
 
 
 export type CarePlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -934,6 +1453,11 @@ export type CarePlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   patient?: boolean | Prisma.PatientDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  conditions?: boolean | Prisma.CarePlan$conditionsArgs<ExtArgs>
+  risks?: boolean | Prisma.CarePlan$risksArgs<ExtArgs>
+  tasks?: boolean | Prisma.CarePlan$tasksArgs<ExtArgs>
+  goalItems?: boolean | Prisma.CarePlan$goalItemsArgs<ExtArgs>
+  _count?: boolean | Prisma.CarePlanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carePlan"]>
 
 export type CarePlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -986,6 +1510,11 @@ export type CarePlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   patient?: boolean | Prisma.PatientDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+  conditions?: boolean | Prisma.CarePlan$conditionsArgs<ExtArgs>
+  risks?: boolean | Prisma.CarePlan$risksArgs<ExtArgs>
+  tasks?: boolean | Prisma.CarePlan$tasksArgs<ExtArgs>
+  goalItems?: boolean | Prisma.CarePlan$goalItemsArgs<ExtArgs>
+  _count?: boolean | Prisma.CarePlanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CarePlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1004,6 +1533,10 @@ export type $CarePlanPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     createdBy: Prisma.$UserPayload<ExtArgs>
     patient: Prisma.$PatientPayload<ExtArgs>
     organization: Prisma.$OrganizationPayload<ExtArgs>
+    conditions: Prisma.$CarePlanConditionPayload<ExtArgs>[]
+    risks: Prisma.$CarePlanRiskPayload<ExtArgs>[]
+    tasks: Prisma.$CarePlanTaskPayload<ExtArgs>[]
+    goalItems: Prisma.$CarePlanGoalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1413,6 +1946,10 @@ export interface Prisma__CarePlanClient<T, Null = never, ExtArgs extends runtime
   createdBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   patient<T extends Prisma.PatientDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PatientDefaultArgs<ExtArgs>>): Prisma.Prisma__PatientClient<runtime.Types.Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  conditions<T extends Prisma.CarePlan$conditionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarePlan$conditionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarePlanConditionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  risks<T extends Prisma.CarePlan$risksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarePlan$risksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarePlanRiskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tasks<T extends Prisma.CarePlan$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarePlan$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarePlanTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  goalItems<T extends Prisma.CarePlan$goalItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarePlan$goalItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarePlanGoalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1845,6 +2382,102 @@ export type CarePlanDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many CarePlans to delete.
    */
   limit?: number
+}
+
+/**
+ * CarePlan.conditions
+ */
+export type CarePlan$conditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarePlanCondition
+   */
+  select?: Prisma.CarePlanConditionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarePlanCondition
+   */
+  omit?: Prisma.CarePlanConditionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarePlanConditionInclude<ExtArgs> | null
+  where?: Prisma.CarePlanConditionWhereInput
+  orderBy?: Prisma.CarePlanConditionOrderByWithRelationInput | Prisma.CarePlanConditionOrderByWithRelationInput[]
+  cursor?: Prisma.CarePlanConditionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarePlanConditionScalarFieldEnum | Prisma.CarePlanConditionScalarFieldEnum[]
+}
+
+/**
+ * CarePlan.risks
+ */
+export type CarePlan$risksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarePlanRisk
+   */
+  select?: Prisma.CarePlanRiskSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarePlanRisk
+   */
+  omit?: Prisma.CarePlanRiskOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarePlanRiskInclude<ExtArgs> | null
+  where?: Prisma.CarePlanRiskWhereInput
+  orderBy?: Prisma.CarePlanRiskOrderByWithRelationInput | Prisma.CarePlanRiskOrderByWithRelationInput[]
+  cursor?: Prisma.CarePlanRiskWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarePlanRiskScalarFieldEnum | Prisma.CarePlanRiskScalarFieldEnum[]
+}
+
+/**
+ * CarePlan.tasks
+ */
+export type CarePlan$tasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarePlanTask
+   */
+  select?: Prisma.CarePlanTaskSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarePlanTask
+   */
+  omit?: Prisma.CarePlanTaskOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarePlanTaskInclude<ExtArgs> | null
+  where?: Prisma.CarePlanTaskWhereInput
+  orderBy?: Prisma.CarePlanTaskOrderByWithRelationInput | Prisma.CarePlanTaskOrderByWithRelationInput[]
+  cursor?: Prisma.CarePlanTaskWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarePlanTaskScalarFieldEnum | Prisma.CarePlanTaskScalarFieldEnum[]
+}
+
+/**
+ * CarePlan.goalItems
+ */
+export type CarePlan$goalItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarePlanGoal
+   */
+  select?: Prisma.CarePlanGoalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarePlanGoal
+   */
+  omit?: Prisma.CarePlanGoalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarePlanGoalInclude<ExtArgs> | null
+  where?: Prisma.CarePlanGoalWhereInput
+  orderBy?: Prisma.CarePlanGoalOrderByWithRelationInput | Prisma.CarePlanGoalOrderByWithRelationInput[]
+  cursor?: Prisma.CarePlanGoalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarePlanGoalScalarFieldEnum | Prisma.CarePlanGoalScalarFieldEnum[]
 }
 
 /**

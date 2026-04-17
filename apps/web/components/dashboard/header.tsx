@@ -18,7 +18,7 @@ export function Header() {
 					</div>
 					<input
 						type='text'
-						placeholder='Search visits, carers, clients...'
+						placeholder='Search visits, carers, patients...'
 						className='h-10 w-48 bg-transparent px-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none lg:w-64'
 					/>
 				</div>

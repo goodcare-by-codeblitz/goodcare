@@ -15,11 +15,11 @@ export async function visitRoutes(app: FastifyInstance) {
 	app.addHook('preHandler', authenticate(app));
 	app.addHook('preHandler', orgScope);
 
-	app.post('/:organizationId/visits', { ...createVisitSchema, preHandler: [authorize('assign_visits')] }, createVisitController);
+	app.post('/:organizationId/visits', { ...createVisitSchema, preHandler: [authorize('manage_visits')] }, createVisitController);
 	app.get('/:organizationId/visits', { ...listVisitsSchema, preHandler: [authorize('view_visits')] }, listVisitsController);
 	app.get('/:organizationId/visits/:visitId', { ...getVisitSchema, preHandler: [authorize('view_visits')] }, getVisitController);
-	app.patch('/:organizationId/visits/:visitId', { ...updateVisitSchema, preHandler: [authorize('assign_visits')] }, updateVisitController);
-	app.delete('/:organizationId/visits/:visitId', { ...deleteVisitOpts, preHandler: [authorize('assign_visits')] }, deleteVisitController);
+	app.patch('/:organizationId/visits/:visitId', { ...updateVisitSchema, preHandler: [authorize('manage_visits')] }, updateVisitController);
+	app.delete('/:organizationId/visits/:visitId', { ...deleteVisitOpts, preHandler: [authorize('manage_visits')] }, deleteVisitController);
 	app.post('/:organizationId/visits/:visitId/assign', { ...assignCarerSchema, preHandler: [authorize('assign_visits')] }, assignCarerController);
 	app.delete('/:organizationId/visits/:visitId/assign/:carerId', { ...unassignCarerSchema, preHandler: [authorize('assign_visits')] }, unassignCarerController);
 }

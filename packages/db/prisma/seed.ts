@@ -38,6 +38,11 @@ const permissions = [
 	{ key: 'manage_care_plans', description: 'Create, update, and archive care plans' },
 	{ key: 'view_care_plans', description: 'View care plans and goals' },
 
+	// Medication & eMAR
+	{ key: 'manage_medications', description: 'Create, update, and discontinue medications' },
+	{ key: 'view_medications', description: 'View patient medications and eMAR history' },
+	{ key: 'administer_medications', description: 'Record medication administration activity' },
+
 	// Daily notes
 	{ key: 'manage_daily_notes', description: 'Create and edit daily notes during visits' },
 	{ key: 'view_daily_notes', description: 'View daily notes and observations' },
@@ -211,6 +216,9 @@ async function main() {
 			'assign_visits',
 			'manage_care_plans',
 			'view_care_plans',
+			'manage_medications',
+			'view_medications',
+			'administer_medications',
 			'manage_daily_notes',
 			'view_daily_notes',
 			'manage_incidents',
@@ -235,6 +243,9 @@ async function main() {
 			'assign_visits',
 			'manage_care_plans',
 			'view_care_plans',
+			'manage_medications',
+			'view_medications',
+			'administer_medications',
 			'view_daily_notes',
 			'manage_incidents',
 			'view_incidents',
@@ -249,6 +260,8 @@ async function main() {
 			'view_patients',
 			'view_visits',
 			'view_care_plans',
+			'view_medications',
+			'administer_medications',
 			'manage_daily_notes',
 			'view_daily_notes',
 			'manage_incidents',
@@ -262,6 +275,7 @@ async function main() {
 			'view_patients',
 			'view_visits',
 			'view_care_plans',
+			'view_medications',
 			'view_daily_notes',
 			'view_incidents',
 			'view_qualifications',

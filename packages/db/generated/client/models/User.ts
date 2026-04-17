@@ -224,6 +224,7 @@ export type UserWhereInput = {
   inviteTokens?: Prisma.InviteTokenListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   passwordResetTokens?: Prisma.PasswordResetTokenListRelationFilter
+  medicationAdministrations?: Prisma.MedicationAdministrationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -246,6 +247,7 @@ export type UserOrderByWithRelationInput = {
   inviteTokens?: Prisma.InviteTokenOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   passwordResetTokens?: Prisma.PasswordResetTokenOrderByRelationAggregateInput
+  medicationAdministrations?: Prisma.MedicationAdministrationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -271,6 +273,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   inviteTokens?: Prisma.InviteTokenListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   passwordResetTokens?: Prisma.PasswordResetTokenListRelationFilter
+  medicationAdministrations?: Prisma.MedicationAdministrationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -323,6 +326,7 @@ export type UserCreateInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -345,6 +349,7 @@ export type UserUncheckedCreateInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUpdateInput = {
@@ -367,6 +372,7 @@ export type UserUpdateInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -389,6 +395,7 @@ export type UserUncheckedUpdateInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -466,6 +473,11 @@ export type UserMinOrderByAggregateInput = {
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -552,6 +564,22 @@ export type UserUpdateOneRequiredWithoutCarePlansNestedInput = {
   upsert?: Prisma.UserUpsertWithoutCarePlansInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarePlansInput, Prisma.UserUpdateWithoutCarePlansInput>, Prisma.UserUncheckedUpdateWithoutCarePlansInput>
+}
+
+export type UserCreateNestedOneWithoutMedicationAdministrationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedCreateWithoutMedicationAdministrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMedicationAdministrationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutMedicationAdministrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedCreateWithoutMedicationAdministrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMedicationAdministrationsInput
+  upsert?: Prisma.UserUpsertWithoutMedicationAdministrationsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMedicationAdministrationsInput, Prisma.UserUpdateWithoutMedicationAdministrationsInput>, Prisma.UserUncheckedUpdateWithoutMedicationAdministrationsInput>
 }
 
 export type UserCreateNestedOneWithoutIncidentsReportedInput = {
@@ -643,6 +671,7 @@ export type UserCreateWithoutInvitedMembersInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutInvitedMembersInput = {
@@ -664,6 +693,7 @@ export type UserUncheckedCreateWithoutInvitedMembersInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutInvitedMembersInput = {
@@ -690,6 +720,7 @@ export type UserCreateWithoutOrganizationUsersInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutOrganizationUsersInput = {
@@ -711,6 +742,7 @@ export type UserUncheckedCreateWithoutOrganizationUsersInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutOrganizationUsersInput = {
@@ -748,6 +780,7 @@ export type UserUpdateWithoutInvitedMembersInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvitedMembersInput = {
@@ -769,6 +802,7 @@ export type UserUncheckedUpdateWithoutInvitedMembersInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUpsertWithoutOrganizationUsersInput = {
@@ -801,6 +835,7 @@ export type UserUpdateWithoutOrganizationUsersInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizationUsersInput = {
@@ -822,6 +857,7 @@ export type UserUncheckedUpdateWithoutOrganizationUsersInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutRolesInput = {
@@ -843,6 +879,7 @@ export type UserCreateWithoutRolesInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -864,6 +901,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -901,6 +939,7 @@ export type UserUpdateWithoutRolesInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -922,6 +961,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutVisitAssignmentsInput = {
@@ -943,6 +983,7 @@ export type UserCreateWithoutVisitAssignmentsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutVisitAssignmentsInput = {
@@ -964,6 +1005,7 @@ export type UserUncheckedCreateWithoutVisitAssignmentsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutVisitAssignmentsInput = {
@@ -1001,6 +1043,7 @@ export type UserUpdateWithoutVisitAssignmentsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitAssignmentsInput = {
@@ -1022,6 +1065,7 @@ export type UserUncheckedUpdateWithoutVisitAssignmentsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutCarePlansInput = {
@@ -1043,6 +1087,7 @@ export type UserCreateWithoutCarePlansInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutCarePlansInput = {
@@ -1064,6 +1109,7 @@ export type UserUncheckedCreateWithoutCarePlansInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutCarePlansInput = {
@@ -1101,6 +1147,7 @@ export type UserUpdateWithoutCarePlansInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCarePlansInput = {
@@ -1119,6 +1166,111 @@ export type UserUncheckedUpdateWithoutCarePlansInput = {
   incidentsReported?: Prisma.IncidentReportUncheckedUpdateManyWithoutReportedByNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   roles?: Prisma.RoleAssignmentUncheckedUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
+}
+
+export type UserCreateWithoutMedicationAdministrationsInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organizationUsers?: Prisma.OrganizationUserCreateNestedManyWithoutUserInput
+  invitedMembers?: Prisma.OrganizationUserCreateNestedManyWithoutInvitedByInput
+  visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutAssignedByInput
+  incidentsReported?: Prisma.IncidentReportCreateNestedManyWithoutReportedByInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorUserInput
+  roles?: Prisma.RoleAssignmentCreateNestedManyWithoutUserInput
+  carePlans?: Prisma.CarePlanCreateNestedManyWithoutCreatedByInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutMedicationAdministrationsInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organizationUsers?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutUserInput
+  invitedMembers?: Prisma.OrganizationUserUncheckedCreateNestedManyWithoutInvitedByInput
+  visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutAssignedByInput
+  incidentsReported?: Prisma.IncidentReportUncheckedCreateNestedManyWithoutReportedByInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorUserInput
+  roles?: Prisma.RoleAssignmentUncheckedCreateNestedManyWithoutUserInput
+  carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutCreatedByInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutMedicationAdministrationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedCreateWithoutMedicationAdministrationsInput>
+}
+
+export type UserUpsertWithoutMedicationAdministrationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedUpdateWithoutMedicationAdministrationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedCreateWithoutMedicationAdministrationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMedicationAdministrationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMedicationAdministrationsInput, Prisma.UserUncheckedUpdateWithoutMedicationAdministrationsInput>
+}
+
+export type UserUpdateWithoutMedicationAdministrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organizationUsers?: Prisma.OrganizationUserUpdateManyWithoutUserNestedInput
+  invitedMembers?: Prisma.OrganizationUserUpdateManyWithoutInvitedByNestedInput
+  visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutAssignedByNestedInput
+  incidentsReported?: Prisma.IncidentReportUpdateManyWithoutReportedByNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorUserNestedInput
+  roles?: Prisma.RoleAssignmentUpdateManyWithoutUserNestedInput
+  carePlans?: Prisma.CarePlanUpdateManyWithoutCreatedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMedicationAdministrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organizationUsers?: Prisma.OrganizationUserUncheckedUpdateManyWithoutUserNestedInput
+  invitedMembers?: Prisma.OrganizationUserUncheckedUpdateManyWithoutInvitedByNestedInput
+  visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutAssignedByNestedInput
+  incidentsReported?: Prisma.IncidentReportUncheckedUpdateManyWithoutReportedByNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorUserNestedInput
+  roles?: Prisma.RoleAssignmentUncheckedUpdateManyWithoutUserNestedInput
+  carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutCreatedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -1143,6 +1295,7 @@ export type UserCreateWithoutIncidentsReportedInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutIncidentsReportedInput = {
@@ -1164,6 +1317,7 @@ export type UserUncheckedCreateWithoutIncidentsReportedInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutIncidentsReportedInput = {
@@ -1201,6 +1355,7 @@ export type UserUpdateWithoutIncidentsReportedInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutIncidentsReportedInput = {
@@ -1222,6 +1377,7 @@ export type UserUncheckedUpdateWithoutIncidentsReportedInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -1243,6 +1399,7 @@ export type UserCreateWithoutAuditLogsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -1264,6 +1421,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -1301,6 +1459,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -1322,6 +1481,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutInviteTokensInput = {
@@ -1343,6 +1503,7 @@ export type UserCreateWithoutInviteTokensInput = {
   carePlans?: Prisma.CarePlanCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutInviteTokensInput = {
@@ -1364,6 +1525,7 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutInviteTokensInput = {
@@ -1401,6 +1563,7 @@ export type UserUpdateWithoutInviteTokensInput = {
   carePlans?: Prisma.CarePlanUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInviteTokensInput = {
@@ -1422,6 +1585,7 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutPasswordResetTokensInput = {
@@ -1443,6 +1607,7 @@ export type UserCreateWithoutPasswordResetTokensInput = {
   carePlans?: Prisma.CarePlanCreateNestedManyWithoutCreatedByInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
@@ -1464,6 +1629,7 @@ export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
   carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutCreatedByInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutPasswordResetTokensInput = {
@@ -1501,6 +1667,7 @@ export type UserUpdateWithoutPasswordResetTokensInput = {
   carePlans?: Prisma.CarePlanUpdateManyWithoutCreatedByNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
@@ -1522,6 +1689,7 @@ export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
   carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutCreatedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1543,6 +1711,7 @@ export type UserCreateWithoutSessionsInput = {
   carePlans?: Prisma.CarePlanCreateNestedManyWithoutCreatedByInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutCreatedByInput
   passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationCreateNestedManyWithoutActorUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1564,6 +1733,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   carePlans?: Prisma.CarePlanUncheckedCreateNestedManyWithoutCreatedByInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedCreateNestedManyWithoutActorUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1601,6 +1771,7 @@ export type UserUpdateWithoutSessionsInput = {
   carePlans?: Prisma.CarePlanUpdateManyWithoutCreatedByNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutCreatedByNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUpdateManyWithoutActorUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1622,6 +1793,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   carePlans?: Prisma.CarePlanUncheckedUpdateManyWithoutCreatedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  medicationAdministrations?: Prisma.MedicationAdministrationUncheckedUpdateManyWithoutActorUserNestedInput
 }
 
 
@@ -1640,6 +1812,7 @@ export type UserCountOutputType = {
   inviteTokens: number
   sessions: number
   passwordResetTokens: number
+  medicationAdministrations: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1653,6 +1826,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   inviteTokens?: boolean | UserCountOutputTypeCountInviteTokensArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   passwordResetTokens?: boolean | UserCountOutputTypeCountPasswordResetTokensArgs
+  medicationAdministrations?: boolean | UserCountOutputTypeCountMedicationAdministrationsArgs
 }
 
 /**
@@ -1735,6 +1909,13 @@ export type UserCountOutputTypeCountPasswordResetTokensArgs<ExtArgs extends runt
   where?: Prisma.PasswordResetTokenWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMedicationAdministrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MedicationAdministrationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1756,6 +1937,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   passwordResetTokens?: boolean | Prisma.User$passwordResetTokensArgs<ExtArgs>
+  medicationAdministrations?: boolean | Prisma.User$medicationAdministrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1807,6 +1989,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   passwordResetTokens?: boolean | Prisma.User$passwordResetTokensArgs<ExtArgs>
+  medicationAdministrations?: boolean | Prisma.User$medicationAdministrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1825,6 +2008,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     inviteTokens: Prisma.$InviteTokenPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     passwordResetTokens: Prisma.$PasswordResetTokenPayload<ExtArgs>[]
+    medicationAdministrations: Prisma.$MedicationAdministrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2240,6 +2424,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   inviteTokens<T extends Prisma.User$inviteTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inviteTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   passwordResetTokens<T extends Prisma.User$passwordResetTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$passwordResetTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PasswordResetTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  medicationAdministrations<T extends Prisma.User$medicationAdministrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$medicationAdministrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MedicationAdministrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2903,6 +3088,30 @@ export type User$passwordResetTokensArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.PasswordResetTokenScalarFieldEnum | Prisma.PasswordResetTokenScalarFieldEnum[]
+}
+
+/**
+ * User.medicationAdministrations
+ */
+export type User$medicationAdministrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MedicationAdministration
+   */
+  select?: Prisma.MedicationAdministrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MedicationAdministration
+   */
+  omit?: Prisma.MedicationAdministrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MedicationAdministrationInclude<ExtArgs> | null
+  where?: Prisma.MedicationAdministrationWhereInput
+  orderBy?: Prisma.MedicationAdministrationOrderByWithRelationInput | Prisma.MedicationAdministrationOrderByWithRelationInput[]
+  cursor?: Prisma.MedicationAdministrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MedicationAdministrationScalarFieldEnum | Prisma.MedicationAdministrationScalarFieldEnum[]
 }
 
 /**

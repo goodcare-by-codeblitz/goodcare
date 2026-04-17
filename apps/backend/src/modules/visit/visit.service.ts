@@ -50,7 +50,19 @@ export async function listVisitsService(
 	organizationId: string,
 	query: VisitListQuery,
 ): Promise<{
-	visits: VisitRecord[];
+	visits: Array<
+		VisitRecord & {
+			patient: { id: string; firstName: string; lastName: string };
+			assignments: Array<{
+				id: string;
+				isActive: boolean;
+				carer: {
+					id: string;
+					organizationUser: { user: { firstName: string; lastName: string } };
+				};
+			}>;
+		}
+	>;
 	pagination: {
 		page: number;
 		limit: number;
@@ -89,6 +101,35 @@ export async function listVisitsService(
 				organizationId: true,
 				createdAt: true,
 				updatedAt: true,
+				patient: {
+					select: {
+						id: true,
+						firstName: true,
+						lastName: true,
+					},
+				},
+				assignments: {
+					where: { isActive: true },
+					select: {
+						id: true,
+						isActive: true,
+						carer: {
+							select: {
+								id: true,
+								organizationUser: {
+									select: {
+										user: {
+											select: {
+												firstName: true,
+												lastName: true,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			orderBy: { scheduledStart: 'asc' },
 			skip,
@@ -269,7 +310,7 @@ export async function unassignCarerService(
 
 	await prisma.visitAssignment.update({
 		where: { id: assignment.id },
-		data: { isActive: true, unassignedAt: new Date() },
+		data: { isActive: false, unassignedAt: new Date() },
 	});
 	return { message: 'Carer unassigned successfully' };
 }

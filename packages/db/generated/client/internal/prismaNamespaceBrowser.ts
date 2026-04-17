@@ -62,9 +62,18 @@ export const ModelName = {
   Qualification: 'Qualification',
   QualificationType: 'QualificationType',
   Patient: 'Patient',
+  PatientProfile: 'PatientProfile',
+  PatientEmergencyContact: 'PatientEmergencyContact',
+  PatientAllergy: 'PatientAllergy',
   Visit: 'Visit',
   VisitAssignment: 'VisitAssignment',
   CarePlan: 'CarePlan',
+  CarePlanCondition: 'CarePlanCondition',
+  CarePlanRisk: 'CarePlanRisk',
+  CarePlanTask: 'CarePlanTask',
+  CarePlanGoal: 'CarePlanGoal',
+  Medication: 'Medication',
+  MedicationAdministration: 'MedicationAdministration',
   VisitTask: 'VisitTask',
   DailyNote: 'DailyNote',
   IncidentReport: 'IncidentReport',
@@ -230,6 +239,48 @@ export const PatientScalarFieldEnum = {
 export type PatientScalarFieldEnum = (typeof PatientScalarFieldEnum)[keyof typeof PatientScalarFieldEnum]
 
 
+export const PatientProfileScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  medicalSummary: 'medicalSummary',
+  careRequirements: 'careRequirements',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PatientProfileScalarFieldEnum = (typeof PatientProfileScalarFieldEnum)[keyof typeof PatientProfileScalarFieldEnum]
+
+
+export const PatientEmergencyContactScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  name: 'name',
+  relationship: 'relationship',
+  phone: 'phone',
+  email: 'email',
+  isPrimary: 'isPrimary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PatientEmergencyContactScalarFieldEnum = (typeof PatientEmergencyContactScalarFieldEnum)[keyof typeof PatientEmergencyContactScalarFieldEnum]
+
+
+export const PatientAllergyScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  name: 'name',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PatientAllergyScalarFieldEnum = (typeof PatientAllergyScalarFieldEnum)[keyof typeof PatientAllergyScalarFieldEnum]
+
+
 export const VisitScalarFieldEnum = {
   id: 'id',
   scheduledStart: 'scheduledStart',
@@ -275,6 +326,114 @@ export const CarePlanScalarFieldEnum = {
 } as const
 
 export type CarePlanScalarFieldEnum = (typeof CarePlanScalarFieldEnum)[keyof typeof CarePlanScalarFieldEnum]
+
+
+export const CarePlanConditionScalarFieldEnum = {
+  id: 'id',
+  carePlanId: 'carePlanId',
+  organizationId: 'organizationId',
+  name: 'name',
+  diagnosedYear: 'diagnosedYear',
+  description: 'description',
+  patientImpact: 'patientImpact',
+  carerNotes: 'carerNotes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarePlanConditionScalarFieldEnum = (typeof CarePlanConditionScalarFieldEnum)[keyof typeof CarePlanConditionScalarFieldEnum]
+
+
+export const CarePlanRiskScalarFieldEnum = {
+  id: 'id',
+  carePlanId: 'carePlanId',
+  organizationId: 'organizationId',
+  label: 'label',
+  level: 'level',
+  notes: 'notes',
+  reviewDate: 'reviewDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarePlanRiskScalarFieldEnum = (typeof CarePlanRiskScalarFieldEnum)[keyof typeof CarePlanRiskScalarFieldEnum]
+
+
+export const CarePlanTaskScalarFieldEnum = {
+  id: 'id',
+  carePlanId: 'carePlanId',
+  organizationId: 'organizationId',
+  label: 'label',
+  visitType: 'visitType',
+  required: 'required',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarePlanTaskScalarFieldEnum = (typeof CarePlanTaskScalarFieldEnum)[keyof typeof CarePlanTaskScalarFieldEnum]
+
+
+export const CarePlanGoalScalarFieldEnum = {
+  id: 'id',
+  carePlanId: 'carePlanId',
+  organizationId: 'organizationId',
+  description: 'description',
+  category: 'category',
+  targetDate: 'targetDate',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarePlanGoalScalarFieldEnum = (typeof CarePlanGoalScalarFieldEnum)[keyof typeof CarePlanGoalScalarFieldEnum]
+
+
+export const MedicationScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  name: 'name',
+  doseAmount: 'doseAmount',
+  doseUnit: 'doseUnit',
+  route: 'route',
+  frequency: 'frequency',
+  morning: 'morning',
+  noon: 'noon',
+  evening: 'evening',
+  night: 'night',
+  bedtime: 'bedtime',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  prescriber: 'prescriber',
+  instructions: 'instructions',
+  status: 'status',
+  prnIndication: 'prnIndication',
+  prnMaxDose: 'prnMaxDose',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type MedicationScalarFieldEnum = (typeof MedicationScalarFieldEnum)[keyof typeof MedicationScalarFieldEnum]
+
+
+export const MedicationAdministrationScalarFieldEnum = {
+  id: 'id',
+  medicationId: 'medicationId',
+  patientId: 'patientId',
+  organizationId: 'organizationId',
+  result: 'result',
+  scheduledFor: 'scheduledFor',
+  administeredAt: 'administeredAt',
+  notes: 'notes',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MedicationAdministrationScalarFieldEnum = (typeof MedicationAdministrationScalarFieldEnum)[keyof typeof MedicationAdministrationScalarFieldEnum]
 
 
 export const VisitTaskScalarFieldEnum = {

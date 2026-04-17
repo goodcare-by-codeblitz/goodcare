@@ -1,6 +1,27 @@
 import { prisma } from '@repo/db';
 import { NotFoundError } from '../../lib/errors';
-import type { CreatePatientBody, PatientListQuery, UpdatePatientBody } from './patient.types';
+import type {
+  CreatePatientBody,
+  PatientListQuery,
+  PatientProfileAggregate,
+  UpdatePatientBody,
+  UpdatePatientProfileBody,
+} from './patient.types';
+
+const db = prisma as any;
+
+function isMissingTableError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const candidate = error as { code?: string; message?: string };
+  return (
+    candidate.code === 'P2021' ||
+    (typeof candidate.message === 'string' &&
+      candidate.message.includes('does not exist in the current database'))
+  );
+}
 
 type PatientRecord = {
   id: string;
@@ -64,6 +85,10 @@ export async function listPatientsService(
     ];
   }
 
+  if (query.status) {
+    where.status = query.status;
+  }
+
   const [patients, total] = await Promise.all([
     prisma.patient.findMany({
       where,
@@ -121,6 +146,140 @@ export async function getPatientService(
   return patient;
 }
 
+export async function getPatientProfileService(
+  organizationId: string,
+  patientId: string,
+): Promise<PatientProfileAggregate> {
+  try {
+    const patient = await db.patient.findFirst({
+      where: {
+        id: patientId,
+        organizationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        gender: true,
+        genderDescription: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        address: {
+          select: {
+            line1: true,
+            line2: true,
+            city: true,
+            postcode: true,
+            country: true,
+          },
+        },
+        emergencyContacts: {
+          select: {
+            id: true,
+            name: true,
+            relationship: true,
+            phone: true,
+            email: true,
+            isPrimary: true,
+          },
+          orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        },
+        allergies: {
+          select: {
+            id: true,
+            name: true,
+            notes: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        profile: {
+          select: {
+            medicalSummary: true,
+            careRequirements: true,
+          },
+        },
+      },
+    });
+
+    if (!patient) {
+      throw new NotFoundError('Patient not found');
+    }
+
+    return {
+      id: patient.id,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      dateOfBirth: patient.dateOfBirth,
+      gender: patient.gender,
+      genderDescription: patient.genderDescription,
+      status: patient.status,
+      createdAt: patient.createdAt,
+      updatedAt: patient.updatedAt,
+      address: patient.address,
+      emergencyContacts: patient.emergencyContacts,
+      allergies: patient.allergies,
+      medicalSummary: patient.profile?.medicalSummary ?? null,
+      careRequirements: patient.profile?.careRequirements ?? null,
+    };
+  } catch (error) {
+    if (!isMissingTableError(error)) {
+      throw error;
+    }
+
+    const patient = await prisma.patient.findFirst({
+      where: {
+        id: patientId,
+        organizationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        gender: true,
+        genderDescription: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        address: {
+          select: {
+            line1: true,
+            line2: true,
+            city: true,
+            postcode: true,
+            country: true,
+          },
+        },
+      },
+    });
+
+    if (!patient) {
+      throw new NotFoundError('Patient not found');
+    }
+
+    return {
+      id: patient.id,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      dateOfBirth: patient.dateOfBirth,
+      gender: patient.gender,
+      genderDescription: patient.genderDescription,
+      status: patient.status,
+      createdAt: patient.createdAt,
+      updatedAt: patient.updatedAt,
+      address: patient.address,
+      emergencyContacts: [],
+      allergies: [],
+      medicalSummary: null,
+      careRequirements: null,
+    };
+  }
+}
+
 export async function updatePatientService(
   organizationId: string,
   patientId: string,
@@ -155,6 +314,124 @@ export async function updatePatientService(
       updatedAt: true,
     },
   });
+}
+
+export async function updatePatientProfileService(
+  organizationId: string,
+  patientId: string,
+  input: UpdatePatientProfileBody,
+): Promise<PatientProfileAggregate> {
+  const existingPatient = await prisma.patient.findFirst({
+    where: { id: patientId, organizationId, deletedAt: null },
+    select: { id: true, addressId: true },
+  });
+
+  if (!existingPatient) {
+    throw new NotFoundError('Patient not found');
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const txDb = tx as any;
+
+    if (input.address !== undefined) {
+      if (input.address === null) {
+        await txDb.patient.update({
+          where: { id: patientId },
+          data: { addressId: null },
+        });
+      } else if (existingPatient.addressId) {
+        await txDb.address.update({
+          where: { id: existingPatient.addressId },
+          data: {
+            line1: input.address.line1,
+            line2: input.address.line2 ?? null,
+            city: input.address.city,
+            postcode: input.address.postcode,
+            country: input.address.country,
+          },
+        });
+      } else {
+        const address = await txDb.address.create({
+          data: {
+            line1: input.address.line1,
+            line2: input.address.line2 ?? null,
+            city: input.address.city,
+            postcode: input.address.postcode,
+            country: input.address.country,
+          },
+          select: { id: true },
+        });
+
+        await txDb.patient.update({
+          where: { id: patientId },
+          data: { addressId: address.id },
+        });
+      }
+    }
+
+    if (
+      input.medicalSummary !== undefined ||
+      input.careRequirements !== undefined
+    ) {
+      await txDb.patientProfile.upsert({
+        where: { patientId },
+        update: {
+          ...(input.medicalSummary !== undefined
+            ? { medicalSummary: input.medicalSummary ?? null }
+            : {}),
+          ...(input.careRequirements !== undefined
+            ? { careRequirements: input.careRequirements ?? null }
+            : {}),
+        },
+        create: {
+          patientId,
+          organizationId,
+          medicalSummary: input.medicalSummary ?? null,
+          careRequirements: input.careRequirements ?? null,
+        },
+      });
+    }
+
+    if (input.emergencyContacts !== undefined) {
+      await txDb.patientEmergencyContact.deleteMany({
+        where: { patientId, organizationId },
+      });
+
+      if (input.emergencyContacts.length > 0) {
+        await txDb.patientEmergencyContact.createMany({
+          data: input.emergencyContacts.map((contact, index) => ({
+            patientId,
+            organizationId,
+            name: contact.name,
+            relationship: contact.relationship,
+            phone: contact.phone,
+            email: contact.email ?? null,
+            isPrimary:
+              contact.isPrimary ?? index === 0,
+          })),
+        });
+      }
+    }
+
+    if (input.allergies !== undefined) {
+      await txDb.patientAllergy.deleteMany({
+        where: { patientId, organizationId },
+      });
+
+      if (input.allergies.length > 0) {
+        await txDb.patientAllergy.createMany({
+          data: input.allergies.map((allergy) => ({
+            patientId,
+            organizationId,
+            name: allergy.name,
+            notes: allergy.notes ?? null,
+          })),
+        });
+      }
+    }
+  });
+
+  return getPatientProfileService(organizationId, patientId);
 }
 
 export async function deletePatientService(

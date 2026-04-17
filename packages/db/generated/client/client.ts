@@ -95,6 +95,21 @@ export type QualificationType = Prisma.QualificationTypeModel
  */
 export type Patient = Prisma.PatientModel
 /**
+ * Model PatientProfile
+ * 
+ */
+export type PatientProfile = Prisma.PatientProfileModel
+/**
+ * Model PatientEmergencyContact
+ * 
+ */
+export type PatientEmergencyContact = Prisma.PatientEmergencyContactModel
+/**
+ * Model PatientAllergy
+ * 
+ */
+export type PatientAllergy = Prisma.PatientAllergyModel
+/**
  * Model Visit
  * 
  */
@@ -109,6 +124,36 @@ export type VisitAssignment = Prisma.VisitAssignmentModel
  * 
  */
 export type CarePlan = Prisma.CarePlanModel
+/**
+ * Model CarePlanCondition
+ * 
+ */
+export type CarePlanCondition = Prisma.CarePlanConditionModel
+/**
+ * Model CarePlanRisk
+ * 
+ */
+export type CarePlanRisk = Prisma.CarePlanRiskModel
+/**
+ * Model CarePlanTask
+ * 
+ */
+export type CarePlanTask = Prisma.CarePlanTaskModel
+/**
+ * Model CarePlanGoal
+ * 
+ */
+export type CarePlanGoal = Prisma.CarePlanGoalModel
+/**
+ * Model Medication
+ * 
+ */
+export type Medication = Prisma.MedicationModel
+/**
+ * Model MedicationAdministration
+ * 
+ */
+export type MedicationAdministration = Prisma.MedicationAdministrationModel
 /**
  * Model VisitTask
  * 

@@ -215,6 +215,10 @@ export const currentOrgAccessSchema: FastifySchema = {
 				organizationId: { type: ['string', 'null'] },
 				organizationSlug: { type: ['string', 'null'] },
 				organizationName: { type: ['string', 'null'] },
+				permissions: {
+					type: 'array',
+					items: { type: 'string' },
+				},
 			},
 		},
 		401: errorResponse,

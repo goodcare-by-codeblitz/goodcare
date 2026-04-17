@@ -96,6 +96,24 @@ export const CarePlanStatus = {
 export type CarePlanStatus = (typeof CarePlanStatus)[keyof typeof CarePlanStatus]
 
 
+export const CarePlanGoalStatus = {
+  ACTIVE: 'ACTIVE',
+  ACHIEVED: 'ACHIEVED',
+  PAUSED: 'PAUSED'
+} as const
+
+export type CarePlanGoalStatus = (typeof CarePlanGoalStatus)[keyof typeof CarePlanGoalStatus]
+
+
+export const CarePlanRiskLevel = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+} as const
+
+export type CarePlanRiskLevel = (typeof CarePlanRiskLevel)[keyof typeof CarePlanRiskLevel]
+
+
 export const QualificationStatus = {
   PENDING: 'PENDING',
   VERIFIED: 'VERIFIED',
@@ -148,3 +166,22 @@ export const Gender = {
 } as const
 
 export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const MedicationStatus = {
+  ACTIVE: 'ACTIVE',
+  PRN: 'PRN',
+  DISCONTINUED: 'DISCONTINUED'
+} as const
+
+export type MedicationStatus = (typeof MedicationStatus)[keyof typeof MedicationStatus]
+
+
+export const MedicationAdministrationResult = {
+  GIVEN: 'GIVEN',
+  MISSED: 'MISSED',
+  REFUSED: 'REFUSED',
+  NA: 'NA'
+} as const
+
+export type MedicationAdministrationResult = (typeof MedicationAdministrationResult)[keyof typeof MedicationAdministrationResult]

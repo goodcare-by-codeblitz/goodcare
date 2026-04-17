@@ -4,10 +4,17 @@ import {
   createPatientService,
   deletePatientService,
   getPatientService,
+  getPatientProfileService,
   listPatientsService,
   updatePatientService,
+  updatePatientProfileService,
 } from './patient.service';
-import type { CreatePatientBody, PatientListQuery, UpdatePatientBody } from './patient.types';
+import type {
+  CreatePatientBody,
+  PatientListQuery,
+  UpdatePatientBody,
+  UpdatePatientProfileBody,
+} from './patient.types';
 
 export async function createPatientController(request: FastifyRequest, reply: FastifyReply) {
   const body = request.body as CreatePatientBody;
@@ -39,6 +46,12 @@ export async function getPatientController(request: FastifyRequest, reply: Fasti
   return reply.send(patient);
 }
 
+export async function getPatientProfileController(request: FastifyRequest, reply: FastifyReply) {
+  const { patientId } = request.params as { patientId: string };
+  const patient = await getPatientProfileService(request.org.id, patientId);
+  return reply.send(patient);
+}
+
 export async function updatePatientController(request: FastifyRequest, reply: FastifyReply) {
   const { patientId } = request.params as { patientId: string };
   const body = request.body as UpdatePatientBody;
@@ -47,6 +60,25 @@ export async function updatePatientController(request: FastifyRequest, reply: Fa
   logAudit({
     action: 'UPDATE',
     entityType: 'Patient',
+    entityId: patientId,
+    newValues: body as Record<string, unknown>,
+    organizationId: request.org.id,
+    actorUserId: request.user.id,
+    ipAddress: request.ip,
+    userAgent: request.headers['user-agent'] ?? undefined,
+  });
+
+  return reply.send(patient);
+}
+
+export async function updatePatientProfileController(request: FastifyRequest, reply: FastifyReply) {
+  const { patientId } = request.params as { patientId: string };
+  const body = request.body as UpdatePatientProfileBody;
+  const patient = await updatePatientProfileService(request.org.id, patientId, body);
+
+  logAudit({
+    action: 'UPDATE',
+    entityType: 'PatientProfile',
     entityId: patientId,
     newValues: body as Record<string, unknown>,
     organizationId: request.org.id,

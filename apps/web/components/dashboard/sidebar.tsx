@@ -1,5 +1,9 @@
 'use client';
 
+import {
+	getCurrentOrgContext,
+	hasOrgPermission,
+} from '@/lib/org-management';
 import { cn } from '@/lib/utils';
 import {
 	CalendarDays,
@@ -16,7 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const topNav = [
 	{ icon: LayoutDashboard, href: '/dashboard', label: 'Dashboard' },
@@ -29,7 +33,7 @@ const topNav = [
 	},
 	{ icon: Pill, href: '/dashboard/medication', label: 'Medication & eMAR' },
 	{ icon: ClipboardList, href: '/dashboard/care-plans', label: 'Care Plans' },
-	{ icon: UserRound, href: '/dashboard/clients', label: 'Clients' },
+	{ icon: UserRound, href: '/dashboard/patients', label: 'Patients' },
 	{
 		icon: MonitorPlay,
 		href: '/dashboard/monitoring',
@@ -40,6 +44,40 @@ const topNav = [
 export function Sidebar() {
 	const pathname = usePathname();
 	const [expanded, setExpanded] = useState(true);
+	const [canViewPatients, setCanViewPatients] = useState<boolean | null>(null);
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const loadPermissions = async () => {
+			try {
+				const context = await getCurrentOrgContext();
+				if (!isMounted) {
+					return;
+				}
+
+				setCanViewPatients(hasOrgPermission(context, 'view_patients'));
+			} catch {
+				if (isMounted) {
+					setCanViewPatients(null);
+				}
+			}
+		};
+
+		void loadPermissions();
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
+	const visibleTopNav = topNav.filter((item) => {
+		if (item.href === '/dashboard/patients' && canViewPatients === false) {
+			return false;
+		}
+
+		return true;
+	});
 
 	return (
 		<aside
@@ -49,7 +87,7 @@ export function Sidebar() {
 			)}>
 			{/* Top nav */}
 			<nav className='flex flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden px-4 py-4'>
-				{topNav.map((item) => {
+				{visibleTopNav.map((item) => {
 					const isActive =
 						item.href === '/dashboard'
 							? pathname === '/dashboard'

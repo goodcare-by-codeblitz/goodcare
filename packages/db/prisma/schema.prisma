@@ -73,6 +73,18 @@ enum CarePlanStatus {
   ARCHIVED
 }
 
+enum CarePlanGoalStatus {
+  ACTIVE
+  ACHIEVED
+  PAUSED
+}
+
+enum CarePlanRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 enum QualificationStatus {
   PENDING
   VERIFIED
@@ -112,6 +124,19 @@ enum Gender {
   NOT_SPECIFIED
 }
 
+enum MedicationStatus {
+  ACTIVE
+  PRN
+  DISCONTINUED
+}
+
+enum MedicationAdministrationResult {
+  GIVEN
+  MISSED
+  REFUSED
+  NA
+}
+
 model User {
   id           String     @id @default(uuid())
   firstName    String
@@ -133,6 +158,7 @@ model User {
   inviteTokens      InviteToken[]
   sessions          Session[]
   passwordResetTokens PasswordResetToken[]
+  medicationAdministrations MedicationAdministration[]
 }
 
 model Organization {
@@ -157,6 +183,11 @@ model Organization {
   carers         Carer[]
   qualifications Qualification[]
   inviteTokens   InviteToken[]
+  patientProfiles PatientProfile[]
+  patientEmergencyContacts PatientEmergencyContact[]
+  patientAllergies PatientAllergy[]
+  medications Medication[]
+  medicationAdministrations MedicationAdministration[]
 
   @@unique([slug])
 }
@@ -307,10 +338,64 @@ model Patient {
   visits    Visit[]
   carePlans CarePlan[]
   incidents IncidentReport[]
+  profile   PatientProfile?
+  emergencyContacts PatientEmergencyContact[]
+  allergies PatientAllergy[]
+  medications Medication[]
+  medicationAdministrations MedicationAdministration[]
 
   @@unique([id, organizationId])
   @@index([organizationId])
   @@index([lastName, firstName])
+}
+
+model PatientProfile {
+  id               String   @id @default(uuid())
+  patientId        String   @unique
+  organizationId   String
+  medicalSummary   String?
+  careRequirements String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([patientId, organizationId])
+  @@index([organizationId])
+}
+
+model PatientEmergencyContact {
+  id             String   @id @default(uuid())
+  patientId      String
+  organizationId String
+  name           String
+  relationship   String
+  phone          String
+  email          String?
+  isPrimary      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, patientId])
+}
+
+model PatientAllergy {
+  id             String   @id @default(uuid())
+  patientId      String
+  organizationId String
+  name           String
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, patientId])
 }
 
 model Visit {
@@ -382,10 +467,136 @@ model CarePlan {
 
   patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
   organization Organization @relation(fields: [organizationId], references: [id])
+  conditions   CarePlanCondition[]
+  risks        CarePlanRisk[]
+  tasks        CarePlanTask[]
+  goalItems    CarePlanGoal[]
 
+  @@unique([id, organizationId])
   @@unique([patientId, organizationId, version])
   @@index([organizationId, patientId])
   @@index([organizationId, patientId, status])
+}
+
+model CarePlanCondition {
+  id             String   @id @default(uuid())
+  carePlanId     String
+  organizationId String
+  name           String
+  diagnosedYear  Int?
+  description    String?
+  patientImpact  String?
+  carerNotes     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  carePlan CarePlan @relation(fields: [carePlanId, organizationId], references: [id, organizationId])
+
+  @@index([organizationId, carePlanId])
+}
+
+model CarePlanRisk {
+  id             String            @id @default(uuid())
+  carePlanId     String
+  organizationId String
+  label          String
+  level          CarePlanRiskLevel @default(MEDIUM)
+  notes          String
+  reviewDate     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  carePlan CarePlan @relation(fields: [carePlanId, organizationId], references: [id, organizationId])
+
+  @@index([organizationId, carePlanId])
+}
+
+model CarePlanTask {
+  id             String   @id @default(uuid())
+  carePlanId     String
+  organizationId String
+  label          String
+  visitType      String
+  required       Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  carePlan CarePlan @relation(fields: [carePlanId, organizationId], references: [id, organizationId])
+
+  @@index([organizationId, carePlanId])
+}
+
+model CarePlanGoal {
+  id             String             @id @default(uuid())
+  carePlanId     String
+  organizationId String
+  description    String
+  category       String
+  targetDate     DateTime?
+  status         CarePlanGoalStatus @default(ACTIVE)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  carePlan CarePlan @relation(fields: [carePlanId, organizationId], references: [id, organizationId])
+
+  @@index([organizationId, carePlanId])
+}
+
+model Medication {
+  id             String           @id @default(uuid())
+  patientId      String
+  organizationId String
+  name           String
+  doseAmount     String
+  doseUnit       String
+  route          String
+  frequency      String
+  morning        Boolean          @default(false)
+  noon           Boolean          @default(false)
+  evening        Boolean          @default(false)
+  night          Boolean          @default(false)
+  bedtime        Boolean          @default(false)
+  startDate      DateTime
+  endDate        DateTime?
+  prescriber     String
+  instructions   String
+  status         MedicationStatus @default(ACTIVE)
+  prnIndication  String?
+  prnMaxDose     String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+
+  patient      Patient                     @relation(fields: [patientId, organizationId], references: [id, organizationId])
+  organization Organization                @relation(fields: [organizationId], references: [id])
+  administrations MedicationAdministration[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId, patientId])
+}
+
+model MedicationAdministration {
+  id             String                         @id @default(uuid())
+  medicationId   String
+  patientId      String
+  organizationId String
+  result         MedicationAdministrationResult
+  scheduledFor   DateTime?
+  administeredAt DateTime?
+  notes          String?
+  actorUserId    String?
+  createdAt      DateTime                       @default(now())
+  updatedAt      DateTime                       @updatedAt
+
+  medication   Medication   @relation(fields: [medicationId, organizationId], references: [id, organizationId])
+  patient      Patient      @relation(fields: [patientId, organizationId], references: [id, organizationId])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  actorUser    User?        @relation(fields: [actorUserId], references: [id])
+
+  @@index([organizationId, patientId])
+  @@index([organizationId, medicationId])
 }
 
 model VisitTask {
