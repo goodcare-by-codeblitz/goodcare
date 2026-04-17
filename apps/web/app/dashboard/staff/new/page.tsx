@@ -1,36 +1,17 @@
 'use client';
 
-import DashboardFooter from '@/components/dashboard/footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 import {
-	ArrowLeft,
-	ChevronRight,
-	FileText,
-	Info,
-	Mail,
-	Trash2,
-	Upload,
-} from 'lucide-react';
+	createCarerInvite,
+	getCurrentOrgContext,
+	getOrgManagementError,
+} from '@/lib/org-management';
+import { ArrowLeft, ChevronRight, Info, Mail, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useRef, useState } from 'react';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
-interface UploadedFile {
-	id: string;
-	name: string;
-	size: string;
-	expiryDate: string;
-}
-
-/* ------------------------------------------------------------------ */
-/*  FormSection — reusable accessible card wrapper                     */
-/* ------------------------------------------------------------------ */
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 function FormSection({
 	title,
@@ -53,192 +34,87 @@ function FormSection({
 					className='font-heading text-base font-bold text-foreground'>
 					{title}
 				</h2>
-				{description && (
-					<p className='mt-1 text-sm text-slate-600'>{description}</p>
-				)}
+				{description ? <p className='mt-1 text-sm text-slate-600'>{description}</p> : null}
 			</div>
 			<div className='px-6 py-6'>{children}</div>
 		</section>
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  FileDropzone                                                       */
-/* ------------------------------------------------------------------ */
-
-function FileDropzone({ onFiles }: { onFiles: (files: FileList) => void }) {
-	const inputRef = useRef<HTMLInputElement>(null);
-	const [dragOver, setDragOver] = useState(false);
-
-	const handleDrop = useCallback(
-		(e: React.DragEvent) => {
-			e.preventDefault();
-			setDragOver(false);
-			if (e.dataTransfer.files.length > 0) {
-				onFiles(e.dataTransfer.files);
-			}
-		},
-		[onFiles],
-	);
-
-	return (
-		<div
-			role='button'
-			tabIndex={0}
-			aria-label='Upload qualification documents. Click or drag and drop PDF, JPG, or PNG files up to 10MB.'
-			className={cn(
-				'flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors',
-				'focus-visible:border-care-blue focus-visible:ring-3 focus-visible:ring-care-blue/30 focus-visible:outline-none',
-				dragOver
-					? 'border-care-blue bg-care-blue-light'
-					: 'border-slate-300 bg-slate-50 hover:border-care-blue hover:bg-care-blue-light/50',
-			)}
-			onClick={() => inputRef.current?.click()}
-			onKeyDown={(e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					inputRef.current?.click();
-				}
-			}}
-			onDragOver={(e) => {
-				e.preventDefault();
-				setDragOver(true);
-			}}
-			onDragLeave={() => setDragOver(false)}
-			onDrop={handleDrop}>
-			<div className='flex size-12 items-center justify-center rounded-full bg-care-blue-light'>
-				<Upload className='size-5 text-care-blue' aria-hidden='true' />
-			</div>
-			<div>
-				<p className='text-sm font-semibold text-foreground'>
-					Click to upload{' '}
-					<span className='font-normal text-slate-600'>or drag and drop</span>
-				</p>
-				<p className='mt-1 text-xs text-slate-500'>
-					PDF, JPG, or PNG (max 10MB)
-				</p>
-			</div>
-			<input
-				ref={inputRef}
-				type='file'
-				className='sr-only'
-				accept='.pdf,.jpg,.jpeg,.png'
-				multiple
-				aria-hidden='true'
-				tabIndex={-1}
-				onChange={(e) => {
-					if (e.target.files && e.target.files.length > 0) {
-						onFiles(e.target.files);
-					}
-				}}
-			/>
-		</div>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  UploadedFileCard                                                   */
-/* ------------------------------------------------------------------ */
-
-function UploadedFileCard({
-	file,
-	onRemove,
-	onExpiryChange,
-}: {
-	file: UploadedFile;
-	onRemove: () => void;
-	onExpiryChange: (date: string) => void;
-}) {
-	return (
-		<div
-			className='flex flex-col gap-4 rounded-lg border border-border bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between'
-			role='group'
-			aria-label={`Uploaded file: ${file.name}`}>
-			<div className='flex items-center gap-3'>
-				<div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-care-blue-light'>
-					<FileText className='size-5 text-care-blue' aria-hidden='true' />
-				</div>
-				<div className='min-w-0'>
-					<p className='truncate text-sm font-semibold text-foreground'>
-						{file.name}
-					</p>
-					<p className='text-xs text-slate-500'>{file.size}</p>
-				</div>
-			</div>
-			<div className='flex items-center gap-3'>
-				<div className='flex flex-col gap-1'>
-					<Label
-						htmlFor={`expiry-${file.id}`}
-						className='text-xs font-medium text-slate-600'>
-						Expiry Date
-					</Label>
-					<Input
-						id={`expiry-${file.id}`}
-						type='date'
-						value={file.expiryDate}
-						onChange={(e) => onExpiryChange(e.target.value)}
-						className='h-9 w-40 text-sm'
-						aria-describedby={`expiry-help-${file.id}`}
-					/>
-					<span id={`expiry-help-${file.id}`} className='sr-only'>
-						Set the expiry date for {file.name}
-					</span>
-				</div>
-				<button
-					type='button'
-					onClick={onRemove}
-					className='mt-5 flex size-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-error/10 hover:text-error focus-visible:ring-2 focus-visible:ring-error/50 focus-visible:outline-none'
-					aria-label={`Remove ${file.name}`}>
-					<Trash2 className='size-4' />
-				</button>
-			</div>
-		</div>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Main Page                                                          */
-/* ------------------------------------------------------------------ */
-
 export default function AddCarerPage() {
-	const [files, setFiles] = useState<UploadedFile[]>([
-		{
-			id: '1',
-			name: 'DBS_Certificate_2024.pdf',
-			size: '2.4 MB',
-			expiryDate: '2027-03-15',
-		},
-		{
-			id: '2',
-			name: 'First_Aid_Level3.pdf',
-			size: '1.8 MB',
-			expiryDate: '2026-09-22',
-		},
-	]);
+	const router = useRouter();
+	const [organizationId, setOrganizationId] = useState<string | null>(null);
+	const [firstName, setFirstName] = useState('');
+	const [lastName, setLastName] = useState('');
+	const [email, setEmail] = useState('');
+	const [phone, setPhone] = useState('');
+	const [isLoading, setIsLoading] = useState(true);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
-	const handleAddFiles = useCallback((fileList: FileList) => {
-		const newFiles: UploadedFile[] = Array.from(fileList).map((f, i) => ({
-			id: `${Date.now()}-${i}`,
-			name: f.name,
-			size: `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
-			expiryDate: '',
-		}));
-		setFiles((prev) => [...prev, ...newFiles]);
+	useEffect(() => {
+		let isMounted = true;
+
+		const load = async () => {
+			try {
+				setIsLoading(true);
+				setErrorMessage('');
+				const org = await getCurrentOrgContext();
+				if (isMounted) {
+					setOrganizationId(org.organizationId);
+				}
+			} catch (error) {
+				if (isMounted) {
+					setErrorMessage(
+						getOrgManagementError(error, 'Unable to load the current organization.'),
+					);
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false);
+				}
+			}
+		};
+
+		void load();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
-	const handleRemoveFile = useCallback((id: string) => {
-		setFiles((prev) => prev.filter((f) => f.id !== id));
-	}, []);
+	const canSubmit =
+		Boolean(organizationId) &&
+		Boolean(firstName.trim()) &&
+		Boolean(lastName.trim()) &&
+		Boolean(email.trim());
 
-	const handleExpiryChange = useCallback((id: string, date: string) => {
-		setFiles((prev) =>
-			prev.map((f) => (f.id === id ? { ...f, expiryDate: date } : f)),
-		);
-	}, []);
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (!organizationId) {
+			return;
+		}
+
+		try {
+			setIsSubmitting(true);
+			setErrorMessage('');
+			await createCarerInvite(organizationId, {
+				firstName: firstName.trim(),
+				lastName: lastName.trim(),
+				email: email.trim(),
+			});
+			router.push('/dashboard/staff');
+		} catch (error) {
+			setErrorMessage(
+				getOrgManagementError(error, 'Unable to send carer invitation.'),
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
 		<div className='mx-auto max-w-6/12 p-4'>
-			{/* Breadcrumb */}
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -259,7 +135,6 @@ export default function AddCarerPage() {
 				</ol>
 			</nav>
 
-			{/* Page header */}
 			<div className='mb-8'>
 				<div className='flex items-center gap-3'>
 					<Link
@@ -273,151 +148,87 @@ export default function AddCarerPage() {
 					</h1>
 				</div>
 				<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-					Enter the details for the new care professional. An invitation email
-					will be sent so they can complete their profile and begin onboarding.
+					Send a dedicated carer invitation. This flow is separate from team admin
+					and manager invites.
 				</p>
 			</div>
 
-			<form
-				onSubmit={(e) => e.preventDefault()}
-				className='flex flex-col gap-6'
-				noValidate>
-				{/* ---- Personal Information ---- */}
+			<form onSubmit={handleSubmit} className='flex flex-col gap-6' noValidate>
 				<FormSection
 					id='personal'
-					title='Personal Information'
-					description='Basic contact details for the care professional.'>
+					title='Invitation Details'
+					description='We will send an invite to this carer so they can activate their access.'>
 					<div className='grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2'>
 						<div className='flex flex-col gap-2'>
-							<Label htmlFor='firstName'>
-								First Name{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+							<Label htmlFor='firstName'>First Name</Label>
 							<Input
 								id='firstName'
+								value={firstName}
+								onChange={(event) => setFirstName(event.target.value)}
 								placeholder='e.g. Sarah'
-								required
-								aria-required='true'
 								autoComplete='given-name'
 								className='h-10'
 							/>
 						</div>
 						<div className='flex flex-col gap-2'>
-							<Label htmlFor='lastName'>
-								Last Name{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+							<Label htmlFor='lastName'>Last Name</Label>
 							<Input
 								id='lastName'
+								value={lastName}
+								onChange={(event) => setLastName(event.target.value)}
 								placeholder='e.g. Jenkins'
-								required
-								aria-required='true'
 								autoComplete='family-name'
 								className='h-10'
 							/>
 						</div>
-						<div className='flex flex-col gap-2'>
-							<Label htmlFor='email'>
-								Email Address{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+						<div className='flex flex-col gap-2 sm:col-span-2'>
+							<Label htmlFor='email'>Email Address</Label>
 							<Input
 								id='email'
 								type='email'
+								value={email}
+								onChange={(event) => setEmail(event.target.value)}
 								placeholder='e.g. sarah@example.com'
-								required
-								aria-required='true'
 								autoComplete='email'
 								className='h-10'
 							/>
 						</div>
-						<div className='flex flex-col gap-2'>
+						<div className='flex flex-col gap-2 sm:col-span-2'>
 							<Label htmlFor='phone'>Phone Number</Label>
 							<Input
 								id='phone'
 								type='tel'
+								value={phone}
+								onChange={(event) => setPhone(event.target.value)}
 								placeholder='e.g. 07700 900000'
 								autoComplete='tel'
 								className='h-10'
 							/>
+							<p className='text-xs text-slate-500'>
+								Phone is kept here for reference in the form, but only name and email
+								are sent in this invitation-focused pass.
+							</p>
 						</div>
 					</div>
 				</FormSection>
 
-				{/* ---- Residential Address ---- */}
-				<FormSection
-					id='address'
-					title='Residential Address'
-					description='Home address used for travel-time calculations and rota planning.'>
-					<div className='flex flex-col gap-5'>
-						<div className='flex flex-col gap-2'>
-							<Label htmlFor='address1'>Address Line 1</Label>
-							<Input
-								id='address1'
-								placeholder='e.g. 14 Elm Street'
-								autoComplete='address-line1'
-								className='h-10'
-							/>
-						</div>
-						<div className='grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2'>
-							<div className='flex flex-col gap-2'>
-								<Label htmlFor='city'>City</Label>
-								<Input
-									id='city'
-									placeholder='e.g. Manchester'
-									autoComplete='address-level2'
-									className='h-10'
-								/>
-							</div>
-							<div className='flex flex-col gap-2'>
-								<Label htmlFor='postcode'>Postcode</Label>
-								<Input
-									id='postcode'
-									placeholder='e.g. M1 1AA'
-									autoComplete='postal-code'
-									className='h-10'
-								/>
-							</div>
-						</div>
+				<div
+					className='flex gap-3 rounded-xl border border-warning/30 bg-warning/5 p-5'
+					role='note'>
+					<Shield
+						className='mt-0.5 size-5 shrink-0 text-warning'
+						aria-hidden='true'
+					/>
+					<div>
+						<p className='text-sm font-bold text-foreground'>Current Scope</p>
+						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
+							Address details, compliance documents, and qualifications are not saved
+							by this invite flow yet. They will be collected in a later onboarding
+							step.
+						</p>
 					</div>
-				</FormSection>
+				</div>
 
-				{/* ---- Qualifications & Compliance ---- */}
-				<FormSection
-					id='qualifications'
-					title='Qualifications & Compliance'
-					description='Upload certificates, DBS checks, and training records. Set expiry dates to receive renewal reminders.'>
-					<div className='flex flex-col gap-5'>
-						<FileDropzone onFiles={handleAddFiles} />
-
-						{files.length > 0 && (
-							<div
-								className='flex flex-col gap-3'
-								role='list'
-								aria-label='Uploaded documents'>
-								{files.map((file) => (
-									<div key={file.id} role='listitem'>
-										<UploadedFileCard
-											file={file}
-											onRemove={() => handleRemoveFile(file.id)}
-											onExpiryChange={(date) =>
-												handleExpiryChange(file.id, date)
-											}
-										/>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
-				</FormSection>
-
-				{/* ---- Invitation workflow info ---- */}
 				<div
 					className='flex gap-3 rounded-xl border border-care-blue/20 bg-care-blue-light p-5'
 					role='note'>
@@ -426,20 +237,21 @@ export default function AddCarerPage() {
 						aria-hidden='true'
 					/>
 					<div>
-						<p className='text-sm font-bold text-foreground'>
-							Invitation Workflow
-						</p>
+						<p className='text-sm font-bold text-foreground'>Invitation Workflow</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							After submitting, the care professional will receive an email
-							invitation to create their account. They&apos;ll complete their
-							profile, upload any remaining documents, and set their
-							availability — all before their first shift.
+							The carer will receive an email invitation and will be onboarded with
+							the caregiver access path, separate from team admin and manager roles.
 						</p>
 					</div>
 				</div>
 
-				{/* ---- Actions ---- */}
-				<div className='flex flex-col-reverse gap-3 border-b border-border pt-6 pb-6 sm:flex-row sm:justify-end'>
+				<div className='min-h-5'>
+					{errorMessage ? (
+						<p className='text-sm font-medium text-red-600'>{errorMessage}</p>
+					) : null}
+				</div>
+
+				<div className='flex flex-col-reverse gap-3 border-b border-border pb-6 pt-6 sm:flex-row sm:justify-end'>
 					<Link
 						href='/dashboard/staff'
 						className='inline-flex h-11 items-center justify-center rounded-lg border border-border bg-background px-6 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none'>
@@ -448,9 +260,10 @@ export default function AddCarerPage() {
 					<Button
 						type='submit'
 						size='lg'
+						disabled={!canSubmit || isSubmitting || isLoading}
 						className='h-11 gap-2 bg-care-blue px-6 text-sm font-semibold shadow-md hover:bg-care-blue-hover'>
 						<Mail className='size-4' aria-hidden='true' />
-						Invite Care Professional
+						{isSubmitting ? 'Sending Invitation...' : 'Invite Care Professional'}
 					</Button>
 				</div>
 			</form>

@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { AuthSync } from '@/components/auth/auth-sync';
+import type { Metadata } from 'next';
 import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
 
@@ -27,8 +27,7 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<head>
-				{/* Figma capture — remove after design export */}
-				<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+				<link rel='icon' href='/favicon.ico' />
 			</head>
 			<body
 				className={`${inter.variable} ${manrope.variable} antialiased overflow-hidden`}>

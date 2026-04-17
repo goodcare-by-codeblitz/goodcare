@@ -1,6 +1,17 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import {
+	TEAM_ROLE_META,
+	fetchTeamMembers,
+	fetchTeamRoles,
+	getCurrentOrgContext,
+	getOrgManagementError,
+	removeTeamMember,
+	updateTeamMember,
+	type TeamMember,
+	type TeamRole,
+} from '@/lib/org-management';
 import { cn } from '@/lib/utils';
 import {
 	AlertTriangle,
@@ -9,146 +20,26 @@ import {
 	ChevronRight,
 	Info,
 	Mail,
-	Shield,
 	Trash2,
 	UserX,
-	X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { use, useCallback, useState } from 'react';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+import { useRouter } from 'next/navigation';
+import { use, useEffect, useState } from 'react';
 
 type MemberStatus = 'ACTIVE' | 'SUSPENDED';
 
-interface MemberProfile {
-	id: string;
-	firstName: string;
-	lastName: string;
-	email: string;
-	status: MemberStatus;
-	roles: string[];
-	joinedAt: string;
-	invitedAt: string;
-	invitedBy: string;
-	avatarColor: string;
+function formatDate(date: string | null) {
+	if (!date) {
+		return 'N/A';
+	}
+
+	return new Date(date).toLocaleDateString('en-GB', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	});
 }
-
-interface Role {
-	id: string;
-	name: string;
-	description: string;
-	category: 'admin' | 'manager' | 'viewer';
-}
-
-/* ------------------------------------------------------------------ */
-/*  Available roles                                                    */
-/* ------------------------------------------------------------------ */
-
-const AVAILABLE_ROLES: Role[] = [
-	{
-		id: 'org-admin',
-		name: 'Organisation Admin',
-		description:
-			'Full access to all settings, billing, team management, and data. Can invite and remove any user.',
-		category: 'admin',
-	},
-	{
-		id: 'care-manager',
-		name: 'Care Manager',
-		description:
-			'Manage carers, clients, rotas, care plans, and daily operations. Cannot change billing or org settings.',
-		category: 'manager',
-	},
-	{
-		id: 'scheduling-manager',
-		name: 'Scheduling Manager',
-		description:
-			'Create and edit rotas, assign visits, and manage carer availability. Read-only access to client records.',
-		category: 'manager',
-	},
-	{
-		id: 'compliance-officer',
-		name: 'Compliance Officer',
-		description:
-			'View audit logs, review qualifications, manage training records, and generate compliance reports.',
-		category: 'manager',
-	},
-	{
-		id: 'read-only',
-		name: 'Read-Only Viewer',
-		description:
-			'View dashboards, reports, and client summaries. Cannot create, edit, or delete any records.',
-		category: 'viewer',
-	},
-];
-
-const CATEGORY_LABELS: Record<Role['category'], string> = {
-	admin: 'Administrator',
-	manager: 'Management',
-	viewer: 'Limited Access',
-};
-
-/* ------------------------------------------------------------------ */
-/*  Mock data lookup                                                   */
-/* ------------------------------------------------------------------ */
-
-const MOCK_MEMBERS: Record<string, MemberProfile> = {
-	u1: {
-		id: 'u1',
-		firstName: 'Priya',
-		lastName: 'Sharma',
-		email: 'priya.sharma@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['org-admin'],
-		joinedAt: '2024-09-01',
-		invitedAt: '2024-08-25',
-		invitedBy: 'System',
-		avatarColor: '#6366f1',
-	},
-	u2: {
-		id: 'u2',
-		firstName: 'James',
-		lastName: 'Porter',
-		email: 'james.porter@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['care-manager', 'compliance-officer'],
-		joinedAt: '2024-10-14',
-		invitedAt: '2024-10-08',
-		invitedBy: 'Priya Sharma',
-		avatarColor: '#0ea5e9',
-	},
-	u3: {
-		id: 'u3',
-		firstName: 'Fatima',
-		lastName: 'Al-Rashid',
-		email: 'f.alrashid@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['scheduling-manager'],
-		joinedAt: '2025-01-06',
-		invitedAt: '2024-12-20',
-		invitedBy: 'Priya Sharma',
-		avatarColor: '#f59e0b',
-	},
-	u4: {
-		id: 'u4',
-		firstName: 'Thomas',
-		lastName: 'Wade',
-		email: 'thomas.wade@sunrisecare.co.uk',
-		status: 'SUSPENDED',
-		roles: ['read-only'],
-		joinedAt: '2025-02-10',
-		invitedAt: '2025-02-03',
-		invitedBy: 'James Porter',
-		avatarColor: '#64748b',
-	},
-};
-
-/* ------------------------------------------------------------------ */
-/*  Sub-components                                                     */
-/* ------------------------------------------------------------------ */
 
 function FormSection({
 	title,
@@ -171,9 +62,7 @@ function FormSection({
 					className='font-heading text-base font-bold text-foreground'>
 					{title}
 				</h2>
-				{description && (
-					<p className='mt-1 text-sm text-slate-600'>{description}</p>
-				)}
+				{description ? <p className='mt-1 text-sm text-slate-600'>{description}</p> : null}
 			</div>
 			<div className='px-6 py-6'>{children}</div>
 		</section>
@@ -185,6 +74,7 @@ function MemberStatusBadge({ status }: { status: MemberStatus }) {
 		ACTIVE: 'bg-success/10 text-success border border-success/20',
 		SUSPENDED: 'bg-warning/10 text-warning border border-warning/20',
 	};
+
 	return (
 		<span
 			className={cn(
@@ -199,19 +89,18 @@ function MemberStatusBadge({ status }: { status: MemberStatus }) {
 function RoleCard({
 	role,
 	selected,
-	onToggle,
+	onSelect,
 }: {
-	role: Role;
+	role: TeamRole;
 	selected: boolean;
-	onToggle: () => void;
+	onSelect: () => void;
 }) {
 	return (
 		<button
 			type='button'
-			role='checkbox'
+			role='radio'
 			aria-checked={selected}
-			aria-label={`${role.name}: ${role.description}`}
-			onClick={onToggle}
+			onClick={onSelect}
 			className={cn(
 				'group flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-all',
 				'focus-visible:border-care-blue focus-visible:ring-3 focus-visible:ring-care-blue/30 focus-visible:outline-none',
@@ -221,128 +110,163 @@ function RoleCard({
 			)}>
 			<span
 				className={cn(
-					'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+					'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
 					selected
 						? 'border-care-blue bg-care-blue text-white'
 						: 'border-slate-300 bg-white group-hover:border-slate-400',
 				)}
 				aria-hidden='true'>
-				{selected && <Check className='size-3' strokeWidth={3} />}
+				{selected ? <Check className='size-3' strokeWidth={3} /> : null}
 			</span>
 			<div className='min-w-0 flex-1'>
 				<p className='text-sm font-semibold text-foreground'>{role.name}</p>
 				<p className='mt-0.5 text-sm leading-relaxed text-slate-600'>
-					{role.description}
+					{TEAM_ROLE_META[role.name]?.description ?? 'Organization role'}
 				</p>
 			</div>
 		</button>
 	);
 }
 
-function SelectedRolePill({
-	role,
-	onRemove,
-}: {
-	role: Role;
-	onRemove: () => void;
-}) {
-	return (
-		<span className='inline-flex items-center gap-1.5 rounded-full border border-care-blue/20 bg-care-blue-light px-3 py-1.5'>
-			<Shield className='size-3.5 text-care-blue' aria-hidden='true' />
-			<span className='text-xs font-semibold text-care-blue'>{role.name}</span>
-			<button
-				type='button'
-				onClick={onRemove}
-				className='ml-0.5 flex size-4 items-center justify-center rounded-full text-care-blue/60 transition-colors hover:bg-care-blue/10 hover:text-care-blue focus-visible:ring-2 focus-visible:ring-care-blue/50 focus-visible:outline-none'
-				aria-label={`Remove ${role.name} role`}>
-				<X className='size-3' />
-			</button>
-		</span>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
-
 export default function MemberProfilePage({
 	params,
 }: {
 	params: Promise<{ userId: string }>;
 }) {
+	const router = useRouter();
 	const { userId } = use(params);
-	const member = MOCK_MEMBERS[userId];
-
-	const [selectedRoles, setSelectedRoles] = useState<Set<string>>(
-		new Set(member?.roles ?? []),
-	);
-	const [status, setStatus] = useState<MemberStatus>(
-		member?.status ?? 'ACTIVE',
-	);
-	const [saved, setSaved] = useState(false);
+	const [organizationId, setOrganizationId] = useState<string | null>(null);
+	const [member, setMember] = useState<TeamMember | null>(null);
+	const [roles, setRoles] = useState<TeamRole[]>([]);
+	const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+	const [status, setStatus] = useState<MemberStatus>('ACTIVE');
+	const [isLoading, setIsLoading] = useState(true);
+	const [isSaving, setIsSaving] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
+	const [successMessage, setSuccessMessage] = useState('');
 	const [confirmRemove, setConfirmRemove] = useState(false);
 
-	const toggleRole = useCallback((roleId: string) => {
-		setSelectedRoles((prev) => {
-			const next = new Set(prev);
-			if (next.has(roleId)) next.delete(roleId);
-			else next.add(roleId);
-			return next;
-		});
-	}, []);
+	useEffect(() => {
+		let isMounted = true;
 
-	const removeRole = useCallback((roleId: string) => {
-		setSelectedRoles((prev) => {
-			const next = new Set(prev);
-			next.delete(roleId);
-			return next;
-		});
-	}, []);
+		const load = async () => {
+			try {
+				setIsLoading(true);
+				setErrorMessage('');
+				const org = await getCurrentOrgContext();
+				const [members, teamRoles] = await Promise.all([
+					fetchTeamMembers(org.organizationId),
+					fetchTeamRoles(org.organizationId),
+				]);
+				const nextMember = members.find((candidate) => candidate.userId === userId) ?? null;
 
-	function handleSave() {
-		// In production: PATCH /orgs/:orgId/members/:userId
-		setSaved(true);
-		setTimeout(() => setSaved(false), 3000);
+				if (!isMounted) {
+					return;
+				}
+
+				setOrganizationId(org.organizationId);
+				setRoles(teamRoles);
+				setMember(nextMember);
+				setSelectedRoleId(nextMember?.role?.id ?? null);
+				setStatus(nextMember?.status ?? 'ACTIVE');
+			} catch (error) {
+				if (isMounted) {
+					setErrorMessage(
+						getOrgManagementError(error, 'Unable to load member details.'),
+					);
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false);
+				}
+			}
+		};
+
+		void load();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [userId]);
+
+	const handleSave = async () => {
+		if (!organizationId || !member) {
+			return;
+		}
+
+		try {
+			setIsSaving(true);
+			setErrorMessage('');
+			setSuccessMessage('');
+			await updateTeamMember(organizationId, member.userId, {
+				roleId: selectedRoleId,
+				status,
+			});
+			setMember((current) =>
+				current
+					? {
+							...current,
+							status,
+							role: roles.find((role) => role.id === selectedRoleId) ?? null,
+						}
+					: current,
+			);
+			setSuccessMessage('Member updated successfully.');
+		} catch (error) {
+			setErrorMessage(
+				getOrgManagementError(error, 'Unable to update this member.'),
+			);
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
+	const handleRemove = async () => {
+		if (!organizationId || !member) {
+			return;
+		}
+
+		try {
+			setIsSaving(true);
+			setErrorMessage('');
+			await removeTeamMember(organizationId, member.userId);
+			router.push('/dashboard/settings/team');
+		} catch (error) {
+			setErrorMessage(
+				getOrgManagementError(error, 'Unable to remove this member.'),
+			);
+			setIsSaving(false);
+		}
+	};
+
+	if (isLoading) {
+		return (
+			<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
+				<p className='text-sm text-slate-500'>Loading member details...</p>
+			</div>
+		);
 	}
 
 	if (!member) {
 		return (
 			<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
-				<div className='flex flex-col items-center gap-3 py-20 text-center'>
-					<p className='text-sm font-semibold text-foreground'>
-						Member not found
-					</p>
-					<Link
-						href='/dashboard/settings/team'
-						className='text-sm font-semibold text-care-blue hover:underline'>
-						Back to Team
-					</Link>
-				</div>
+				<p className='text-sm font-semibold text-foreground'>Member not found.</p>
+				<Link
+					href='/dashboard/settings/team'
+					className='mt-3 inline-flex text-sm font-semibold text-care-blue hover:underline'>
+					Back to Team
+				</Link>
 			</div>
 		);
 	}
 
-	const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
-	const selectedRoleObjects = AVAILABLE_ROLES.filter((r) =>
-		selectedRoles.has(r.id),
-	);
-	const groupedRoles = AVAILABLE_ROLES.reduce(
-		(acc, role) => {
-			if (!acc[role.category]) acc[role.category] = [];
-			acc[role.category].push(role);
-			return acc;
-		},
-		{} as Record<string, Role[]>,
-	);
-
+	const initials = `${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
+	const currentRole = roles.find((role) => role.id === selectedRoleId) ?? null;
 	const hasChanges =
-		JSON.stringify([...selectedRoles].sort()) !==
-			JSON.stringify([...new Set(member.roles)].sort()) ||
-		status !== member.status;
+		(member.role?.id ?? null) !== selectedRoleId || member.status !== status;
 
 	return (
 		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
-			{/* Breadcrumb */}
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -367,13 +291,12 @@ export default function MemberProfilePage({
 					</li>
 					<li>
 						<span className='font-semibold text-foreground' aria-current='page'>
-							{member.firstName} {member.lastName}
+							{member.user.firstName} {member.user.lastName}
 						</span>
 					</li>
 				</ol>
 			</nav>
 
-			{/* Page header */}
 			<div className='mb-8'>
 				<div className='flex items-center gap-3'>
 					<Link
@@ -383,36 +306,36 @@ export default function MemberProfilePage({
 						<ArrowLeft className='size-4' />
 					</Link>
 					<h1 className='font-heading text-2xl font-bold tracking-tight text-foreground'>
-						{member.firstName} {member.lastName}
+						{member.user.firstName} {member.user.lastName}
 					</h1>
 					<MemberStatusBadge status={status} />
 				</div>
 				<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-					View and manage this member&apos;s profile, roles, and account status.
-					Changes can only be made by the member themselves or an admin with the{' '}
-					<span className='font-semibold text-foreground'>
-						Manage Members
-					</span>{' '}
-					permission.
+					View and manage this team member&apos;s access level and account status.
 				</p>
 			</div>
 
+			<div className='mb-4 min-h-5'>
+				{errorMessage ? (
+					<p className='text-sm font-medium text-red-600'>{errorMessage}</p>
+				) : null}
+				{successMessage ? (
+					<p className='text-sm font-medium text-green-600'>{successMessage}</p>
+				) : null}
+			</div>
+
 			<div className='flex flex-col gap-6'>
-				{/* ---- Profile summary card ---- */}
 				<div className='flex items-center gap-5 rounded-xl border border-border bg-white p-6 shadow-sm'>
-					<span
-						className='inline-flex size-16 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white'
-						style={{ backgroundColor: member.avatarColor }}
-						aria-hidden='true'>
+					<span className='inline-flex size-16 shrink-0 items-center justify-center rounded-full bg-care-blue/10 text-xl font-bold text-care-blue'>
 						{initials}
 					</span>
 					<div className='min-w-0 flex-1'>
 						<p className='text-lg font-bold text-foreground'>
-							{member.firstName} {member.lastName}
+							{member.user.firstName} {member.user.lastName}
 						</p>
 						<div className='mt-1 flex items-center gap-1.5 text-sm text-slate-500'>
 							<Mail className='size-4 shrink-0' aria-hidden='true' />
-							<span className='truncate'>{member.email}</span>
+							<span className='truncate'>{member.user.email}</span>
 						</div>
 					</div>
 					<dl className='hidden gap-6 text-right sm:flex'>
@@ -421,11 +344,7 @@ export default function MemberProfilePage({
 								Joined
 							</dt>
 							<dd className='mt-1 text-sm font-semibold text-foreground'>
-								{new Date(member.joinedAt).toLocaleDateString('en-GB', {
-									day: 'numeric',
-									month: 'short',
-									year: 'numeric',
-								})}
+								{formatDate(member.joinedAt)}
 							</dd>
 						</div>
 						<div>
@@ -433,110 +352,86 @@ export default function MemberProfilePage({
 								Invited by
 							</dt>
 							<dd className='mt-1 text-sm font-semibold text-foreground'>
-								{member.invitedBy}
+								{member.invitedBy.firstName} {member.invitedBy.lastName}
 							</dd>
 						</div>
 					</dl>
 				</div>
 
-				{/* ---- Access notice ---- */}
 				<div
 					className='flex gap-3 rounded-xl border border-care-blue/20 bg-care-blue-light p-4'
 					role='note'>
 					<Info className='mt-0.5 size-4 shrink-0 text-care-blue' aria-hidden='true' />
 					<p className='text-sm text-slate-700'>
-						<span className='font-bold'>Who can edit this profile?</span> This
-						member themselves, or any user with the{' '}
-						<span className='font-semibold'>Organisation Admin</span> role or{' '}
-						<span className='font-semibold'>Manage Members</span> permission.
+						Only team roles are managed here. Carer access is handled separately in
+						the Staff onboarding flow.
 					</p>
 				</div>
 
-				{/* ---- Roles & Permissions ---- */}
 				<FormSection
 					id='roles'
-					title='Roles & Permissions'
-					description='Select one or more roles. Permissions are additive — multiple roles give the combined access of all selected roles.'>
+					title='Access Level'
+					description='Assign one team role or remove access entirely by leaving the member unassigned.'>
 					<div className='flex flex-col gap-6'>
-						{/* Selected roles summary */}
-						{selectedRoleObjects.length > 0 && (
-							<div>
-								<p className='mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500'>
-									Assigned Roles
+						{currentRole ? (
+							<div className='rounded-lg border border-care-blue/20 bg-care-blue-light px-4 py-3'>
+								<p className='text-xs font-semibold uppercase tracking-wider text-care-blue'>
+									Selected Role
 								</p>
-								<div
-									className='flex flex-wrap gap-2'
-									role='list'
-									aria-label='Currently assigned roles'>
-									{selectedRoleObjects.map((role) => (
-										<span key={role.id} role='listitem'>
-											<SelectedRolePill
-												role={role}
-												onRemove={() => removeRole(role.id)}
-											/>
-										</span>
-									))}
-								</div>
+								<p className='mt-1 text-sm font-semibold text-foreground'>
+									{currentRole.name}
+								</p>
 							</div>
-						)}
-
-						{selectedRoleObjects.length === 0 && (
+						) : (
 							<div className='flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 p-4'>
-								<AlertTriangle
-									className='size-4 shrink-0 text-warning'
-									aria-hidden='true'
-								/>
+								<AlertTriangle className='size-4 shrink-0 text-warning' />
 								<p className='text-sm text-slate-700'>
-									This member has no roles assigned. They will not be able to
-									access the organisation.
+									This member currently has no team role assigned.
 								</p>
 							</div>
 						)}
 
-						{/* Role groups */}
-						{(['admin', 'manager', 'viewer'] as Role['category'][]).map(
-							(category) => {
-								const roles = groupedRoles[category];
-								if (!roles) return null;
-								return (
-									<fieldset key={category} className='flex flex-col gap-3'>
-										<legend className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
-											{CATEGORY_LABELS[category]}
-										</legend>
-										{roles.map((role) => (
-											<RoleCard
-												key={role.id}
-												role={role}
-												selected={selectedRoles.has(role.id)}
-												onToggle={() => toggleRole(role.id)}
-											/>
-										))}
-									</fieldset>
-								);
-							},
-						)}
+						<div role='radiogroup' className='flex flex-col gap-3'>
+							{roles.map((role) => (
+								<RoleCard
+									key={role.id}
+									role={role}
+									selected={selectedRoleId === role.id}
+									onSelect={() =>
+										setSelectedRoleId((current) =>
+											current === role.id ? null : role.id,
+										)
+									}
+								/>
+							))}
+						</div>
+
+						{selectedRoleId ? (
+							<button
+								type='button'
+								onClick={() => setSelectedRoleId(null)}
+								className='self-start text-sm font-semibold text-care-blue hover:underline'>
+								Unassign team role
+							</button>
+						) : null}
 					</div>
 				</FormSection>
 
-				{/* ---- Account Status ---- */}
 				<FormSection
 					id='status'
 					title='Account Status'
-					description='Suspending a member immediately removes their access. They can be reactivated at any time.'>
+					description='Suspending a member removes sign-in access until they are reactivated.'>
 					<div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
 						<div>
 							<p className='text-sm font-semibold text-foreground'>
 								Current status:{' '}
-								<span
-									className={cn(
-										status === 'ACTIVE' ? 'text-success' : 'text-warning',
-									)}>
+								<span className={status === 'ACTIVE' ? 'text-success' : 'text-warning'}>
 									{status === 'ACTIVE' ? 'Active' : 'Suspended'}
 								</span>
 							</p>
 							<p className='mt-1 text-sm text-slate-500'>
 								{status === 'ACTIVE'
-									? 'This member can currently sign in and access the organisation.'
+									? 'This member can currently sign in and access the organization.'
 									: 'This member is suspended and cannot sign in.'}
 							</p>
 						</div>
@@ -560,7 +455,6 @@ export default function MemberProfilePage({
 					</div>
 				</FormSection>
 
-				{/* ---- Save actions ---- */}
 				<div className='flex flex-col-reverse gap-3 border-t border-border pt-2 sm:flex-row sm:items-center sm:justify-between'>
 					<Link
 						href='/dashboard/settings/team'
@@ -569,26 +463,18 @@ export default function MemberProfilePage({
 					</Link>
 					<Button
 						type='button'
-						onClick={handleSave}
-						disabled={!hasChanges}
+						onClick={() => void handleSave()}
+						disabled={!hasChanges || isSaving}
 						className={cn(
 							'h-10 gap-2 px-5 text-sm font-semibold shadow-md',
-							hasChanges
+							hasChanges && !isSaving
 								? 'bg-care-blue hover:bg-care-blue-hover'
 								: 'cursor-not-allowed bg-care-blue/40',
 						)}>
-						{saved ? (
-							<>
-								<Check className='size-4' aria-hidden='true' />
-								Saved
-							</>
-						) : (
-							'Save Changes'
-						)}
+						{isSaving ? 'Saving...' : 'Save Changes'}
 					</Button>
 				</div>
 
-				{/* ---- Danger zone ---- */}
 				<section
 					aria-labelledby='danger-heading'
 					className='rounded-xl border border-error/30 bg-white shadow-sm'>
@@ -599,8 +485,7 @@ export default function MemberProfilePage({
 							Danger Zone
 						</h2>
 						<p className='mt-1 text-sm text-slate-600'>
-							Removing a member immediately revokes all their access. This
-							action cannot be undone.
+							Removing a member immediately revokes all organization access.
 						</p>
 					</div>
 					<div className='px-6 py-6'>
@@ -608,11 +493,10 @@ export default function MemberProfilePage({
 							<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
 								<div>
 									<p className='text-sm font-semibold text-foreground'>
-										Remove from organisation
+										Remove from organization
 									</p>
 									<p className='mt-0.5 text-sm text-slate-500'>
-										{member.firstName} will lose access to all data and
-										resources. You can re-invite them later.
+										{member.user.firstName} will lose access to this organization.
 									</p>
 								</div>
 								<button
@@ -626,20 +510,15 @@ export default function MemberProfilePage({
 						) : (
 							<div className='flex flex-col gap-4'>
 								<div className='flex gap-3 rounded-lg border border-error/30 bg-error/5 p-4'>
-									<AlertTriangle
-										className='mt-0.5 size-5 shrink-0 text-error'
-										aria-hidden='true'
-									/>
+									<AlertTriangle className='mt-0.5 size-5 shrink-0 text-error' />
 									<div>
 										<p className='text-sm font-bold text-foreground'>
-											Are you sure you want to remove{' '}
-											{member.firstName} {member.lastName}?
+											Remove {member.user.firstName} {member.user.lastName} from this organization?
 										</p>
 										<p className='mt-1 text-sm text-slate-600'>
-											This will immediately revoke their access to{' '}
-											<strong>all organisation data</strong>. Their account will
-											still exist but they will no longer be a member. This
-											cannot be undone.
+											This immediately revokes their team access. Their user account
+											will still exist, but they will no longer belong to this
+											organization.
 										</p>
 									</div>
 								</div>
@@ -650,23 +529,19 @@ export default function MemberProfilePage({
 										className='inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none'>
 										Cancel
 									</button>
-									<Link
-										href='/dashboard/settings/team'
+									<button
+										type='button'
+										onClick={() => void handleRemove()}
 										className='inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-error px-5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-error/90 focus-visible:ring-2 focus-visible:ring-error/50 focus-visible:outline-none'>
 										<Trash2 className='size-4' aria-hidden='true' />
 										Yes, Remove Member
-									</Link>
+									</button>
 								</div>
 							</div>
 						)}
 					</div>
 				</section>
 			</div>
-
-			{/* Footer */}
-			<p className='mt-8 pb-4 text-center text-xs text-slate-400'>
-				&copy; {new Date().getFullYear()} Good Care Pro. All rights reserved.
-			</p>
 		</div>
 	);
 }
