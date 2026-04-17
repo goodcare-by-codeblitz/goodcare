@@ -45,7 +45,55 @@ export type TeamInvite = {
 		lastName: string;
 		email: string;
 	};
-	kind: 'TEAM' | 'CARER';
+	kind: 'TEAM';
+};
+
+export type CarerStatus = 'ACTIVE' | 'ON_LEAVE' | 'SUSPENDED' | 'TERMINATED';
+
+export type CarerListItem = {
+	id: string;
+	organizationUserId: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	employmentType: string;
+	experienceYears: number;
+	hireDate: string;
+	status: CarerStatus;
+	updatedAt: string;
+};
+
+export type CarerInvite = {
+	id: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	role: TeamRole;
+	invitedAt: string;
+	expiresAt: string;
+	invitedBy: {
+		firstName: string;
+		lastName: string;
+		email: string;
+	};
+	kind: 'CARER';
+};
+
+type CarerApiRecord = {
+	id: string;
+	organizationUserId: string;
+	hireDate: string;
+	employmentType: string;
+	experienceYears: number;
+	status: CarerStatus;
+	updatedAt: string;
+	organizationUser: {
+		user: {
+			firstName: string;
+			lastName: string;
+			email: string;
+		};
+	};
 };
 
 export const TEAM_ROLE_META: Record<
@@ -100,6 +148,14 @@ function extractErrorMessage(error: unknown, fallback: string) {
 
 export function getOrgManagementError(error: unknown, fallback: string) {
 	return extractErrorMessage(error, fallback);
+}
+
+export function getOrgManagementStatusCode(error: unknown) {
+	if (axios.isAxiosError(error)) {
+		return error.response?.status ?? null;
+	}
+
+	return null;
 }
 
 export async function getCurrentOrgContext(): Promise<OrgContext> {
@@ -192,7 +248,61 @@ export async function createCarerInvite(
 		},
 	);
 
-	return response.data.invite as TeamInvite;
+	return response.data.invite as CarerInvite;
+}
+
+export async function fetchCarers(
+	organizationId: string,
+	params?: {
+		page?: number;
+		limit?: number;
+		search?: string;
+		status?: CarerStatus;
+	},
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/carers`, {
+		params,
+		withCredentials: true,
+	});
+
+	return (response.data.carers as CarerApiRecord[]).map((carer) => ({
+		id: carer.id,
+		organizationUserId: carer.organizationUserId,
+		firstName: carer.organizationUser.user.firstName,
+		lastName: carer.organizationUser.user.lastName,
+		email: carer.organizationUser.user.email,
+		employmentType: carer.employmentType,
+		experienceYears: carer.experienceYears,
+		hireDate: carer.hireDate,
+		status: carer.status,
+		updatedAt: carer.updatedAt,
+	})) as CarerListItem[];
+}
+
+export async function fetchCarerInvites(organizationId: string) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await axios.get(
+		`${baseUrl}/v1/orgs/${organizationId}/carer-invitations`,
+		{
+			withCredentials: true,
+		},
+	);
+
+	return response.data.invites as CarerInvite[];
+}
+
+export async function revokeCarerInvite(
+	organizationId: string,
+	inviteId: string,
+) {
+	const baseUrl = getBackendBaseUrl();
+	await axios.delete(
+		`${baseUrl}/v1/orgs/${organizationId}/carer-invitations/${inviteId}`,
+		{
+			withCredentials: true,
+		},
+	);
 }
 
 export async function updateTeamMember(

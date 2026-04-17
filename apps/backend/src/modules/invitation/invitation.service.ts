@@ -163,12 +163,16 @@ export async function createInviteService(input: CreateInviteInput) {
   };
 }
 
-export async function listInvitesService(organizationId: string) {
+export async function listInvitesService(
+  organizationId: string,
+  kind: InviteKind,
+) {
   const invites = await prisma.inviteToken.findMany({
     where: {
       organizationId,
       usedAt: null,
       revokedAt: null,
+      expiresAt: { gt: new Date() },
     },
     select: {
       id: true,
@@ -198,10 +202,14 @@ export async function listInvitesService(organizationId: string) {
 
   return invites
     .map((invite) => summarizeInviteRecord(invite))
-    .filter((invite): invite is InviteSummary => invite?.kind === 'TEAM');
+    .filter((invite): invite is InviteSummary => invite?.kind === kind);
 }
 
-export async function revokeInviteService(organizationId: string, inviteId: string) {
+export async function revokeInviteService(
+  organizationId: string,
+  inviteId: string,
+  kind: InviteKind,
+) {
   const invite = await prisma.inviteToken.findFirst({
     where: {
       id: inviteId,
@@ -232,6 +240,13 @@ export async function revokeInviteService(organizationId: string, inviteId: stri
   });
 
   if (!invite) {
+    throw new NotFoundError('Invite not found or already used/revoked');
+  }
+
+  const inviteKind = getInviteKindFromAssignments(
+    invite.organizationUser?.user.roles ?? [],
+  );
+  if (!inviteKind || inviteKind !== kind) {
     throw new NotFoundError('Invite not found or already used/revoked');
   }
 
@@ -374,4 +389,24 @@ function summarizeInviteRecord(
 
 function resolveInviteKind(roleName: string): InviteKind {
   return isCarerRoleName(roleName) ? 'CARER' : 'TEAM';
+}
+
+function getInviteKindFromAssignments(
+  assignments: Array<{ role: { name: string } }>,
+): InviteKind | null {
+  const teamAssignment = assignments.find((assignment) =>
+    isTeamRoleName(assignment.role.name),
+  );
+  if (teamAssignment) {
+    return 'TEAM';
+  }
+
+  const carerAssignment = assignments.find((assignment) =>
+    isCarerRoleName(assignment.role.name),
+  );
+  if (carerAssignment) {
+    return 'CARER';
+  }
+
+  return null;
 }
