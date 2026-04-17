@@ -2,12 +2,13 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { logAudit } from '../../lib/audit';
 import {
   getOrgService,
+  listRolesService,
   listMembersService,
   removeMemberService,
   updateMemberService,
   updateOrgService,
 } from './org.service';
-import type { UpdateMemberBody, UpdateOrgBody } from './org.types';
+import type { RoleKind, UpdateMemberBody, UpdateOrgBody } from './org.types';
 
 export async function getOrgController(request: FastifyRequest, reply: FastifyReply) {
   const { organizationId } = request.params as { organizationId: string };
@@ -38,6 +39,12 @@ export async function listMembersController(request: FastifyRequest, reply: Fast
   const { organizationId } = request.params as { organizationId: string };
   const members = await listMembersService(organizationId);
   return reply.send({ members });
+}
+
+export async function listRolesController(request: FastifyRequest, reply: FastifyReply) {
+  const { kind } = request.query as { kind: RoleKind };
+  const roles = await listRolesService(kind);
+  return reply.send({ roles });
 }
 
 export async function updateMemberController(request: FastifyRequest, reply: FastifyReply) {

@@ -1,6 +1,11 @@
 import { prisma } from '@repo/db';
 import { ConflictError, ForbiddenError, NotFoundError } from '../../lib/errors';
-import type { UpdateMemberBody, UpdateOrgBody } from './org.types';
+import {
+  CARER_ROLE_NAME,
+  isTeamRoleName,
+  listOrganizationRoles,
+} from './org-role.utils';
+import type { OrgRole, RoleKind, UpdateMemberBody, UpdateOrgBody } from './org.types';
 
 export async function getOrgService(organizationId: string): Promise<{
   id: string; name: string; slug: string; status: string; createdAt: Date;
@@ -41,17 +46,28 @@ export async function updateOrgService(organizationId: string, input: UpdateOrgB
 
 export async function listMembersService(organizationId: string): Promise<Array<{
   id: string; userId: string; status: string; invitedAt: Date; joinedAt: Date | null;
+  invitedBy: { firstName: string; lastName: string; email: string };
   user: { id: string; email: string; firstName: string; lastName: string };
-  roles: Array<{ id: string; name: string }>;
+  role: OrgRole | null;
 }>> {
   const members = await prisma.organizationUser.findMany({
-    where: { organizationId },
+    where: {
+      organizationId,
+      status: { in: ['ACTIVE', 'SUSPENDED'] },
+    },
     select: {
       id: true,
       userId: true,
       status: true,
       invitedAt: true,
       joinedAt: true,
+      invitedBy: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
       user: {
         select: {
           id: true,
@@ -63,7 +79,6 @@ export async function listMembersService(organizationId: string): Promise<Array<
     },
   });
 
-  // Load roles for each member
   const userIds = members.map(m => m.userId);
   const roleAssignments = await prisma.roleAssignment.findMany({
     where: { organizationId, userId: { in: userIds } },
@@ -73,17 +88,28 @@ export async function listMembersService(organizationId: string): Promise<Array<
     },
   });
 
-  const rolesByUser = new Map<string, Array<{ id: string; name: string }>>();
+  const teamRoleByUser = new Map<string, OrgRole>();
+  const hasCarerRole = new Set<string>();
   for (const ra of roleAssignments) {
-    const existing = rolesByUser.get(ra.userId) ?? [];
-    existing.push(ra.role);
-    rolesByUser.set(ra.userId, existing);
+    if (isTeamRoleName(ra.role.name) && !teamRoleByUser.has(ra.userId)) {
+      teamRoleByUser.set(ra.userId, ra.role);
+    }
+
+    if (ra.role.name === CARER_ROLE_NAME) {
+      hasCarerRole.add(ra.userId);
+    }
   }
 
-  return members.map(m => ({
-    ...m,
-    roles: rolesByUser.get(m.userId) ?? [],
-  }));
+  return members
+    .filter((member) => !(hasCarerRole.has(member.userId) && !teamRoleByUser.has(member.userId)))
+    .map((member) => ({
+      ...member,
+      role: teamRoleByUser.get(member.userId) ?? null,
+    }));
+}
+
+export async function listRolesService(kind: RoleKind) {
+  return listOrganizationRoles(kind);
 }
 
 export async function updateMemberService(
@@ -92,6 +118,13 @@ export async function updateMemberService(
   actingUserId: string,
   input: UpdateMemberBody,
 ) {
+  const teamRoles = await listOrganizationRoles('team');
+  const teamRoleIds = teamRoles.map((role) => role.id);
+  const requestedRole =
+    input.roleId === undefined || input.roleId === null
+      ? null
+      : teamRoles.find((role) => role.id === input.roleId);
+
   const orgUser = await prisma.organizationUser.findUnique({
     where: {
       userId_organizationId: {
@@ -104,29 +137,59 @@ export async function updateMemberService(
 
   if (!orgUser) throw new NotFoundError('Member not found in this organization');
 
-  // If changing role, validate it's org-scoped
-  if (input.roleId) {
-    const role = await prisma.role.findUnique({
-      where: { id: input.roleId },
-      select: { id: true, scope: true },
-    });
+  const existingAssignments = await prisma.roleAssignment.findMany({
+    where: {
+      userId: targetUserId,
+      organizationId,
+    },
+    select: {
+      roleId: true,
+      role: { select: { name: true } },
+    },
+  });
 
-    if (!role || role.scope !== 'ORGANIZATION') {
-      throw new ForbiddenError('Invalid organization role');
-    }
+  const currentTeamRole = existingAssignments.find((assignment) =>
+    isTeamRoleName(assignment.role.name),
+  );
+  const isCaregiverOnly =
+    existingAssignments.some((assignment) => assignment.role.name === CARER_ROLE_NAME) &&
+    !currentTeamRole;
 
-    // Replace all org role assignments for this user in this org
+  if (isCaregiverOnly) {
+    throw new ForbiddenError('Carer members must be managed through the carer flow');
+  }
+
+  if (input.roleId !== undefined && input.roleId !== null && !requestedRole) {
+    throw new ForbiddenError('Invalid organization role');
+  }
+
+  if (
+    input.roleId !== undefined &&
+    currentTeamRole?.role.name === 'Admin' &&
+    input.roleId !== currentTeamRole.roleId
+  ) {
+    await guardLastAdmin(organizationId, targetUserId);
+  }
+
+  if (input.roleId !== undefined) {
     await prisma.$transaction(async (tx) => {
       await tx.roleAssignment.deleteMany({
-        where: { userId: targetUserId, organizationId },
-      });
-      await tx.roleAssignment.create({
-        data: {
+        where: {
           userId: targetUserId,
-          roleId: input.roleId!,
           organizationId,
+          roleId: { in: teamRoleIds },
         },
       });
+
+      if (requestedRole) {
+        await tx.roleAssignment.create({
+          data: {
+            userId: targetUserId,
+            roleId: requestedRole.id,
+            organizationId,
+          },
+        });
+      }
     });
   }
 
@@ -162,6 +225,24 @@ export async function removeMemberService(
   });
 
   if (!orgUser) throw new NotFoundError('Member not found in this organization');
+
+  const existingAssignments = await prisma.roleAssignment.findMany({
+    where: {
+      userId: targetUserId,
+      organizationId,
+    },
+    select: {
+      role: { select: { name: true } },
+    },
+  });
+
+  const isCaregiverOnly =
+    existingAssignments.some((assignment) => assignment.role.name === CARER_ROLE_NAME) &&
+    !existingAssignments.some((assignment) => isTeamRoleName(assignment.role.name));
+
+  if (isCaregiverOnly) {
+    throw new ForbiddenError('Carer members must be managed through the carer flow');
+  }
 
   // Cannot remove yourself
   if (targetUserId === actingUserId) {

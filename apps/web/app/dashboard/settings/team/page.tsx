@@ -2,7 +2,15 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import {
+	fetchTeamInvites,
+	fetchTeamMembers,
+	getCurrentOrgContext,
+	getOrgManagementError,
+	revokeTeamInvite,
+	type TeamInvite,
+	type TeamMember,
+} from '@/lib/org-management';
 import {
 	ChevronRight,
 	Clock,
@@ -14,140 +22,35 @@ import {
 	X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+type MemberStatus = 'ACTIVE' | 'SUSPENDED';
 
-type MemberStatus = 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+function formatDate(date: string | null) {
+	if (!date) {
+		return 'N/A';
+	}
 
-interface TeamMember {
-	id: string;
-	firstName: string;
-	lastName: string;
-	email: string;
-	status: MemberStatus;
-	roles: string[];
-	joinedAt: string | null;
-	invitedAt: string;
-	avatarColor: string;
+	return new Date(date).toLocaleDateString('en-GB', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	});
 }
-
-interface PendingInvite {
-	id: string;
-	email: string;
-	firstName: string;
-	lastName: string;
-	role: string;
-	invitedAt: string;
-	expiresAt: string;
-	invitedBy: string;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Mock data                                                          */
-/* ------------------------------------------------------------------ */
-
-const MOCK_MEMBERS: TeamMember[] = [
-	{
-		id: 'u1',
-		firstName: 'Priya',
-		lastName: 'Sharma',
-		email: 'priya.sharma@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['Organisation Admin'],
-		joinedAt: '2024-09-01',
-		invitedAt: '2024-08-25',
-		avatarColor: '#6366f1',
-	},
-	{
-		id: 'u2',
-		firstName: 'James',
-		lastName: 'Porter',
-		email: 'james.porter@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['Care Manager', 'Compliance Officer'],
-		joinedAt: '2024-10-14',
-		invitedAt: '2024-10-08',
-		avatarColor: '#0ea5e9',
-	},
-	{
-		id: 'u3',
-		firstName: 'Fatima',
-		lastName: 'Al-Rashid',
-		email: 'f.alrashid@sunrisecare.co.uk',
-		status: 'ACTIVE',
-		roles: ['Scheduling Manager'],
-		joinedAt: '2025-01-06',
-		invitedAt: '2024-12-20',
-		avatarColor: '#f59e0b',
-	},
-	{
-		id: 'u4',
-		firstName: 'Thomas',
-		lastName: 'Wade',
-		email: 'thomas.wade@sunrisecare.co.uk',
-		status: 'SUSPENDED',
-		roles: ['Read-Only Viewer'],
-		joinedAt: '2025-02-10',
-		invitedAt: '2025-02-03',
-		avatarColor: '#64748b',
-	},
-];
-
-const MOCK_INVITES: PendingInvite[] = [
-	{
-		id: 'i1',
-		email: 'sarah.whitmore@sunrisecare.co.uk',
-		firstName: 'Sarah',
-		lastName: 'Whitmore',
-		role: 'Care Manager',
-		invitedAt: '2026-03-10',
-		expiresAt: '2026-03-17',
-		invitedBy: 'Priya Sharma',
-	},
-	{
-		id: 'i2',
-		email: 'compliance@sunrisecare.co.uk',
-		firstName: 'Marcus',
-		lastName: 'Bell',
-		role: 'Compliance Officer',
-		invitedAt: '2026-03-11',
-		expiresAt: '2026-03-18',
-		invitedBy: 'Priya Sharma',
-	},
-];
-
-/* ------------------------------------------------------------------ */
-/*  MemberStatusBadge                                                  */
-/* ------------------------------------------------------------------ */
 
 function MemberStatusBadge({ status }: { status: MemberStatus }) {
 	const styles: Record<MemberStatus, string> = {
 		ACTIVE: 'bg-success/10 text-success border border-success/20',
-		INVITED: 'bg-care-blue-light text-care-blue border border-care-blue/20',
 		SUSPENDED: 'bg-warning/10 text-warning border border-warning/20',
 	};
-	const labels: Record<MemberStatus, string> = {
-		ACTIVE: 'Active',
-		INVITED: 'Invited',
-		SUSPENDED: 'Suspended',
-	};
+
 	return (
 		<span
-			className={cn(
-				'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold',
-				styles[status],
-			)}>
-			{labels[status]}
+			className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[status]}`}>
+			{status === 'ACTIVE' ? 'Active' : 'Suspended'}
 		</span>
 	);
 }
-
-/* ------------------------------------------------------------------ */
-/*  RolePill                                                           */
-/* ------------------------------------------------------------------ */
 
 function RolePill({ name }: { name: string }) {
 	return (
@@ -158,81 +61,35 @@ function RolePill({ name }: { name: string }) {
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Avatar                                                             */
-/* ------------------------------------------------------------------ */
-
-function Avatar({
-	firstName,
-	lastName,
-	color,
-	size = 'md',
-}: {
-	firstName: string;
-	lastName: string;
-	color: string;
-	size?: 'sm' | 'md';
-}) {
-	const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
-	const sizeClass = size === 'sm' ? 'size-8 text-xs' : 'size-10 text-sm';
-	return (
-		<span
-			className={cn(
-				'inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white',
-				sizeClass,
-			)}
-			style={{ backgroundColor: color }}
-			aria-hidden='true'>
-			{initials}
-		</span>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  MemberRow                                                          */
-/* ------------------------------------------------------------------ */
-
 function MemberRow({ member }: { member: TeamMember }) {
+	const initials = `${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
+
 	return (
 		<Link
-			href={`/dashboard/settings/team/${member.id}`}
+			href={`/dashboard/settings/team/${member.userId}`}
 			className='group flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none'
-			aria-label={`View profile of ${member.firstName} ${member.lastName}`}>
-			<Avatar
-				firstName={member.firstName}
-				lastName={member.lastName}
-				color={member.avatarColor}
-			/>
+			aria-label={`View profile of ${member.user.firstName} ${member.user.lastName}`}>
+			<span className='inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-care-blue/10 text-sm font-bold text-care-blue'>
+				{initials}
+			</span>
 
-			{/* Name + email */}
 			<div className='min-w-0 flex-1'>
 				<p className='truncate text-sm font-semibold text-foreground'>
-					{member.firstName} {member.lastName}
+					{member.user.firstName} {member.user.lastName}
 				</p>
-				<p className='truncate text-xs text-slate-500'>{member.email}</p>
+				<p className='truncate text-xs text-slate-500'>{member.user.email}</p>
 			</div>
 
-			{/* Roles — hidden on small screens */}
 			<div className='hidden w-56 flex-wrap gap-1.5 lg:flex'>
-				{member.roles.map((role) => (
-					<RolePill key={role} name={role} />
-				))}
+				{member.role ? <RolePill name={member.role.name} /> : <RolePill name='Unassigned' />}
 			</div>
 
-			{/* Status */}
 			<div className='hidden sm:block'>
 				<MemberStatusBadge status={member.status} />
 			</div>
 
-			{/* Joined */}
 			<p className='hidden w-24 shrink-0 text-xs text-slate-400 xl:block'>
-				{member.joinedAt
-					? new Date(member.joinedAt).toLocaleDateString('en-GB', {
-							day: 'numeric',
-							month: 'short',
-							year: 'numeric',
-						})
-					: '—'}
+				{formatDate(member.joinedAt)}
 			</p>
 
 			<ChevronRight className='size-4 shrink-0 text-slate-300 transition-colors group-hover:text-slate-500' />
@@ -240,16 +97,12 @@ function MemberRow({ member }: { member: TeamMember }) {
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  PendingInviteRow                                                   */
-/* ------------------------------------------------------------------ */
-
 function PendingInviteRow({
 	invite,
 	onRevoke,
 }: {
-	invite: PendingInvite;
-	onRevoke: (id: string) => void;
+	invite: TeamInvite;
+	onRevoke: (inviteId: string) => void;
 }) {
 	const expires = new Date(invite.expiresAt);
 	const now = new Date();
@@ -259,7 +112,6 @@ function PendingInviteRow({
 
 	return (
 		<div className='flex items-center gap-4 px-6 py-4'>
-			{/* Avatar placeholder */}
 			<span className='inline-flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-200 bg-slate-50 text-xs font-bold text-slate-400'>
 				{invite.firstName[0]}
 				{invite.lastName[0]}
@@ -273,11 +125,11 @@ function PendingInviteRow({
 			</div>
 
 			<div className='hidden lg:block'>
-				<RolePill name={invite.role} />
+				<RolePill name={invite.role.name} />
 			</div>
 
 			<div className='hidden sm:block'>
-				<span className='inline-flex items-center gap-1 rounded-full bg-care-blue-light px-2.5 py-0.5 text-xs font-semibold text-care-blue border border-care-blue/20'>
+				<span className='inline-flex items-center gap-1 rounded-full border border-care-blue/20 bg-care-blue-light px-2.5 py-0.5 text-xs font-semibold text-care-blue'>
 					Invited
 				</span>
 			</div>
@@ -298,32 +150,88 @@ function PendingInviteRow({
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
-
 export default function TeamSettingsPage() {
 	const [search, setSearch] = useState('');
-	const [invites, setInvites] = useState<PendingInvite[]>(MOCK_INVITES);
+	const [members, setMembers] = useState<TeamMember[]>([]);
+	const [invites, setInvites] = useState<TeamInvite[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [errorMessage, setErrorMessage] = useState('');
+	const [actionMessage, setActionMessage] = useState('');
 
-	const filtered = MOCK_MEMBERS.filter((m) => {
-		const q = search.toLowerCase();
+	useEffect(() => {
+		let isMounted = true;
+
+		const load = async () => {
+			try {
+				setIsLoading(true);
+				setErrorMessage('');
+				const org = await getCurrentOrgContext();
+				const [nextMembers, nextInvites] = await Promise.all([
+					fetchTeamMembers(org.organizationId),
+					fetchTeamInvites(org.organizationId),
+				]);
+
+				if (!isMounted) {
+					return;
+				}
+
+				setMembers(nextMembers);
+				setInvites(nextInvites);
+			} catch (error) {
+				if (!isMounted) {
+					return;
+				}
+
+				setErrorMessage(
+					getOrgManagementError(error, 'Unable to load team settings.'),
+				);
+			} finally {
+				if (isMounted) {
+					setIsLoading(false);
+				}
+			}
+		};
+
+		void load();
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
+	const filteredMembers = members.filter((member) => {
+		const query = search.trim().toLowerCase();
+		if (!query) {
+			return true;
+		}
+
+		const fullName = `${member.user.firstName} ${member.user.lastName}`.toLowerCase();
 		return (
-			`${m.firstName} ${m.lastName}`.toLowerCase().includes(q) ||
-			m.email.toLowerCase().includes(q) ||
-			m.roles.some((r) => r.toLowerCase().includes(q))
+			fullName.includes(query) ||
+			member.user.email.toLowerCase().includes(query) ||
+			(member.role?.name.toLowerCase().includes(query) ?? false)
 		);
 	});
 
-	const activeCount = MOCK_MEMBERS.filter((m) => m.status === 'ACTIVE').length;
+	const activeCount = members.filter((member) => member.status === 'ACTIVE').length;
 
-	function revokeInvite(id: string) {
-		setInvites((prev) => prev.filter((i) => i.id !== id));
-	}
+	const handleRevokeInvite = async (inviteId: string) => {
+		try {
+			setErrorMessage('');
+			setActionMessage('');
+			const org = await getCurrentOrgContext();
+			await revokeTeamInvite(org.organizationId, inviteId);
+			setInvites((current) => current.filter((invite) => invite.id !== inviteId));
+			setActionMessage('Invitation revoked successfully.');
+		} catch (error) {
+			setErrorMessage(
+				getOrgManagementError(error, 'Unable to revoke invitation.'),
+			);
+		}
+	};
 
 	return (
 		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
-			{/* Breadcrumb */}
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -344,7 +252,6 @@ export default function TeamSettingsPage() {
 				</ol>
 			</nav>
 
-			{/* Page header */}
 			<div className='mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
 				<div>
 					<div className='flex items-center gap-3'>
@@ -356,33 +263,34 @@ export default function TeamSettingsPage() {
 						</h1>
 					</div>
 					<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-						Manage who has access to your organisation. You can update roles,
-						suspend accounts, and invite new members. Only admins and those with
-						the{' '}
-						<span className='font-semibold text-foreground'>
-							Manage Members
-						</span>{' '}
-						permission can make changes.
+						Manage organization admins, managers, and viewers. Carers are onboarded
+						separately through the Staff area.
 					</p>
 				</div>
 
 				<Link href='/dashboard/settings/team/invite' className='shrink-0'>
 					<Button className='h-10 gap-2 bg-care-blue text-sm font-semibold shadow-md hover:bg-care-blue-hover'>
 						<UserPlus className='size-4' aria-hidden='true' />
-						Invite Member
+						Invite Team Member
 					</Button>
 				</Link>
 			</div>
 
-			{/* Summary strip */}
+			<div className='mb-4 min-h-5'>
+				{errorMessage ? (
+					<p className='text-sm font-medium text-red-600'>{errorMessage}</p>
+				) : null}
+				{actionMessage ? (
+					<p className='text-sm font-medium text-green-600'>{actionMessage}</p>
+				) : null}
+			</div>
+
 			<div className='mb-6 grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-white shadow-sm'>
 				<div className='px-5 py-4'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						Total Members
 					</p>
-					<p className='mt-1 text-2xl font-bold text-foreground'>
-						{MOCK_MEMBERS.length}
-					</p>
+					<p className='mt-1 text-2xl font-bold text-foreground'>{members.length}</p>
 				</div>
 				<div className='px-5 py-4'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
@@ -394,23 +302,19 @@ export default function TeamSettingsPage() {
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						Pending Invites
 					</p>
-					<p className='mt-1 text-2xl font-bold text-care-blue'>
-						{invites.length}
-					</p>
+					<p className='mt-1 text-2xl font-bold text-care-blue'>{invites.length}</p>
 				</div>
 			</div>
 
-			{/* Members list */}
 			<section aria-labelledby='members-heading' className='mb-6'>
 				<div className='rounded-xl border border-border bg-white shadow-sm'>
-					{/* Card header with search */}
 					<div className='flex flex-col gap-3 border-b border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between'>
 						<h2
 							id='members-heading'
 							className='font-heading text-base font-bold text-foreground'>
 							Members
 							<span className='ml-2 text-sm font-normal text-slate-400'>
-								({MOCK_MEMBERS.length})
+								({members.length})
 							</span>
 						</h2>
 						<div className='relative w-full sm:w-64'>
@@ -420,7 +324,7 @@ export default function TeamSettingsPage() {
 							/>
 							<Input
 								type='search'
-								placeholder='Search name, email, or role…'
+								placeholder='Search name, email, or role...'
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
 								className='h-9 pl-9 text-sm'
@@ -429,14 +333,13 @@ export default function TeamSettingsPage() {
 						</div>
 					</div>
 
-					{/* Column headers */}
 					<div className='hidden grid-cols-[auto_1fr_14rem_7rem_6rem_1.5rem] items-center gap-4 border-b border-border px-6 py-2.5 lg:grid'>
 						<span className='w-10' />
 						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
 							Member
 						</span>
 						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
-							Roles
+							Role
 						</span>
 						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
 							Status
@@ -447,10 +350,11 @@ export default function TeamSettingsPage() {
 						<span />
 					</div>
 
-					{/* Rows */}
-					{filtered.length > 0 ? (
+					{isLoading ? (
+						<div className='px-6 py-12 text-sm text-slate-500'>Loading team members...</div>
+					) : filteredMembers.length > 0 ? (
 						<ul role='list' className='divide-y divide-border'>
-							{filtered.map((member) => (
+							{filteredMembers.map((member) => (
 								<li key={member.id}>
 									<MemberRow member={member} />
 								</li>
@@ -459,9 +363,7 @@ export default function TeamSettingsPage() {
 					) : (
 						<div className='flex flex-col items-center gap-2 px-6 py-12 text-center'>
 							<Search className='size-8 text-slate-300' aria-hidden='true' />
-							<p className='text-sm font-semibold text-foreground'>
-								No members found
-							</p>
+							<p className='text-sm font-semibold text-foreground'>No members found</p>
 							<p className='text-xs text-slate-500'>
 								Try a different name, email, or role.
 							</p>
@@ -470,7 +372,6 @@ export default function TeamSettingsPage() {
 				</div>
 			</section>
 
-			{/* Pending invitations */}
 			{invites.length > 0 && (
 				<section aria-labelledby='invites-heading'>
 					<div className='rounded-xl border border-border bg-white shadow-sm'>
@@ -485,13 +386,12 @@ export default function TeamSettingsPage() {
 									</span>
 								</h2>
 								<p className='mt-0.5 text-xs text-slate-500'>
-									These invitations are awaiting acceptance and will expire
-									after 7 days.
+									These invitations are awaiting acceptance and expire after 7 days.
 								</p>
 							</div>
 							<Link
 								href='/dashboard/settings/team/invite'
-								className='hidden sm:flex items-center gap-1.5 text-xs font-semibold text-care-blue hover:underline'>
+								className='hidden items-center gap-1.5 text-xs font-semibold text-care-blue hover:underline sm:flex'>
 								<Mail className='size-3.5' aria-hidden='true' />
 								Send another invite
 							</Link>
@@ -500,7 +400,7 @@ export default function TeamSettingsPage() {
 						<ul role='list' className='divide-y divide-border'>
 							{invites.map((invite) => (
 								<li key={invite.id}>
-									<PendingInviteRow invite={invite} onRevoke={revokeInvite} />
+									<PendingInviteRow invite={invite} onRevoke={handleRevokeInvite} />
 								</li>
 							))}
 						</ul>

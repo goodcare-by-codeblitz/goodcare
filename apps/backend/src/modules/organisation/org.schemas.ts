@@ -23,7 +23,12 @@ export const updateMemberSchema: FastifySchema = {
   body: {
     type: 'object',
     properties: {
-      roleId: { type: 'string', format: 'uuid' },
+      roleId: {
+        anyOf: [
+          { type: 'string', format: 'uuid' },
+          { type: 'null' },
+        ],
+      },
       status: { type: 'string', enum: ['ACTIVE', 'SUSPENDED'] },
     },
     additionalProperties: false,
@@ -34,6 +39,24 @@ export const updateMemberSchema: FastifySchema = {
     properties: {
       organizationId: { type: 'string', format: 'uuid' },
       userId: { type: 'string', format: 'uuid' },
+    },
+  },
+};
+
+export const listRolesSchema: FastifySchema = {
+  tags: ['Organizations'],
+  params: {
+    type: 'object',
+    required: ['organizationId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+    },
+  },
+  querystring: {
+    type: 'object',
+    required: ['kind'],
+    properties: {
+      kind: { type: 'string', enum: ['team', 'carer'] },
     },
   },
 };
@@ -63,5 +86,6 @@ export const memberParamsSchema: FastifySchema = {
 
 export const updateOrgOpts = { schema: updateOrgSchema };
 export const updateMemberOpts = { schema: updateMemberSchema };
+export const listRolesOpts = { schema: listRolesSchema };
 export const orgIdParamsOpts = { schema: orgIdParamsSchema };
 export const memberParamsOpts = { schema: memberParamsSchema };

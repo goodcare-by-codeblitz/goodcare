@@ -1,9 +1,16 @@
 'use client';
 
-import DashboardFooter from '@/components/dashboard/footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+	TEAM_ROLE_META,
+	createTeamInvite,
+	fetchTeamRoles,
+	getCurrentOrgContext,
+	getOrgManagementError,
+	type TeamRole,
+} from '@/lib/org-management';
 import { cn } from '@/lib/utils';
 import {
 	ArrowLeft,
@@ -12,73 +19,10 @@ import {
 	Info,
 	Mail,
 	Shield,
-	X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useState } from 'react';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
-interface Role {
-	id: string;
-	name: string;
-	description: string;
-	category: 'admin' | 'manager' | 'viewer';
-}
-
-/* ------------------------------------------------------------------ */
-/*  Available roles                                                    */
-/* ------------------------------------------------------------------ */
-
-const AVAILABLE_ROLES: Role[] = [
-	{
-		id: 'org-admin',
-		name: 'Organisation Admin',
-		description:
-			'Full access to all settings, billing, team management, and data. Can invite and remove any user.',
-		category: 'admin',
-	},
-	{
-		id: 'care-manager',
-		name: 'Care Manager',
-		description:
-			'Manage carers, clients, rotas, care plans, and daily operations. Cannot change billing or org settings.',
-		category: 'manager',
-	},
-	{
-		id: 'scheduling-manager',
-		name: 'Scheduling Manager',
-		description:
-			'Create and edit rotas, assign visits, and manage carer availability. Read-only access to client records.',
-		category: 'manager',
-	},
-	{
-		id: 'compliance-officer',
-		name: 'Compliance Officer',
-		description:
-			'View audit logs, review qualifications, manage training records, and generate compliance reports.',
-		category: 'manager',
-	},
-	{
-		id: 'read-only',
-		name: 'Read-Only Viewer',
-		description:
-			'View dashboards, reports, and client summaries. Cannot create, edit, or delete any records.',
-		category: 'viewer',
-	},
-];
-
-const CATEGORY_LABELS: Record<Role['category'], string> = {
-	admin: 'Administrator',
-	manager: 'Management',
-	viewer: 'Limited Access',
-};
-
-/* ------------------------------------------------------------------ */
-/*  FormSection — reusable accessible card wrapper                     */
-/* ------------------------------------------------------------------ */
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 function FormSection({
 	title,
@@ -101,140 +45,160 @@ function FormSection({
 					className='font-heading text-base font-bold text-foreground'>
 					{title}
 				</h2>
-				{description && (
-					<p className='mt-1 text-sm text-slate-600'>{description}</p>
-				)}
+				{description ? <p className='mt-1 text-sm text-slate-600'>{description}</p> : null}
 			</div>
 			<div className='px-6 py-6'>{children}</div>
 		</section>
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  RoleCard                                                           */
-/* ------------------------------------------------------------------ */
-
 function RoleCard({
 	role,
 	selected,
-	onToggle,
+	onSelect,
 }: {
-	role: Role;
+	role: TeamRole;
 	selected: boolean;
-	onToggle: () => void;
+	onSelect: () => void;
 }) {
-	const borderColor = selected
-		? 'border-care-blue ring-2 ring-care-blue/20'
-		: 'border-border hover:border-slate-300';
+	const meta = TEAM_ROLE_META[role.name];
 
 	return (
 		<button
 			type='button'
-			role='checkbox'
+			role='radio'
 			aria-checked={selected}
-			aria-label={`${role.name}: ${role.description}`}
-			onClick={onToggle}
+			onClick={onSelect}
 			className={cn(
 				'group flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-all',
 				'focus-visible:border-care-blue focus-visible:ring-3 focus-visible:ring-care-blue/30 focus-visible:outline-none',
-				borderColor,
-				selected ? 'bg-care-blue-light/40' : 'bg-white hover:bg-slate-50',
+				selected
+					? 'border-care-blue bg-care-blue-light/40 ring-2 ring-care-blue/20'
+					: 'border-border bg-white hover:border-slate-300 hover:bg-slate-50',
 			)}>
-			{/* Checkbox indicator */}
 			<span
 				className={cn(
-					'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+					'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
 					selected
 						? 'border-care-blue bg-care-blue text-white'
 						: 'border-slate-300 bg-white group-hover:border-slate-400',
 				)}
 				aria-hidden='true'>
-				{selected && <Check className='size-3' strokeWidth={3} />}
+				{selected ? <Check className='size-3' strokeWidth={3} /> : null}
 			</span>
 
 			<div className='min-w-0 flex-1'>
 				<p className='text-sm font-semibold text-foreground'>{role.name}</p>
 				<p className='mt-0.5 text-sm leading-relaxed text-slate-600'>
-					{role.description}
+					{meta?.description ?? 'Organization role'}
 				</p>
 			</div>
 		</button>
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  SelectedRolePill                                                   */
-/* ------------------------------------------------------------------ */
-
-function SelectedRolePill({
-	role,
-	onRemove,
-}: {
-	role: Role;
-	onRemove: () => void;
-}) {
-	return (
-		<span className='inline-flex items-center gap-1.5 rounded-full border border-care-blue/20 bg-care-blue-light px-3 py-1.5'>
-			<Shield className='size-3.5 text-care-blue' aria-hidden='true' />
-			<span className='text-xs font-semibold text-care-blue'>{role.name}</span>
-			<button
-				type='button'
-				onClick={onRemove}
-				className='ml-0.5 flex size-4 items-center justify-center rounded-full text-care-blue/60 transition-colors hover:bg-care-blue/10 hover:text-care-blue focus-visible:ring-2 focus-visible:ring-care-blue/50 focus-visible:outline-none'
-				aria-label={`Remove ${role.name} role`}>
-				<X className='size-3' />
-			</button>
-		</span>
-	);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Main Page                                                          */
-/* ------------------------------------------------------------------ */
-
 export default function InviteTeamMemberPage() {
-	const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
+	const router = useRouter();
+	const [roles, setRoles] = useState<TeamRole[]>([]);
+	const [organizationId, setOrganizationId] = useState<string | null>(null);
+	const [firstName, setFirstName] = useState('');
+	const [lastName, setLastName] = useState('');
+	const [email, setEmail] = useState('');
+	const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
-	const toggleRole = useCallback((roleId: string) => {
-		setSelectedRoles((prev) => {
-			const next = new Set(prev);
-			if (next.has(roleId)) {
-				next.delete(roleId);
-			} else {
-				next.add(roleId);
+	useEffect(() => {
+		let isMounted = true;
+
+		const load = async () => {
+			try {
+				setIsLoading(true);
+				setErrorMessage('');
+				const org = await getCurrentOrgContext();
+				const teamRoles = await fetchTeamRoles(org.organizationId);
+
+				if (!isMounted) {
+					return;
+				}
+
+				setOrganizationId(org.organizationId);
+				setRoles(teamRoles);
+			} catch (error) {
+				if (isMounted) {
+					setErrorMessage(
+						getOrgManagementError(error, 'Unable to load available roles.'),
+					);
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false);
+				}
 			}
-			return next;
-		});
+		};
+
+		void load();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
-	const removeRole = useCallback((roleId: string) => {
-		setSelectedRoles((prev) => {
-			const next = new Set(prev);
-			next.delete(roleId);
-			return next;
-		});
-	}, []);
+	const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? null;
+	const canSubmit =
+		Boolean(organizationId) &&
+		Boolean(firstName.trim()) &&
+		Boolean(lastName.trim()) &&
+		Boolean(email.trim()) &&
+		Boolean(selectedRoleId);
 
-	const selectedRoleObjects = AVAILABLE_ROLES.filter((r) =>
-		selectedRoles.has(r.id),
-	);
-
-	const groupedRoles = AVAILABLE_ROLES.reduce(
-		(acc, role) => {
-			if (!acc[role.category]) {
-				acc[role.category] = [];
-			}
-			acc[role.category].push(role);
-			return acc;
+	const groupedRoles = roles.reduce(
+		(groups, role) => {
+			const category = TEAM_ROLE_META[role.name]?.category ?? 'viewer';
+			groups[category].push(role);
+			return groups;
 		},
-		{} as Record<string, Role[]>,
+		{
+			admin: [] as TeamRole[],
+			manager: [] as TeamRole[],
+			viewer: [] as TeamRole[],
+		},
 	);
 
-	const canSubmit = selectedRoles.size > 0;
+	const orderedCategories = [
+		['admin', 'Administrator'],
+		['manager', 'Operations'],
+		['viewer', 'Read Only'],
+	] as const;
+
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (!organizationId || !selectedRoleId) {
+			return;
+		}
+
+		try {
+			setIsSubmitting(true);
+			setErrorMessage('');
+			await createTeamInvite(organizationId, {
+				firstName: firstName.trim(),
+				lastName: lastName.trim(),
+				email: email.trim(),
+				roleId: selectedRoleId,
+			});
+			router.push('/dashboard/settings/team');
+		} catch (error) {
+			setErrorMessage(
+				getOrgManagementError(error, 'Unable to send invitation.'),
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
 		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
-			{/* Breadcrumb */}
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -265,7 +229,6 @@ export default function InviteTeamMemberPage() {
 				</ol>
 			</nav>
 
-			{/* Page header */}
 			<div className='mb-8'>
 				<div className='flex items-center gap-3'>
 					<Link
@@ -279,132 +242,96 @@ export default function InviteTeamMemberPage() {
 					</h1>
 				</div>
 				<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-					Add a manager, administrator, or other team member to your
-					organisation. They&apos;ll receive an email invitation to set up their
-					account and can be assigned one or more roles.
+					Invite an organization admin, manager, or viewer. Carers are onboarded
+					separately from the Staff area.
 				</p>
 			</div>
 
-			<form
-				onSubmit={(e) => e.preventDefault()}
-				className='flex flex-col gap-6'
-				noValidate>
-				{/* ---- Contact Details ---- */}
+			<form onSubmit={handleSubmit} className='flex flex-col gap-6' noValidate>
 				<FormSection
 					id='contact'
 					title='Contact Details'
 					description='Who are you inviting? They will use this email to sign in.'>
 					<div className='grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2'>
 						<div className='flex flex-col gap-2'>
-							<Label htmlFor='tm-firstName'>
-								First Name{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+							<Label htmlFor='tm-firstName'>First Name</Label>
 							<Input
 								id='tm-firstName'
+								value={firstName}
+								onChange={(event) => setFirstName(event.target.value)}
 								placeholder='e.g. James'
-								required
-								aria-required='true'
-								autoComplete='given-name'
 								className='h-10'
+								autoComplete='given-name'
 							/>
 						</div>
 						<div className='flex flex-col gap-2'>
-							<Label htmlFor='tm-lastName'>
-								Last Name{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+							<Label htmlFor='tm-lastName'>Last Name</Label>
 							<Input
 								id='tm-lastName'
+								value={lastName}
+								onChange={(event) => setLastName(event.target.value)}
 								placeholder='e.g. Porter'
-								required
-								aria-required='true'
-								autoComplete='family-name'
 								className='h-10'
+								autoComplete='family-name'
 							/>
 						</div>
 						<div className='flex flex-col gap-2 sm:col-span-2'>
-							<Label htmlFor='tm-email'>
-								Email Address{' '}
-								<span className='text-error' aria-hidden='true'>
-									*
-								</span>
-							</Label>
+							<Label htmlFor='tm-email'>Email Address</Label>
 							<Input
 								id='tm-email'
 								type='email'
+								value={email}
+								onChange={(event) => setEmail(event.target.value)}
 								placeholder='e.g. james.porter@yourcompany.co.uk'
-								required
-								aria-required='true'
-								autoComplete='email'
 								className='h-10'
+								autoComplete='email'
 							/>
-							<p className='text-xs text-slate-500' id='email-hint'>
-								This will be their login email. Make sure it&apos;s a valid
-								address they can access.
-							</p>
 						</div>
 					</div>
 				</FormSection>
 
-				{/* ---- Roles & Permissions ---- */}
 				<FormSection
 					id='roles'
-					title='Roles & Permissions'
-					description='Select one or more roles. Permissions are additive — a user with multiple roles gets the combined access of all selected roles.'>
-					<div className='flex flex-col gap-6'>
-						{/* Selected roles summary */}
-						{selectedRoleObjects.length > 0 && (
-							<div>
-								<p className='mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500'>
-									Assigned Roles
-								</p>
-								<div
-									className='flex flex-wrap gap-2'
-									role='list'
-									aria-label='Currently assigned roles'>
-									{selectedRoleObjects.map((role) => (
-										<span key={role.id} role='listitem'>
-											<SelectedRolePill
-												role={role}
-												onRemove={() => removeRole(role.id)}
-											/>
-										</span>
-									))}
+					title='Access Level'
+					description='Select one team role. Permissions come directly from the backend role catalog.'>
+					{isLoading ? (
+						<p className='text-sm text-slate-500'>Loading available roles...</p>
+					) : (
+						<div className='flex flex-col gap-6'>
+							{selectedRole ? (
+								<div className='rounded-lg border border-care-blue/20 bg-care-blue-light px-4 py-3'>
+									<p className='text-xs font-semibold uppercase tracking-wider text-care-blue'>
+										Selected Role
+									</p>
+									<p className='mt-1 text-sm font-semibold text-foreground'>
+										{selectedRole.name}
+									</p>
 								</div>
-							</div>
-						)}
+							) : null}
 
-						{/* Role groups */}
-						{(['admin', 'manager', 'viewer'] as Role['category'][]).map(
-							(category) => {
-								const roles = groupedRoles[category];
-								if (!roles) return null;
-								return (
+							{orderedCategories.map(([category, label]) =>
+								groupedRoles[category].length > 0 ? (
 									<fieldset key={category} className='flex flex-col gap-3'>
 										<legend className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
-											{CATEGORY_LABELS[category]}
+											{label}
 										</legend>
-										{roles.map((role) => (
-											<RoleCard
-												key={role.id}
-												role={role}
-												selected={selectedRoles.has(role.id)}
-												onToggle={() => toggleRole(role.id)}
-											/>
-										))}
+										<div role='radiogroup' className='flex flex-col gap-3'>
+											{groupedRoles[category].map((role) => (
+												<RoleCard
+													key={role.id}
+													role={role}
+													selected={selectedRoleId === role.id}
+													onSelect={() => setSelectedRoleId(role.id)}
+												/>
+											))}
+										</div>
 									</fieldset>
-								);
-							},
-						)}
-					</div>
+								) : null,
+							)}
+						</div>
+					)}
 				</FormSection>
 
-				{/* ---- Security note ---- */}
 				<div
 					className='flex gap-3 rounded-xl border border-warning/30 bg-warning/5 p-5'
 					role='note'>
@@ -415,15 +342,12 @@ export default function InviteTeamMemberPage() {
 					<div>
 						<p className='text-sm font-bold text-foreground'>Security Notice</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							Admin and management roles grant access to sensitive client data,
-							staff records, and operational controls. Only invite people you
-							trust and assign the minimum roles necessary. You can change roles
-							at any time from the Team settings page.
+							Invite only the access level this person needs. Team roles control
+							sensitive operational and staffing features.
 						</p>
 					</div>
 				</div>
 
-				{/* ---- Invitation workflow info ---- */}
 				<div
 					className='flex gap-3 rounded-xl border border-care-blue/20 bg-care-blue-light p-5'
 					role='note'>
@@ -432,19 +356,20 @@ export default function InviteTeamMemberPage() {
 						aria-hidden='true'
 					/>
 					<div>
-						<p className='text-sm font-bold text-foreground'>
-							What happens next?
-						</p>
+						<p className='text-sm font-bold text-foreground'>What happens next?</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							The invitee will receive an email with a secure link to create
-							their account and set a password. Their access begins only after
-							they accept the invitation. Pending invitations can be revoked
-							from the Team settings page.
+							The invitee will receive an email with a secure link to set their
+							password and activate access to this organization.
 						</p>
 					</div>
 				</div>
 
-				{/* ---- Actions ---- */}
+				<div className='min-h-5'>
+					{errorMessage ? (
+						<p className='text-sm font-medium text-red-600'>{errorMessage}</p>
+					) : null}
+				</div>
+
 				<div className='flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end'>
 					<Link
 						href='/dashboard/settings/team'
@@ -454,15 +379,15 @@ export default function InviteTeamMemberPage() {
 					<Button
 						type='submit'
 						size='lg'
-						disabled={!canSubmit}
+						disabled={!canSubmit || isSubmitting || isLoading}
 						className={cn(
 							'h-11 gap-2 px-6 text-sm font-semibold shadow-md',
-							canSubmit
+							canSubmit && !isSubmitting && !isLoading
 								? 'bg-care-blue hover:bg-care-blue-hover'
 								: 'cursor-not-allowed bg-care-blue/50',
 						)}>
 						<Mail className='size-4' aria-hidden='true' />
-						Send Invitation
+						{isSubmitting ? 'Sending Invitation...' : 'Send Invitation'}
 					</Button>
 				</div>
 			</form>
