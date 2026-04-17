@@ -48,3 +48,5 @@ export const revokeInviteSchema: FastifySchema = {
 export const createInviteOpts = { schema: createInviteSchema };
 export const inviteListOpts = { schema: inviteListSchema };
 export const revokeInviteOpts = { schema: revokeInviteSchema };
+export const carerInviteListOpts = { schema: inviteListSchema };
+export const revokeCarerInviteOpts = { schema: revokeInviteSchema };

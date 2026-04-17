@@ -52,13 +52,36 @@ export async function createInviteController(request: FastifyRequest, reply: Fas
 
 export async function listInvitesController(request: FastifyRequest, reply: FastifyReply) {
   const { organizationId } = request.params as { organizationId: string };
-  const invites = await listInvitesService(organizationId);
+  const invites = await listInvitesService(organizationId, 'TEAM');
+  return reply.send({ invites });
+}
+
+export async function listCarerInvitesController(request: FastifyRequest, reply: FastifyReply) {
+  const { organizationId } = request.params as { organizationId: string };
+  const invites = await listInvitesService(organizationId, 'CARER');
   return reply.send({ invites });
 }
 
 export async function revokeInviteController(request: FastifyRequest, reply: FastifyReply) {
   const { organizationId, inviteId } = request.params as { organizationId: string; inviteId: string };
-  const result = await revokeInviteService(organizationId, inviteId);
+  const result = await revokeInviteService(organizationId, inviteId, 'TEAM');
+
+  logAudit({
+    action: 'DELETE',
+    entityType: 'InviteToken',
+    entityId: inviteId,
+    organizationId,
+    actorUserId: request.user.id,
+    ipAddress: request.ip,
+    userAgent: request.headers['user-agent'] ?? undefined,
+  });
+
+  return reply.send(result);
+}
+
+export async function revokeCarerInviteController(request: FastifyRequest, reply: FastifyReply) {
+  const { organizationId, inviteId } = request.params as { organizationId: string; inviteId: string };
+  const result = await revokeInviteService(organizationId, inviteId, 'CARER');
 
   logAudit({
     action: 'DELETE',
