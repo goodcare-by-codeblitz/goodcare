@@ -24,12 +24,15 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { loginSchema } from './login-validation';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 export default function LoginPage() {
+	const searchParams = useSearchParams();
+	const nextPath = searchParams.get('next');
 	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -76,6 +79,11 @@ export default function LoginPage() {
 
 			setOrganizations(organizations); // Store organizations in Zustand
 			broadcastAuthEvent('login');
+
+			if (nextPath && nextPath.startsWith('/')) {
+				window.location.replace(nextPath);
+				return;
+			}
 
 			if (organizations.length === 0) {
 				setErrorMessage(

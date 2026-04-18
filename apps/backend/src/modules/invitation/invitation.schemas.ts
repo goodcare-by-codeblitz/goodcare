@@ -4,10 +4,15 @@ export const createInviteSchema: FastifySchema = {
   tags: ['Invitations'],
   body: {
     type: 'object',
-    required: ['email', 'roleId', 'firstName', 'lastName'],
+    required: ['email', 'roleIds', 'firstName', 'lastName'],
     properties: {
       email: { type: 'string', format: 'email' },
-      roleId: { type: 'string', format: 'uuid' },
+      roleIds: {
+        type: 'array',
+        minItems: 1,
+        uniqueItems: true,
+        items: { type: 'string', format: 'uuid' },
+      },
       firstName: { type: 'string', minLength: 1 },
       lastName: { type: 'string', minLength: 1 },
     },

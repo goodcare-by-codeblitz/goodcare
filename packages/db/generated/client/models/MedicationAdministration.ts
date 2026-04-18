@@ -30,6 +30,7 @@ export type MedicationAdministrationMinAggregateOutputType = {
   patientId: string | null
   organizationId: string | null
   result: $Enums.MedicationAdministrationResult | null
+  slot: $Enums.MedicationScheduleSlot | null
   scheduledFor: Date | null
   administeredAt: Date | null
   notes: string | null
@@ -44,6 +45,7 @@ export type MedicationAdministrationMaxAggregateOutputType = {
   patientId: string | null
   organizationId: string | null
   result: $Enums.MedicationAdministrationResult | null
+  slot: $Enums.MedicationScheduleSlot | null
   scheduledFor: Date | null
   administeredAt: Date | null
   notes: string | null
@@ -58,6 +60,7 @@ export type MedicationAdministrationCountAggregateOutputType = {
   patientId: number
   organizationId: number
   result: number
+  slot: number
   scheduledFor: number
   administeredAt: number
   notes: number
@@ -74,6 +77,7 @@ export type MedicationAdministrationMinAggregateInputType = {
   patientId?: true
   organizationId?: true
   result?: true
+  slot?: true
   scheduledFor?: true
   administeredAt?: true
   notes?: true
@@ -88,6 +92,7 @@ export type MedicationAdministrationMaxAggregateInputType = {
   patientId?: true
   organizationId?: true
   result?: true
+  slot?: true
   scheduledFor?: true
   administeredAt?: true
   notes?: true
@@ -102,6 +107,7 @@ export type MedicationAdministrationCountAggregateInputType = {
   patientId?: true
   organizationId?: true
   result?: true
+  slot?: true
   scheduledFor?: true
   administeredAt?: true
   notes?: true
@@ -189,6 +195,7 @@ export type MedicationAdministrationGroupByOutputType = {
   patientId: string
   organizationId: string
   result: $Enums.MedicationAdministrationResult
+  slot: $Enums.MedicationScheduleSlot | null
   scheduledFor: Date | null
   administeredAt: Date | null
   notes: string | null
@@ -224,6 +231,7 @@ export type MedicationAdministrationWhereInput = {
   patientId?: Prisma.StringFilter<"MedicationAdministration"> | string
   organizationId?: Prisma.StringFilter<"MedicationAdministration"> | string
   result?: Prisma.EnumMedicationAdministrationResultFilter<"MedicationAdministration"> | $Enums.MedicationAdministrationResult
+  slot?: Prisma.EnumMedicationScheduleSlotNullableFilter<"MedicationAdministration"> | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   administeredAt?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   notes?: Prisma.StringNullableFilter<"MedicationAdministration"> | string | null
@@ -242,6 +250,7 @@ export type MedicationAdministrationOrderByWithRelationInput = {
   patientId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   result?: Prisma.SortOrder
+  slot?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledFor?: Prisma.SortOrderInput | Prisma.SortOrder
   administeredAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -263,6 +272,7 @@ export type MedicationAdministrationWhereUniqueInput = Prisma.AtLeast<{
   patientId?: Prisma.StringFilter<"MedicationAdministration"> | string
   organizationId?: Prisma.StringFilter<"MedicationAdministration"> | string
   result?: Prisma.EnumMedicationAdministrationResultFilter<"MedicationAdministration"> | $Enums.MedicationAdministrationResult
+  slot?: Prisma.EnumMedicationScheduleSlotNullableFilter<"MedicationAdministration"> | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   administeredAt?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   notes?: Prisma.StringNullableFilter<"MedicationAdministration"> | string | null
@@ -281,6 +291,7 @@ export type MedicationAdministrationOrderByWithAggregationInput = {
   patientId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   result?: Prisma.SortOrder
+  slot?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledFor?: Prisma.SortOrderInput | Prisma.SortOrder
   administeredAt?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -301,6 +312,7 @@ export type MedicationAdministrationScalarWhereWithAggregatesInput = {
   patientId?: Prisma.StringWithAggregatesFilter<"MedicationAdministration"> | string
   organizationId?: Prisma.StringWithAggregatesFilter<"MedicationAdministration"> | string
   result?: Prisma.EnumMedicationAdministrationResultWithAggregatesFilter<"MedicationAdministration"> | $Enums.MedicationAdministrationResult
+  slot?: Prisma.EnumMedicationScheduleSlotNullableWithAggregatesFilter<"MedicationAdministration"> | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.DateTimeNullableWithAggregatesFilter<"MedicationAdministration"> | Date | string | null
   administeredAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MedicationAdministration"> | Date | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"MedicationAdministration"> | string | null
@@ -312,6 +324,7 @@ export type MedicationAdministrationScalarWhereWithAggregatesInput = {
 export type MedicationAdministrationCreateInput = {
   id?: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -329,6 +342,7 @@ export type MedicationAdministrationUncheckedCreateInput = {
   patientId: string
   organizationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -340,6 +354,7 @@ export type MedicationAdministrationUncheckedCreateInput = {
 export type MedicationAdministrationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -357,6 +372,7 @@ export type MedicationAdministrationUncheckedUpdateInput = {
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -371,6 +387,7 @@ export type MedicationAdministrationCreateManyInput = {
   patientId: string
   organizationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -382,6 +399,7 @@ export type MedicationAdministrationCreateManyInput = {
 export type MedicationAdministrationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -395,6 +413,7 @@ export type MedicationAdministrationUncheckedUpdateManyInput = {
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -419,6 +438,7 @@ export type MedicationAdministrationCountOrderByAggregateInput = {
   patientId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   result?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   administeredAt?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -433,6 +453,7 @@ export type MedicationAdministrationMaxOrderByAggregateInput = {
   patientId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   result?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   administeredAt?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -447,6 +468,7 @@ export type MedicationAdministrationMinOrderByAggregateInput = {
   patientId?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   result?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   scheduledFor?: Prisma.SortOrder
   administeredAt?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -627,9 +649,14 @@ export type EnumMedicationAdministrationResultFieldUpdateOperationsInput = {
   set?: $Enums.MedicationAdministrationResult
 }
 
+export type NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput = {
+  set?: $Enums.MedicationScheduleSlot | null
+}
+
 export type MedicationAdministrationCreateWithoutActorUserInput = {
   id?: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -646,6 +673,7 @@ export type MedicationAdministrationUncheckedCreateWithoutActorUserInput = {
   patientId: string
   organizationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -688,6 +716,7 @@ export type MedicationAdministrationScalarWhereInput = {
   patientId?: Prisma.StringFilter<"MedicationAdministration"> | string
   organizationId?: Prisma.StringFilter<"MedicationAdministration"> | string
   result?: Prisma.EnumMedicationAdministrationResultFilter<"MedicationAdministration"> | $Enums.MedicationAdministrationResult
+  slot?: Prisma.EnumMedicationScheduleSlotNullableFilter<"MedicationAdministration"> | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   administeredAt?: Prisma.DateTimeNullableFilter<"MedicationAdministration"> | Date | string | null
   notes?: Prisma.StringNullableFilter<"MedicationAdministration"> | string | null
@@ -699,6 +728,7 @@ export type MedicationAdministrationScalarWhereInput = {
 export type MedicationAdministrationCreateWithoutOrganizationInput = {
   id?: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -714,6 +744,7 @@ export type MedicationAdministrationUncheckedCreateWithoutOrganizationInput = {
   medicationId: string
   patientId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -751,6 +782,7 @@ export type MedicationAdministrationUpdateManyWithWhereWithoutOrganizationInput 
 export type MedicationAdministrationCreateWithoutPatientInput = {
   id?: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -765,6 +797,7 @@ export type MedicationAdministrationUncheckedCreateWithoutPatientInput = {
   id?: string
   medicationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -802,6 +835,7 @@ export type MedicationAdministrationUpdateManyWithWhereWithoutPatientInput = {
 export type MedicationAdministrationCreateWithoutMedicationInput = {
   id?: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -816,6 +850,7 @@ export type MedicationAdministrationUncheckedCreateWithoutMedicationInput = {
   id?: string
   patientId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -856,6 +891,7 @@ export type MedicationAdministrationCreateManyActorUserInput = {
   patientId: string
   organizationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -866,6 +902,7 @@ export type MedicationAdministrationCreateManyActorUserInput = {
 export type MedicationAdministrationUpdateWithoutActorUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -882,6 +919,7 @@ export type MedicationAdministrationUncheckedUpdateWithoutActorUserInput = {
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -895,6 +933,7 @@ export type MedicationAdministrationUncheckedUpdateManyWithoutActorUserInput = {
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -907,6 +946,7 @@ export type MedicationAdministrationCreateManyOrganizationInput = {
   medicationId: string
   patientId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -918,6 +958,7 @@ export type MedicationAdministrationCreateManyOrganizationInput = {
 export type MedicationAdministrationUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -933,6 +974,7 @@ export type MedicationAdministrationUncheckedUpdateWithoutOrganizationInput = {
   medicationId?: Prisma.StringFieldUpdateOperationsInput | string
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -946,6 +988,7 @@ export type MedicationAdministrationUncheckedUpdateManyWithoutOrganizationInput 
   medicationId?: Prisma.StringFieldUpdateOperationsInput | string
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -958,6 +1001,7 @@ export type MedicationAdministrationCreateManyPatientInput = {
   id?: string
   medicationId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -969,6 +1013,7 @@ export type MedicationAdministrationCreateManyPatientInput = {
 export type MedicationAdministrationUpdateWithoutPatientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -983,6 +1028,7 @@ export type MedicationAdministrationUncheckedUpdateWithoutPatientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   medicationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -995,6 +1041,7 @@ export type MedicationAdministrationUncheckedUpdateManyWithoutPatientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   medicationId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1007,6 +1054,7 @@ export type MedicationAdministrationCreateManyMedicationInput = {
   id?: string
   patientId: string
   result: $Enums.MedicationAdministrationResult
+  slot?: $Enums.MedicationScheduleSlot | null
   scheduledFor?: Date | string | null
   administeredAt?: Date | string | null
   notes?: string | null
@@ -1018,6 +1066,7 @@ export type MedicationAdministrationCreateManyMedicationInput = {
 export type MedicationAdministrationUpdateWithoutMedicationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1032,6 +1081,7 @@ export type MedicationAdministrationUncheckedUpdateWithoutMedicationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1044,6 +1094,7 @@ export type MedicationAdministrationUncheckedUpdateManyWithoutMedicationInput = 
   id?: Prisma.StringFieldUpdateOperationsInput | string
   patientId?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumMedicationAdministrationResultFieldUpdateOperationsInput | $Enums.MedicationAdministrationResult
+  slot?: Prisma.NullableEnumMedicationScheduleSlotFieldUpdateOperationsInput | $Enums.MedicationScheduleSlot | null
   scheduledFor?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   administeredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1060,6 +1111,7 @@ export type MedicationAdministrationSelect<ExtArgs extends runtime.Types.Extensi
   patientId?: boolean
   organizationId?: boolean
   result?: boolean
+  slot?: boolean
   scheduledFor?: boolean
   administeredAt?: boolean
   notes?: boolean
@@ -1078,6 +1130,7 @@ export type MedicationAdministrationSelectCreateManyAndReturn<ExtArgs extends ru
   patientId?: boolean
   organizationId?: boolean
   result?: boolean
+  slot?: boolean
   scheduledFor?: boolean
   administeredAt?: boolean
   notes?: boolean
@@ -1096,6 +1149,7 @@ export type MedicationAdministrationSelectUpdateManyAndReturn<ExtArgs extends ru
   patientId?: boolean
   organizationId?: boolean
   result?: boolean
+  slot?: boolean
   scheduledFor?: boolean
   administeredAt?: boolean
   notes?: boolean
@@ -1114,6 +1168,7 @@ export type MedicationAdministrationSelectScalar = {
   patientId?: boolean
   organizationId?: boolean
   result?: boolean
+  slot?: boolean
   scheduledFor?: boolean
   administeredAt?: boolean
   notes?: boolean
@@ -1122,7 +1177,7 @@ export type MedicationAdministrationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type MedicationAdministrationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "medicationId" | "patientId" | "organizationId" | "result" | "scheduledFor" | "administeredAt" | "notes" | "actorUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["medicationAdministration"]>
+export type MedicationAdministrationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "medicationId" | "patientId" | "organizationId" | "result" | "slot" | "scheduledFor" | "administeredAt" | "notes" | "actorUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["medicationAdministration"]>
 export type MedicationAdministrationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   medication?: boolean | Prisma.MedicationDefaultArgs<ExtArgs>
   patient?: boolean | Prisma.PatientDefaultArgs<ExtArgs>
@@ -1156,6 +1211,7 @@ export type $MedicationAdministrationPayload<ExtArgs extends runtime.Types.Exten
     patientId: string
     organizationId: string
     result: $Enums.MedicationAdministrationResult
+    slot: $Enums.MedicationScheduleSlot | null
     scheduledFor: Date | null
     administeredAt: Date | null
     notes: string | null
@@ -1594,6 +1650,7 @@ export interface MedicationAdministrationFieldRefs {
   readonly patientId: Prisma.FieldRef<"MedicationAdministration", 'String'>
   readonly organizationId: Prisma.FieldRef<"MedicationAdministration", 'String'>
   readonly result: Prisma.FieldRef<"MedicationAdministration", 'MedicationAdministrationResult'>
+  readonly slot: Prisma.FieldRef<"MedicationAdministration", 'MedicationScheduleSlot'>
   readonly scheduledFor: Prisma.FieldRef<"MedicationAdministration", 'DateTime'>
   readonly administeredAt: Prisma.FieldRef<"MedicationAdministration", 'DateTime'>
   readonly notes: Prisma.FieldRef<"MedicationAdministration", 'String'>

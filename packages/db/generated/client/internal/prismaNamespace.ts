@@ -392,6 +392,7 @@ export const ModelName = {
   RolePermission: 'RolePermission',
   RoleAssignment: 'RoleAssignment',
   Carer: 'Carer',
+  CarerAvailabilitySlot: 'CarerAvailabilitySlot',
   Qualification: 'Qualification',
   QualificationType: 'QualificationType',
   Patient: 'Patient',
@@ -413,6 +414,7 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   Address: 'Address',
   InviteToken: 'InviteToken',
+  InviteTokenRole: 'InviteTokenRole',
   PasswordResetToken: 'PasswordResetToken',
   Session: 'Session'
 } as const
@@ -430,7 +432,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationUser" | "role" | "permission" | "rolePermission" | "roleAssignment" | "carer" | "qualification" | "qualificationType" | "patient" | "patientProfile" | "patientEmergencyContact" | "patientAllergy" | "visit" | "visitAssignment" | "carePlan" | "carePlanCondition" | "carePlanRisk" | "carePlanTask" | "carePlanGoal" | "medication" | "medicationAdministration" | "visitTask" | "dailyNote" | "incidentReport" | "auditLog" | "address" | "inviteToken" | "passwordResetToken" | "session"
+    modelProps: "user" | "organization" | "organizationUser" | "role" | "permission" | "rolePermission" | "roleAssignment" | "carer" | "carerAvailabilitySlot" | "qualification" | "qualificationType" | "patient" | "patientProfile" | "patientEmergencyContact" | "patientAllergy" | "visit" | "visitAssignment" | "carePlan" | "carePlanCondition" | "carePlanRisk" | "carePlanTask" | "carePlanGoal" | "medication" | "medicationAdministration" | "visitTask" | "dailyNote" | "incidentReport" | "auditLog" | "address" | "inviteToken" | "inviteTokenRole" | "passwordResetToken" | "session"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1023,6 +1025,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CarerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CarerCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarerAvailabilitySlot: {
+      payload: Prisma.$CarerAvailabilitySlotPayload<ExtArgs>
+      fields: Prisma.CarerAvailabilitySlotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarerAvailabilitySlotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarerAvailabilitySlotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        findFirst: {
+          args: Prisma.CarerAvailabilitySlotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarerAvailabilitySlotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        findMany: {
+          args: Prisma.CarerAvailabilitySlotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>[]
+        }
+        create: {
+          args: Prisma.CarerAvailabilitySlotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        createMany: {
+          args: Prisma.CarerAvailabilitySlotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarerAvailabilitySlotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>[]
+        }
+        delete: {
+          args: Prisma.CarerAvailabilitySlotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        update: {
+          args: Prisma.CarerAvailabilitySlotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarerAvailabilitySlotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarerAvailabilitySlotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarerAvailabilitySlotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarerAvailabilitySlotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarerAvailabilitySlotPayload>
+        }
+        aggregate: {
+          args: Prisma.CarerAvailabilitySlotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarerAvailabilitySlot>
+        }
+        groupBy: {
+          args: Prisma.CarerAvailabilitySlotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarerAvailabilitySlotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarerAvailabilitySlotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarerAvailabilitySlotCountAggregateOutputType> | number
         }
       }
     }
@@ -2580,6 +2656,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InviteTokenRole: {
+      payload: Prisma.$InviteTokenRolePayload<ExtArgs>
+      fields: Prisma.InviteTokenRoleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InviteTokenRoleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InviteTokenRoleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        findFirst: {
+          args: Prisma.InviteTokenRoleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InviteTokenRoleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        findMany: {
+          args: Prisma.InviteTokenRoleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>[]
+        }
+        create: {
+          args: Prisma.InviteTokenRoleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        createMany: {
+          args: Prisma.InviteTokenRoleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InviteTokenRoleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>[]
+        }
+        delete: {
+          args: Prisma.InviteTokenRoleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        update: {
+          args: Prisma.InviteTokenRoleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        deleteMany: {
+          args: Prisma.InviteTokenRoleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InviteTokenRoleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InviteTokenRoleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>[]
+        }
+        upsert: {
+          args: Prisma.InviteTokenRoleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenRolePayload>
+        }
+        aggregate: {
+          args: Prisma.InviteTokenRoleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInviteTokenRole>
+        }
+        groupBy: {
+          args: Prisma.InviteTokenRoleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InviteTokenRoleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InviteTokenRoleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InviteTokenRoleCountAggregateOutputType> | number
+        }
+      }
+    }
     PasswordResetToken: {
       payload: Prisma.$PasswordResetTokenPayload<ExtArgs>
       fields: Prisma.PasswordResetTokenFieldRefs
@@ -2812,8 +2962,14 @@ export type OrganizationUserScalarFieldEnum = (typeof OrganizationUserScalarFiel
 
 export const RoleScalarFieldEnum = {
   id: 'id',
+  key: 'key',
   name: 'name',
-  scope: 'scope'
+  description: 'description',
+  scope: 'scope',
+  isSystem: 'isSystem',
+  organizationId: 'organizationId',
+  organizationRoleKind: 'organizationRoleKind',
+  archivedAt: 'archivedAt'
 } as const
 
 export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
@@ -2851,7 +3007,6 @@ export const CarerScalarFieldEnum = {
   hireDate: 'hireDate',
   employmentType: 'employmentType',
   experienceYears: 'experienceYears',
-  availability: 'availability',
   updatedAt: 'updatedAt',
   status: 'status',
   organizationUserId: 'organizationUserId',
@@ -2859,6 +3014,21 @@ export const CarerScalarFieldEnum = {
 } as const
 
 export type CarerScalarFieldEnum = (typeof CarerScalarFieldEnum)[keyof typeof CarerScalarFieldEnum]
+
+
+export const CarerAvailabilitySlotScalarFieldEnum = {
+  id: 'id',
+  carerId: 'carerId',
+  organizationId: 'organizationId',
+  dayOfWeek: 'dayOfWeek',
+  startTimeMinutes: 'startTimeMinutes',
+  endTimeMinutes: 'endTimeMinutes',
+  crossesMidnight: 'crossesMidnight',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarerAvailabilitySlotScalarFieldEnum = (typeof CarerAvailabilitySlotScalarFieldEnum)[keyof typeof CarerAvailabilitySlotScalarFieldEnum]
 
 
 export const QualificationScalarFieldEnum = {
@@ -3092,6 +3262,7 @@ export const MedicationAdministrationScalarFieldEnum = {
   patientId: 'patientId',
   organizationId: 'organizationId',
   result: 'result',
+  slot: 'slot',
   scheduledFor: 'scheduledFor',
   administeredAt: 'administeredAt',
   notes: 'notes',
@@ -3182,7 +3353,10 @@ export const InviteTokenScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
   organizationUserId: 'organizationUserId',
+  kind: 'kind',
   email: 'email',
+  inviteeFirstName: 'inviteeFirstName',
+  inviteeLastName: 'inviteeLastName',
   tokenHash: 'tokenHash',
   expiresAt: 'expiresAt',
   usedAt: 'usedAt',
@@ -3192,6 +3366,14 @@ export const InviteTokenScalarFieldEnum = {
 } as const
 
 export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
+
+
+export const InviteTokenRoleScalarFieldEnum = {
+  inviteTokenId: 'inviteTokenId',
+  roleId: 'roleId'
+} as const
+
+export type InviteTokenRoleScalarFieldEnum = (typeof InviteTokenRoleScalarFieldEnum)[keyof typeof InviteTokenRoleScalarFieldEnum]
 
 
 export const PasswordResetTokenScalarFieldEnum = {
@@ -3353,6 +3535,27 @@ export type ListEnumRoleScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'OrganizationRoleKind'
+ */
+export type EnumOrganizationRoleKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationRoleKind'>
+    
+
+
+/**
+ * Reference to a field of type 'OrganizationRoleKind[]'
+ */
+export type ListEnumOrganizationRoleKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizationRoleKind[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -3381,6 +3584,20 @@ export type ListEnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'DayOfWeek'
+ */
+export type EnumDayOfWeekFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DayOfWeek'>
+    
+
+
+/**
+ * Reference to a field of type 'DayOfWeek[]'
+ */
+export type ListEnumDayOfWeekFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DayOfWeek[]'>
+    
+
+
+/**
  * Reference to a field of type 'QualificationStatus'
  */
 export type EnumQualificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QualificationStatus'>
@@ -3391,13 +3608,6 @@ export type EnumQualificationStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
  * Reference to a field of type 'QualificationStatus[]'
  */
 export type ListEnumQualificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QualificationStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -3514,6 +3724,20 @@ export type ListEnumMedicationAdministrationResultFieldRefInput<$PrismaModel> = 
 
 
 /**
+ * Reference to a field of type 'MedicationScheduleSlot'
+ */
+export type EnumMedicationScheduleSlotFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicationScheduleSlot'>
+    
+
+
+/**
+ * Reference to a field of type 'MedicationScheduleSlot[]'
+ */
+export type ListEnumMedicationScheduleSlotFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicationScheduleSlot[]'>
+    
+
+
+/**
  * Reference to a field of type 'VisitTaskStatus'
  */
 export type EnumVisitTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VisitTaskStatus'>
@@ -3566,6 +3790,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'InviteKind'
+ */
+export type EnumInviteKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InviteKind'>
+    
+
+
+/**
+ * Reference to a field of type 'InviteKind[]'
+ */
+export type ListEnumInviteKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InviteKind[]'>
     
 
 
@@ -3685,6 +3923,7 @@ export type GlobalOmitConfig = {
   rolePermission?: Prisma.RolePermissionOmit
   roleAssignment?: Prisma.RoleAssignmentOmit
   carer?: Prisma.CarerOmit
+  carerAvailabilitySlot?: Prisma.CarerAvailabilitySlotOmit
   qualification?: Prisma.QualificationOmit
   qualificationType?: Prisma.QualificationTypeOmit
   patient?: Prisma.PatientOmit
@@ -3706,6 +3945,7 @@ export type GlobalOmitConfig = {
   auditLog?: Prisma.AuditLogOmit
   address?: Prisma.AddressOmit
   inviteToken?: Prisma.InviteTokenOmit
+  inviteTokenRole?: Prisma.InviteTokenRoleOmit
   passwordResetToken?: Prisma.PasswordResetTokenOmit
   session?: Prisma.SessionOmit
 }

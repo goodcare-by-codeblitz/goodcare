@@ -4,9 +4,11 @@ import crypto from 'crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
 	ACCESS_TTL,
+	REFRESH_COOKIE_NAME,
 	REFRESH_DAYS,
-	getCookieDomain,
+	clearAuthCookies,
 	refreshExpiryDate,
+	setAccessTokenCookie,
 	setAuthCookies,
 } from '../../../utils/cookies';
 
@@ -21,6 +23,7 @@ import {
 	acceptInviteService,
 	changePasswordService,
 	forgotPasswordService,
+	getInvitePreviewService,
 	loginService,
 	logoutService,
 	myOrganizationsService,
@@ -218,7 +221,6 @@ export function forgotPasswordController(app: FastifyInstance) {
 
 export function logoutController(app: FastifyInstance) {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
-		const cookieDomain = getCookieDomain();
 		const token = request.cookies.access_token;
 		if (!token) {
 			return reply.status(401).send({ error: 'No access token provided' });
@@ -252,14 +254,7 @@ export function logoutController(app: FastifyInstance) {
 			userAgent: request.headers['user-agent'] ?? undefined,
 		});
 
-		reply.clearCookie('access_token', {
-			path: '/',
-			...(cookieDomain ? { domain: cookieDomain } : {}),
-		});
-		reply.clearCookie('refresh_token', {
-			path: '/auth/refresh',
-			...(cookieDomain ? { domain: cookieDomain } : {}),
-		});
+		clearAuthCookies(reply);
 
 		return reply.send({ message: 'Logged out successfully' });
 	};
@@ -267,7 +262,6 @@ export function logoutController(app: FastifyInstance) {
 
 export function changePasswordController(app: FastifyInstance) {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
-		const cookieDomain = getCookieDomain();
 		const body = request.body as ChangePasswordBody;
 
 		const uid = (request.user as { id: string }).id;
@@ -288,14 +282,7 @@ export function changePasswordController(app: FastifyInstance) {
 				userAgent: request.headers['user-agent'] ?? undefined,
 			});
 
-			reply.clearCookie('access_token', {
-				path: '/',
-				...(cookieDomain ? { domain: cookieDomain } : {}),
-			});
-			reply.clearCookie('refresh_token', {
-				path: '/auth/refresh',
-				...(cookieDomain ? { domain: cookieDomain } : {}),
-			});
+			clearAuthCookies(reply);
 
 			return reply.send({ message: 'Password changed successfully' });
 		} catch (err: any) {
@@ -331,6 +318,7 @@ export function acceptInviteController(app: FastifyInstance) {
 				password: body.password,
 				firstName: body.firstName,
 				lastName: body.lastName,
+				currentUserId: await getCurrentUserIdFromSession(app, request),
 				session: { sessionId, tokenHash, expiresAt, userAgent, ip },
 			});
 
@@ -369,9 +357,30 @@ export function acceptInviteController(app: FastifyInstance) {
 	};
 }
 
+export function invitePreviewController(app: FastifyInstance) {
+	return async function handler(
+		request: FastifyRequest<{ Querystring: { token: string } }>,
+		reply: FastifyReply,
+	) {
+		try {
+			const preview = await getInvitePreviewService(
+				request.query.token,
+				await getCurrentUserIdFromSession(app, request),
+			);
+
+			return reply.send(preview);
+		} catch (err: any) {
+			app.log.error({ err }, 'invite-preview failed');
+			return reply.status(400).send({
+				error: err?.message ?? 'Unable to preview invite',
+			});
+		}
+	};
+}
+
 export function refreshController(app: FastifyInstance) {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
-		const rawRefreshToken = request.cookies.refresh_token;
+		const rawRefreshToken = request.cookies[REFRESH_COOKIE_NAME];
 		if (!rawRefreshToken) {
 			return reply.status(401).send({ error: 'No refresh token provided' });
 		}
@@ -397,12 +406,7 @@ export function refreshController(app: FastifyInstance) {
 				{ expiresIn: ACCESS_TTL },
 			);
 
-			reply.setCookie('access_token', accessToken, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
-				path: '/',
-			});
+			setAccessTokenCookie(reply, accessToken);
 
 			return reply.send({ message: 'Token refreshed successfully' });
 		} catch (err: any) {
@@ -524,4 +528,50 @@ export function currentOrgAccessController() {
 			permissions,
 		});
 	};
+}
+
+async function getCurrentUserIdFromSession(
+	app: FastifyInstance,
+	request: FastifyRequest,
+) {
+	const token = request.cookies.access_token;
+	if (token) {
+		try {
+			const decoded = app.jwt.verify<{ sub: string; type: string }>(token);
+			if (decoded.type === 'access') {
+				return decoded.sub;
+			}
+		} catch {
+			// fall through to refresh-session lookup
+		}
+	}
+
+	const refreshToken = request.cookies[REFRESH_COOKIE_NAME];
+	if (!refreshToken) {
+		return null;
+	}
+
+	try {
+		const decoded = app.jwt.verify<{ sid: string; type: string }>(refreshToken);
+		if (decoded.type !== 'refresh' || !decoded.sid) {
+			return null;
+		}
+
+		const session = await prisma.session.findUnique({
+			where: { sessionId: decoded.sid },
+			select: {
+				userId: true,
+				revokedAt: true,
+				expiresAt: true,
+			},
+		});
+
+		if (!session || session.revokedAt || session.expiresAt < new Date()) {
+			return null;
+		}
+
+		return session.userId;
+	} catch {
+		return null;
+	}
 }

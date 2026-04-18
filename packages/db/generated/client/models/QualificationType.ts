@@ -331,10 +331,6 @@ export type QualificationTypeUpdateOneRequiredWithoutQualificationsNestedInput =
   update?: Prisma.XOR<Prisma.XOR<Prisma.QualificationTypeUpdateToOneWithWhereWithoutQualificationsInput, Prisma.QualificationTypeUpdateWithoutQualificationsInput>, Prisma.QualificationTypeUncheckedUpdateWithoutQualificationsInput>
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type QualificationTypeCreateWithoutQualificationsInput = {
   id?: string
   key: string

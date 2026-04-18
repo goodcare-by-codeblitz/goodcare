@@ -66,7 +66,7 @@ function RoleCard({
 	return (
 		<button
 			type='button'
-			role='radio'
+			role='checkbox'
 			aria-checked={selected}
 			onClick={onSelect}
 			className={cn(
@@ -88,9 +88,20 @@ function RoleCard({
 			</span>
 
 			<div className='min-w-0 flex-1'>
-				<p className='text-sm font-semibold text-foreground'>{role.name}</p>
+				<div className='flex flex-wrap items-center gap-2'>
+					<p className='text-sm font-semibold text-foreground'>{role.name}</p>
+					{role.isSystem ? (
+						<span className='rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500'>
+							System
+						</span>
+					) : (
+						<span className='rounded-full bg-care-blue-light px-2 py-0.5 text-[11px] font-semibold text-care-blue'>
+							Custom
+						</span>
+					)}
+				</div>
 				<p className='mt-0.5 text-sm leading-relaxed text-slate-600'>
-					{meta?.description ?? 'Organization role'}
+					{role.description ?? meta?.description ?? 'Organization role'}
 				</p>
 			</div>
 		</button>
@@ -104,7 +115,7 @@ export default function InviteTeamMemberPage() {
 	const [firstName, setFirstName] = useState('');
 	const [lastName, setLastName] = useState('');
 	const [email, setEmail] = useState('');
-	const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+	const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
@@ -145,17 +156,18 @@ export default function InviteTeamMemberPage() {
 		};
 	}, []);
 
-	const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? null;
 	const canSubmit =
 		Boolean(organizationId) &&
 		Boolean(firstName.trim()) &&
 		Boolean(lastName.trim()) &&
 		Boolean(email.trim()) &&
-		Boolean(selectedRoleId);
+		selectedRoleIds.length > 0;
 
 	const groupedRoles = roles.reduce(
 		(groups, role) => {
-			const category = TEAM_ROLE_META[role.name]?.category ?? 'viewer';
+			const category = role.isSystem
+				? (TEAM_ROLE_META[role.name]?.category ?? 'viewer')
+				: 'custom';
 			groups[category].push(role);
 			return groups;
 		},
@@ -163,6 +175,7 @@ export default function InviteTeamMemberPage() {
 			admin: [] as TeamRole[],
 			manager: [] as TeamRole[],
 			viewer: [] as TeamRole[],
+			custom: [] as TeamRole[],
 		},
 	);
 
@@ -170,11 +183,12 @@ export default function InviteTeamMemberPage() {
 		['admin', 'Administrator'],
 		['manager', 'Operations'],
 		['viewer', 'Read Only'],
+		['custom', 'Custom Roles'],
 	] as const;
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		if (!organizationId || !selectedRoleId) {
+		if (!organizationId || selectedRoleIds.length === 0) {
 			return;
 		}
 
@@ -185,7 +199,7 @@ export default function InviteTeamMemberPage() {
 				firstName: firstName.trim(),
 				lastName: lastName.trim(),
 				email: email.trim(),
-				roleId: selectedRoleId,
+				roleIds: selectedRoleIds,
 			});
 			router.push('/dashboard/settings/team');
 		} catch (error) {
@@ -293,19 +307,27 @@ export default function InviteTeamMemberPage() {
 				<FormSection
 					id='roles'
 					title='Access Level'
-					description='Select one team role. Permissions come directly from the backend role catalog.'>
+					description='Select one or more team roles. Effective access is the union of all selected permissions.'>
 					{isLoading ? (
 						<p className='text-sm text-slate-500'>Loading available roles...</p>
 					) : (
 						<div className='flex flex-col gap-6'>
-							{selectedRole ? (
+							{selectedRoleIds.length > 0 ? (
 								<div className='rounded-lg border border-care-blue/20 bg-care-blue-light px-4 py-3'>
 									<p className='text-xs font-semibold uppercase tracking-wider text-care-blue'>
-										Selected Role
+										Selected Roles
 									</p>
-									<p className='mt-1 text-sm font-semibold text-foreground'>
-										{selectedRole.name}
-									</p>
+									<div className='mt-2 flex flex-wrap gap-2'>
+										{roles
+											.filter((role) => selectedRoleIds.includes(role.id))
+											.map((role) => (
+												<span
+													key={role.id}
+													className='rounded-full border border-care-blue/20 bg-white px-2.5 py-1 text-xs font-semibold text-care-blue'>
+													{role.name}
+												</span>
+											))}
+									</div>
 								</div>
 							) : null}
 
@@ -315,13 +337,19 @@ export default function InviteTeamMemberPage() {
 										<legend className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 											{label}
 										</legend>
-										<div role='radiogroup' className='flex flex-col gap-3'>
+										<div className='flex flex-col gap-3'>
 											{groupedRoles[category].map((role) => (
 												<RoleCard
 													key={role.id}
 													role={role}
-													selected={selectedRoleId === role.id}
-													onSelect={() => setSelectedRoleId(role.id)}
+													selected={selectedRoleIds.includes(role.id)}
+													onSelect={() =>
+														setSelectedRoleIds((current) =>
+															current.includes(role.id)
+																? current.filter((id) => id !== role.id)
+																: [...current, role.id],
+														)
+													}
 												/>
 											))}
 										</div>

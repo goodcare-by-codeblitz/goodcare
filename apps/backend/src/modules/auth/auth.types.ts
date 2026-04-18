@@ -61,12 +61,42 @@ export type ResetPasswordInput = ResetPasswordBody;
 
 export type AcceptInviteBody = {
 	token: string;
-	password: string;
+	password?: string | undefined;
 	firstName?: string | undefined;
 	lastName?: string | undefined;
 };
 
-export type AcceptInviteInput = AcceptInviteBody & { session: ISessionInput };
+export type InviteAcceptanceMode =
+	| 'new_user'
+	| 'existing_user_login_required'
+	| 'signed_in_match';
+
+export type InvitePreviewResult = {
+	organization: { id: string; slug: string; name: string };
+	kind: 'TEAM' | 'CARER';
+	email: string;
+	firstName: string;
+	lastName: string;
+	roles: Array<{
+		id: string;
+		key: string;
+		name: string;
+		description: string | null;
+		isSystem: boolean;
+		organizationId: string | null;
+		permissions: Array<{
+			id: string;
+			key: string;
+			description: string;
+		}>;
+	}>;
+	acceptanceMode: InviteAcceptanceMode;
+};
+
+export type AcceptInviteInput = AcceptInviteBody & {
+	session: ISessionInput;
+	currentUserId?: string | null;
+};
 
 export type AcceptInviteResult = {
 	userId: string;

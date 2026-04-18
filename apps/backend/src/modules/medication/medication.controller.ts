@@ -5,6 +5,7 @@ import {
 	createMedicationService,
 	deleteMedicationService,
 	getMedicationService,
+	getPatientMedicationMarService,
 	listMedicationAdministrationsService,
 	listMedicationsService,
 	updateMedicationService,
@@ -12,6 +13,7 @@ import {
 import type {
 	CreateMedicationAdministrationBody,
 	CreateMedicationBody,
+	MedicationMarQuery,
 	MedicationListQuery,
 	UpdateMedicationBody,
 } from './medication.types';
@@ -45,6 +47,21 @@ export async function createMedicationController(
 	});
 
 	return reply.status(201).send(medication);
+}
+
+export async function getPatientMarController(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	const { patientId } = request.params as { patientId: string };
+	const query = request.query as MedicationMarQuery;
+	const mar = await getPatientMedicationMarService(
+		request.org.id,
+		patientId,
+		query,
+	);
+
+	return reply.send(mar);
 }
 
 export async function getMedicationController(

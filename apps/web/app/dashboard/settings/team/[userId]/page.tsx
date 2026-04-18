@@ -98,7 +98,7 @@ function RoleCard({
 	return (
 		<button
 			type='button'
-			role='radio'
+			role='checkbox'
 			aria-checked={selected}
 			onClick={onSelect}
 			className={cn(
@@ -119,9 +119,20 @@ function RoleCard({
 				{selected ? <Check className='size-3' strokeWidth={3} /> : null}
 			</span>
 			<div className='min-w-0 flex-1'>
-				<p className='text-sm font-semibold text-foreground'>{role.name}</p>
+				<div className='flex flex-wrap items-center gap-2'>
+					<p className='text-sm font-semibold text-foreground'>{role.name}</p>
+					{role.isSystem ? (
+						<span className='rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500'>
+							System
+						</span>
+					) : (
+						<span className='rounded-full bg-care-blue-light px-2 py-0.5 text-[11px] font-semibold text-care-blue'>
+							Custom
+						</span>
+					)}
+				</div>
 				<p className='mt-0.5 text-sm leading-relaxed text-slate-600'>
-					{TEAM_ROLE_META[role.name]?.description ?? 'Organization role'}
+					{role.description ?? TEAM_ROLE_META[role.name]?.description ?? 'Organization role'}
 				</p>
 			</div>
 		</button>
@@ -138,7 +149,7 @@ export default function MemberProfilePage({
 	const [organizationId, setOrganizationId] = useState<string | null>(null);
 	const [member, setMember] = useState<TeamMember | null>(null);
 	const [roles, setRoles] = useState<TeamRole[]>([]);
-	const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+	const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 	const [status, setStatus] = useState<MemberStatus>('ACTIVE');
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSaving, setIsSaving] = useState(false);
@@ -167,7 +178,7 @@ export default function MemberProfilePage({
 				setOrganizationId(org.organizationId);
 				setRoles(teamRoles);
 				setMember(nextMember);
-				setSelectedRoleId(nextMember?.role?.id ?? null);
+				setSelectedRoleIds(nextMember?.roles.map((role) => role.id) ?? []);
 				setStatus(nextMember?.status ?? 'ACTIVE');
 			} catch (error) {
 				if (isMounted) {
@@ -199,7 +210,7 @@ export default function MemberProfilePage({
 			setErrorMessage('');
 			setSuccessMessage('');
 			await updateTeamMember(organizationId, member.userId, {
-				roleId: selectedRoleId,
+				roleIds: selectedRoleIds,
 				status,
 			});
 			setMember((current) =>
@@ -207,7 +218,7 @@ export default function MemberProfilePage({
 					? {
 							...current,
 							status,
-							role: roles.find((role) => role.id === selectedRoleId) ?? null,
+							roles: roles.filter((role) => selectedRoleIds.includes(role.id)),
 						}
 					: current,
 			);
@@ -261,9 +272,9 @@ export default function MemberProfilePage({
 	}
 
 	const initials = `${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
-	const currentRole = roles.find((role) => role.id === selectedRoleId) ?? null;
 	const hasChanges =
-		(member.role?.id ?? null) !== selectedRoleId || member.status !== status;
+		member.roles.map((role) => role.id).sort().join(',') !==
+			selectedRoleIds.slice().sort().join(',') || member.status !== status;
 
 	return (
 		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
@@ -371,16 +382,24 @@ export default function MemberProfilePage({
 				<FormSection
 					id='roles'
 					title='Access Level'
-					description='Assign one team role or remove access entirely by leaving the member unassigned.'>
+					description='Assign one or more team roles. Effective access is the union of all selected permissions.'>
 					<div className='flex flex-col gap-6'>
-						{currentRole ? (
+						{selectedRoleIds.length > 0 ? (
 							<div className='rounded-lg border border-care-blue/20 bg-care-blue-light px-4 py-3'>
 								<p className='text-xs font-semibold uppercase tracking-wider text-care-blue'>
-									Selected Role
+									Selected Roles
 								</p>
-								<p className='mt-1 text-sm font-semibold text-foreground'>
-									{currentRole.name}
-								</p>
+								<div className='mt-2 flex flex-wrap gap-2'>
+									{roles
+										.filter((role) => selectedRoleIds.includes(role.id))
+										.map((role) => (
+											<span
+												key={role.id}
+												className='rounded-full border border-care-blue/20 bg-white px-2.5 py-1 text-xs font-semibold text-care-blue'>
+												{role.name}
+											</span>
+										))}
+								</div>
 							</div>
 						) : (
 							<div className='flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 p-4'>
@@ -391,27 +410,29 @@ export default function MemberProfilePage({
 							</div>
 						)}
 
-						<div role='radiogroup' className='flex flex-col gap-3'>
+						<div className='flex flex-col gap-3'>
 							{roles.map((role) => (
 								<RoleCard
 									key={role.id}
 									role={role}
-									selected={selectedRoleId === role.id}
+									selected={selectedRoleIds.includes(role.id)}
 									onSelect={() =>
-										setSelectedRoleId((current) =>
-											current === role.id ? null : role.id,
+										setSelectedRoleIds((current) =>
+											current.includes(role.id)
+												? current.filter((id) => id !== role.id)
+												: [...current, role.id],
 										)
 									}
 								/>
 							))}
 						</div>
 
-						{selectedRoleId ? (
+						{selectedRoleIds.length > 0 ? (
 							<button
 								type='button'
-								onClick={() => setSelectedRoleId(null)}
+								onClick={() => setSelectedRoleIds([])}
 								className='self-start text-sm font-semibold text-care-blue hover:underline'>
-								Unassign team role
+								Clear selected team roles
 							</button>
 						) : null}
 					</div>

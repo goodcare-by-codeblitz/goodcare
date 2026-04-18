@@ -7,7 +7,6 @@ type AuthenticatedUser = {
 	organizationMemberships: Array<{
 		orgId: string;
 		orgSlug: string;
-		role: string;
 		status: string;
 	}>;
 };

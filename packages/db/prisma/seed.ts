@@ -2,15 +2,59 @@ import { hashPassword } from "../../helpers/src/index";
 import { prisma } from '../src/index';
 
 const roles = [
-    { name: 'SuperAdmin', scope: 'PLATFORM' as const },
-    { name: 'SystemAdmin', scope: 'PLATFORM' as const },
-    { name: 'Moderator', scope: 'PLATFORM' as const },
-    { name: 'Viewer', scope: 'PLATFORM' as const },
-	{ name: 'Admin', scope: 'ORGANIZATION' as const },
-	{ name: 'Manager', scope: 'ORGANIZATION' as const },
-	{ name: 'Caregiver', scope: 'ORGANIZATION' as const },
-	{ name: 'Viewer', scope: 'ORGANIZATION' as const },
-];
+	{
+		key: 'platform_super_admin',
+		name: 'SuperAdmin',
+		description: 'Full platform administration access.',
+		scope: 'PLATFORM' as const,
+	},
+	{
+		key: 'platform_system_admin',
+		name: 'SystemAdmin',
+		description: 'Operational platform administrator access.',
+		scope: 'PLATFORM' as const,
+	},
+	{
+		key: 'platform_moderator',
+		name: 'Moderator',
+		description: 'Moderation and incident oversight access.',
+		scope: 'PLATFORM' as const,
+	},
+	{
+		key: 'platform_viewer',
+		name: 'Viewer',
+		description: 'Read-only platform access.',
+		scope: 'PLATFORM' as const,
+	},
+	{
+		key: 'org_admin',
+		name: 'Admin',
+		description: 'Full organization administration access.',
+		scope: 'ORGANIZATION' as const,
+		organizationRoleKind: 'TEAM' as const,
+	},
+	{
+		key: 'org_manager',
+		name: 'Manager',
+		description: 'Operational team management access.',
+		scope: 'ORGANIZATION' as const,
+		organizationRoleKind: 'TEAM' as const,
+	},
+	{
+		key: 'org_caregiver',
+		name: 'Caregiver',
+		description: 'Care delivery role for staff assigned to visits and MAR workflows.',
+		scope: 'ORGANIZATION' as const,
+		organizationRoleKind: 'CARER' as const,
+	},
+	{
+		key: 'org_viewer',
+		name: 'Viewer',
+		description: 'Read-only organization access.',
+		scope: 'ORGANIZATION' as const,
+		organizationRoleKind: 'TEAM' as const,
+	},
+] as const;
 
 const permissions = [
 	// User management
@@ -84,7 +128,7 @@ async function createSuperAdmin() {
 	try {
 		await prisma.$transaction(async (tx) => {
 			const superAdminRole = await tx.role.findFirst({
-				where: { name: 'SuperAdmin', scope: 'PLATFORM' },
+				where: { key: 'platform_super_admin' },
 				select: { id: true },
 			});
 
@@ -124,16 +168,25 @@ async function main() {
 	for (const role of roles) {
 		await prisma.role.upsert({
 			where: {
-				scope_name: { scope: role.scope, name: role.name },
+				key: role.key,
 			},
-            update: {
-                name: role.name,
-                scope: role.scope,
-            },
+			update: {
+				name: role.name,
+				description: role.description,
+				scope: role.scope,
+				isSystem: true,
+				organizationId: null,
+				organizationRoleKind: role.organizationRoleKind ?? null,
+				archivedAt: null,
+			},
 			create: {
+				key: role.key,
 				name: role.name,
 				scope: role.scope,
-            },
+				description: role.description,
+				isSystem: true,
+				organizationRoleKind: role.organizationRoleKind ?? null,
+			},
 		});
 		console.log(`Upserted role: ${role.name} (${role.scope})`);
 	}
@@ -298,7 +351,9 @@ async function main() {
 		const role = await prisma.role.findFirst({
 			where: {
 				name: roleName,
-				...(roleScope ? { scope: roleScope } : {}),
+				scope: roleScope,
+				isSystem: true,
+				organizationId: null,
 			},
 		});
 

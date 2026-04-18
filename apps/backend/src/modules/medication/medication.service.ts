@@ -4,10 +4,28 @@ import type {
 	CreateMedicationAdministrationBody,
 	CreateMedicationBody,
 	MedicationListQuery,
+	MedicationMarQuery,
+	MedicationScheduleSlot,
 	UpdateMedicationBody,
 } from './medication.types';
 
 const db = prisma as any;
+
+const scheduleSlotOrder = [
+	'morning',
+	'noon',
+	'evening',
+	'night',
+	'bedtime',
+] as const satisfies readonly MedicationScheduleSlot[];
+
+const slotToDbValue: Record<MedicationScheduleSlot, string> = {
+	morning: 'MORNING',
+	noon: 'NOON',
+	evening: 'EVENING',
+	night: 'NIGHT',
+	bedtime: 'BEDTIME',
+};
 
 type MedicationRecord = {
 	id: string;
@@ -43,6 +61,7 @@ type MedicationAdministrationRecord = {
 	patientId: string;
 	organizationId: string;
 	result: string;
+	slot: MedicationScheduleSlot | null;
 	scheduledFor: Date | null;
 	administeredAt: Date | null;
 	notes: string | null;
@@ -117,15 +136,147 @@ function mapMedication(record: any): MedicationRecord {
 	};
 }
 
+function mapAdministration(record: any): MedicationAdministrationRecord {
+	return {
+		id: record.id,
+		medicationId: record.medicationId,
+		patientId: record.patientId,
+		organizationId: record.organizationId,
+		result: record.result,
+		slot: record.slot
+			? (String(record.slot).toLowerCase() as MedicationScheduleSlot)
+			: null,
+		scheduledFor: record.scheduledFor,
+		administeredAt: record.administeredAt,
+		notes: record.notes,
+		actorUser: record.actorUser,
+		createdAt: record.createdAt,
+		updatedAt: record.updatedAt,
+	};
+}
+
+function parseDateOnly(date: string) {
+	return new Date(`${date}T00:00:00.000Z`);
+}
+
+function addDays(date: Date, days: number) {
+	const next = new Date(date);
+	next.setUTCDate(next.getUTCDate() + days);
+	return next;
+}
+
+function formatDateKey(date: Date) {
+	return date.toISOString().slice(0, 10);
+}
+
+function formatDayLabel(date: Date, view: 'daily' | 'monthly') {
+	return date.toLocaleDateString('en-GB', {
+		timeZone: 'UTC',
+		weekday: view === 'daily' ? 'long' : undefined,
+		day: 'numeric',
+		month: 'short',
+	});
+}
+
+function getRangeForMar(view: 'daily' | 'monthly', date: string) {
+	const base = parseDateOnly(date);
+	if (view === 'daily') {
+		const end = addDays(base, 1);
+		return {
+			rangeStart: base,
+			rangeEnd: end,
+			days: [base],
+		};
+	}
+
+	const monthStart = new Date(
+		Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1),
+	);
+	const monthEnd = new Date(
+		Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 1),
+	);
+	const days: Date[] = [];
+	for (let cursor = new Date(monthStart); cursor < monthEnd; cursor = addDays(cursor, 1)) {
+		days.push(new Date(cursor));
+	}
+
+	return {
+		rangeStart: monthStart,
+		rangeEnd: monthEnd,
+		days,
+	};
+}
+
+function administrationEffectiveDate(administration: MedicationAdministrationRecord) {
+	return (
+		administration.scheduledFor ??
+		administration.administeredAt ??
+		administration.createdAt
+	);
+}
+
+function deriveSlotFromTime(date: Date) {
+	const hour = date.getUTCHours();
+	if (hour < 10) return 'morning';
+	if (hour < 14) return 'noon';
+	if (hour < 18) return 'evening';
+	if (hour < 22) return 'night';
+	return 'bedtime';
+}
+
+function resolveAdministrationSlot(
+	administration: MedicationAdministrationRecord,
+	medication: MedicationRecord,
+): MedicationScheduleSlot | null {
+	if (administration.slot) {
+		return administration.slot;
+	}
+
+	const enabledSlots = scheduleSlotOrder.filter((slot) => medication.schedule[slot]);
+	if (enabledSlots.length === 1) {
+		return enabledSlots[0] ?? null;
+	}
+
+	const effectiveDate = administrationEffectiveDate(administration);
+	return effectiveDate ? deriveSlotFromTime(effectiveDate) : null;
+}
+
+function isMedicationScheduledForSlot(
+	medication: MedicationRecord,
+	day: Date,
+	slot: MedicationScheduleSlot,
+) {
+	const dayKey = formatDateKey(day);
+	const startKey = formatDateKey(medication.startDate);
+	const endKey = medication.endDate ? formatDateKey(medication.endDate) : null;
+	if (dayKey < startKey) {
+		return false;
+	}
+	if (endKey && dayKey > endKey) {
+		return false;
+	}
+	if (medication.status === 'DISCONTINUED') {
+		return false;
+	}
+
+	return medication.schedule[slot];
+}
+
 async function ensurePatient(organizationId: string, patientId: string) {
 	const patient = await prisma.patient.findFirst({
 		where: { id: patientId, organizationId, deletedAt: null },
-		select: { id: true },
+		select: {
+			id: true,
+			firstName: true,
+			lastName: true,
+		},
 	});
 
 	if (!patient) {
 		throw new NotFoundError('Patient not found');
 	}
+
+	return patient;
 }
 
 async function ensureMedication(
@@ -148,6 +299,29 @@ async function ensureMedication(
 	}
 
 	return medication;
+}
+
+function administrationSelect() {
+	return {
+		id: true,
+		medicationId: true,
+		patientId: true,
+		organizationId: true,
+		result: true,
+		slot: true,
+		scheduledFor: true,
+		administeredAt: true,
+		notes: true,
+		createdAt: true,
+		updatedAt: true,
+		actorUser: {
+			select: {
+				firstName: true,
+				lastName: true,
+				email: true,
+			},
+		},
+	};
 }
 
 export async function listMedicationsService(
@@ -310,29 +484,15 @@ export async function listMedicationAdministrationsService(
 
 	const administrations = await db.medicationAdministration.findMany({
 		where: { organizationId, patientId, medicationId },
-		select: {
-			id: true,
-			medicationId: true,
-			patientId: true,
-			organizationId: true,
-			result: true,
-			scheduledFor: true,
-			administeredAt: true,
-			notes: true,
-			createdAt: true,
-			updatedAt: true,
-			actorUser: {
-				select: {
-					firstName: true,
-					lastName: true,
-					email: true,
-				},
-			},
-		},
+		select: administrationSelect(),
 		orderBy: [{ administeredAt: 'desc' }, { createdAt: 'desc' }],
 	});
 
-	return { administrations };
+	return {
+		administrations: administrations.map((administration: any) =>
+			mapAdministration(administration),
+		),
+	};
 }
 
 export async function createMedicationAdministrationService(
@@ -344,12 +504,13 @@ export async function createMedicationAdministrationService(
 ): Promise<MedicationAdministrationRecord> {
 	await ensureMedication(organizationId, patientId, medicationId);
 
-	return db.medicationAdministration.create({
+	const administration = await db.medicationAdministration.create({
 		data: {
 			organizationId,
 			patientId,
 			medicationId,
 			result: input.result,
+			slot: input.slot ? slotToDbValue[input.slot] : null,
 			scheduledFor: input.scheduledFor ? new Date(input.scheduledFor) : null,
 			administeredAt: input.administeredAt
 				? new Date(input.administeredAt)
@@ -359,24 +520,153 @@ export async function createMedicationAdministrationService(
 			notes: input.notes ?? null,
 			actorUserId,
 		},
-		select: {
-			id: true,
-			medicationId: true,
-			patientId: true,
-			organizationId: true,
-			result: true,
-			scheduledFor: true,
-			administeredAt: true,
-			notes: true,
-			createdAt: true,
-			updatedAt: true,
-			actorUser: {
-				select: {
-					firstName: true,
-					lastName: true,
-					email: true,
-				},
-			},
-		},
+		select: administrationSelect(),
 	});
+
+	return mapAdministration(administration);
+}
+
+export async function getPatientMedicationMarService(
+	organizationId: string,
+	patientId: string,
+	query: MedicationMarQuery,
+) {
+	const patient = await ensurePatient(organizationId, patientId);
+	const view = query.view === 'monthly' ? 'monthly' : 'daily';
+	const referenceDate = query.date ?? formatDateKey(new Date());
+	const { rangeStart, rangeEnd, days } = getRangeForMar(view, referenceDate);
+
+	const medications = (
+		await db.medication.findMany({
+			where: {
+				organizationId,
+				patientId,
+				deletedAt: null,
+				startDate: { lt: rangeEnd },
+				OR: [{ endDate: null }, { endDate: { gte: rangeStart } }],
+			},
+			select: medicationSelect(),
+			orderBy: [{ name: 'asc' }],
+		})
+	).map((medication: any) => mapMedication(medication));
+
+	const administrations = (
+		await db.medicationAdministration.findMany({
+			where: {
+				organizationId,
+				patientId,
+				OR: [
+					{
+						scheduledFor: {
+							gte: rangeStart,
+							lt: rangeEnd,
+						},
+					},
+					{
+						administeredAt: {
+							gte: rangeStart,
+							lt: rangeEnd,
+						},
+					},
+					{
+						AND: [
+							{ scheduledFor: null },
+							{ administeredAt: null },
+							{
+								createdAt: {
+									gte: rangeStart,
+									lt: rangeEnd,
+								},
+							},
+						],
+					},
+				],
+			},
+			select: administrationSelect(),
+			orderBy: [{ administeredAt: 'desc' }, { createdAt: 'desc' }],
+		})
+	).map((administration: any) => mapAdministration(administration));
+
+	const daysMeta = days.map((day) => ({
+		key: formatDateKey(day),
+		label: formatDayLabel(day, view),
+		dayOfMonth: day.getUTCDate(),
+		isToday: formatDateKey(day) === formatDateKey(new Date()),
+	}));
+
+	const rows = medications.map((medication: MedicationRecord) => {
+		const cells: Record<
+			string,
+			Partial<
+				Record<
+					MedicationScheduleSlot,
+					{
+						status:
+							| 'GIVEN'
+							| 'MISSED'
+							| 'REFUSED'
+							| 'NA'
+							| 'DUE'
+							| 'NOT_SCHEDULED';
+						administration: MedicationAdministrationRecord | null;
+					}
+				>
+			>
+		> = {};
+
+		for (const day of days) {
+			const dayKey = formatDateKey(day);
+			cells[dayKey] = {};
+			for (const slot of scheduleSlotOrder) {
+				cells[dayKey]![slot] = {
+					status: isMedicationScheduledForSlot(medication, day, slot)
+						? 'DUE'
+						: 'NOT_SCHEDULED',
+					administration: null,
+				};
+			}
+		}
+
+		const medicationAdministrations = administrations.filter(
+			(administration: MedicationAdministrationRecord) =>
+				administration.medicationId === medication.id,
+		);
+
+		for (const administration of medicationAdministrations) {
+			const slot = resolveAdministrationSlot(administration, medication);
+			if (!slot) {
+				continue;
+			}
+
+			const effectiveDate = administrationEffectiveDate(administration);
+			if (!effectiveDate) {
+				continue;
+			}
+
+			const dayKey = formatDateKey(effectiveDate);
+			if (!cells[dayKey]?.[slot]) {
+				continue;
+			}
+
+			cells[dayKey]![slot] = {
+				status: administration.result as 'GIVEN' | 'MISSED' | 'REFUSED' | 'NA',
+				administration,
+			};
+		}
+
+		return {
+			medication,
+			cells,
+		};
+	});
+
+	return {
+		patient,
+		view,
+		referenceDate,
+		slots: scheduleSlotOrder,
+		days: daysMeta,
+		rows,
+		history: administrations,
+	};
 }

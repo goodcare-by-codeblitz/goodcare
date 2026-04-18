@@ -4,13 +4,18 @@ import { hashPassword, verifyPassword } from '@repo/helpers';
 import crypto from 'crypto';
 import { generateSlug } from '../../../utils/generate-slug';
 import { hashToken, verifyTokenHash } from '../../../utils/token-hash';
-import { BadRequestError, ConflictError } from '../../lib/errors';
+import {
+	BadRequestError,
+	ConflictError,
+	ForbiddenError,
+} from '../../lib/errors';
 import type {
 	AcceptInviteInput,
 	AcceptInviteResult,
 	ChangePasswordInput,
 	ForgotPasswordInput,
 	ForgotPasswordResult,
+	InvitePreviewResult,
 	LoginInput,
 	LoginResult,
 	RefreshResult,
@@ -80,7 +85,7 @@ export async function registerService(
 			});
 
 			const adminRole = await tx.role.findFirst({
-				where: { name: 'Admin', scope: 'ORGANIZATION' },
+				where: { key: 'org_admin' },
 				select: { id: true },
 			});
 
@@ -244,47 +249,89 @@ export async function changePasswordService(
 export async function acceptInviteService(
 	input: AcceptInviteInput,
 ): Promise<AcceptInviteResult> {
-	const tokenHash = hashToken(input.token);
+	const inviteToken = await getValidatedInviteToken(input.token);
+	const organizationUser = inviteToken.organizationUser!;
+	const invitedUser = organizationUser.user;
+	const isExistingUser = invitedUser.passwordHash.trim().length > 0;
 
-	const inviteToken = await prisma.inviteToken.findUnique({
-		where: { tokenHash },
-		include: {
-			organization: { select: { id: true, slug: true, name: true } },
-			organizationUser: { select: { id: true, userId: true } },
-		},
-	});
-
-	if (
-		!inviteToken ||
-		inviteToken.usedAt ||
-		inviteToken.revokedAt ||
-		inviteToken.expiresAt < new Date() ||
-		!inviteToken.organizationUser
-	) {
-		throw new Error('Invalid or expired invite token');
+	if (isExistingUser && input.currentUserId !== organizationUser.userId) {
+		throw new ForbiddenError(
+			'Please sign in as the invited user before accepting this invitation.',
+		);
 	}
 
-	const newHash = await hashPassword(input.password);
+	if (!isExistingUser && !input.password) {
+		throw new BadRequestError('A password is required to accept this invitation.', {
+			reason: 'PASSWORD_REQUIRED',
+			code: 'PASSWORD_REQUIRED',
+			statusCode: 400,
+		});
+	}
+
+	const newHash =
+		!isExistingUser && input.password
+			? await hashPassword(input.password)
+			: null;
 
 	const result = await prisma.$transaction(async (tx) => {
-		const updateData: Record<string, string> = { passwordHash: newHash };
+		const updateData: Record<string, string> = {};
+		if (newHash) updateData.passwordHash = newHash;
 		if (input.firstName) updateData.firstName = input.firstName;
 		if (input.lastName) updateData.lastName = input.lastName;
 
 		const user = await tx.user.update({
-			where: { id: inviteToken.organizationUser!.userId },
+			where: { id: organizationUser.userId },
 			data: updateData,
 			select: { id: true, email: true },
 		});
 
+		if (inviteToken.kind === 'TEAM') {
+			await tx.roleAssignment.deleteMany({
+				where: {
+					userId: user.id,
+					organizationId: inviteToken.organization.id,
+					role: {
+						organizationRoleKind: 'TEAM',
+					},
+				},
+			});
+		}
+
+		if (inviteToken.roles.length > 0) {
+			await tx.roleAssignment.createMany({
+				data: inviteToken.roles.map((entry) => ({
+					userId: user.id,
+					roleId: entry.role.id,
+					organizationId: inviteToken.organization.id,
+				})),
+				skipDuplicates: true,
+			});
+		}
+
 		await tx.organizationUser.update({
-			where: { id: inviteToken.organizationUser!.id },
-			data: { status: 'ACTIVE', joinedAt: new Date() },
+			where: { id: organizationUser.id },
+			data: {
+				status: 'ACTIVE',
+				joinedAt: new Date(),
+				leftAt: null,
+			},
+		});
+
+		await tx.inviteToken.updateMany({
+			where: {
+				organizationUserId: organizationUser.id,
+				usedAt: null,
+				revokedAt: null,
+			},
+			data: { revokedAt: new Date() },
 		});
 
 		await tx.inviteToken.update({
 			where: { id: inviteToken.id },
-			data: { usedAt: new Date() },
+			data: {
+				usedAt: new Date(),
+				revokedAt: null,
+			},
 		});
 
 		await tx.session.create({
@@ -305,6 +352,41 @@ export async function acceptInviteService(
 		userId: result.userId,
 		email: result.email,
 		organization: inviteToken.organization,
+	};
+}
+
+export async function getInvitePreviewService(
+	token: string,
+	currentUserId?: string | null,
+): Promise<InvitePreviewResult> {
+	const inviteToken = await getValidatedInviteToken(token);
+	const organizationUser = inviteToken.organizationUser!;
+	const invitedUser = organizationUser.user;
+	const isExistingUser = invitedUser.passwordHash.trim().length > 0;
+
+	const acceptanceMode =
+		currentUserId === organizationUser.userId
+			? 'signed_in_match'
+			: isExistingUser
+				? 'existing_user_login_required'
+				: 'new_user';
+
+	return {
+		organization: inviteToken.organization,
+		kind: inviteToken.kind,
+		email: inviteToken.email,
+		firstName: inviteToken.inviteeFirstName,
+		lastName: inviteToken.inviteeLastName,
+		roles: inviteToken.roles.map((entry) => ({
+			id: entry.role.id,
+			key: entry.role.key,
+			name: entry.role.name,
+			description: entry.role.description,
+			isSystem: entry.role.isSystem,
+			organizationId: entry.role.organizationId,
+			permissions: entry.role.permissions.map((permissionEntry) => permissionEntry.permission),
+		})),
+		acceptanceMode,
 	};
 }
 
@@ -348,4 +430,69 @@ export async function myOrganizationsService(userId: string) {
 	});
 
 	return orgs;
+}
+
+async function getValidatedInviteToken(token: string) {
+	const tokenHash = hashToken(token);
+
+	const inviteToken = await prisma.inviteToken.findUnique({
+		where: { tokenHash },
+		include: {
+			organization: { select: { id: true, slug: true, name: true } },
+			organizationUser: {
+				select: {
+					id: true,
+					userId: true,
+					user: {
+						select: {
+							id: true,
+							email: true,
+							passwordHash: true,
+						},
+					},
+				},
+			},
+			roles: {
+				select: {
+					role: {
+						select: {
+							id: true,
+							key: true,
+							name: true,
+							description: true,
+							isSystem: true,
+							organizationId: true,
+							permissions: {
+								select: {
+									permission: {
+										select: {
+											id: true,
+											key: true,
+											description: true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	});
+
+	if (
+		!inviteToken ||
+		inviteToken.usedAt ||
+		inviteToken.revokedAt ||
+		inviteToken.expiresAt < new Date() ||
+		!inviteToken.organizationUser
+	) {
+		throw new BadRequestError('Invalid or expired invite token', {
+			reason: 'INVALID_INVITE_TOKEN',
+			code: 'INVALID_INVITE_TOKEN',
+			statusCode: 400,
+		});
+	}
+
+	return inviteToken;
 }

@@ -18,6 +18,16 @@ enum RoleScope {
   ORGANIZATION
 }
 
+enum OrganizationRoleKind {
+  TEAM
+  CARER
+}
+
+enum InviteKind {
+  TEAM
+  CARER
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -124,6 +134,16 @@ enum Gender {
   NOT_SPECIFIED
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 enum MedicationStatus {
   ACTIVE
   PRN
@@ -135,6 +155,14 @@ enum MedicationAdministrationResult {
   MISSED
   REFUSED
   NA
+}
+
+enum MedicationScheduleSlot {
+  MORNING
+  NOON
+  EVENING
+  NIGHT
+  BEDTIME
 }
 
 model User {
@@ -183,11 +211,13 @@ model Organization {
   carers         Carer[]
   qualifications Qualification[]
   inviteTokens   InviteToken[]
+  roles          Role[]
   patientProfiles PatientProfile[]
   patientEmergencyContacts PatientEmergencyContact[]
   patientAllergies PatientAllergy[]
   medications Medication[]
   medicationAdministrations MedicationAdministration[]
+  carerAvailabilitySlots CarerAvailabilitySlot[]
 
   @@unique([slug])
 }
@@ -217,15 +247,24 @@ model OrganizationUser {
 }
 
 model Role {
-  id    String    @id @default(uuid())
-  name  String
-  scope RoleScope @default(PLATFORM)
+  id                   String               @id @default(uuid())
+  key                  String               @unique
+  name                 String
+  description          String?
+  scope                RoleScope            @default(PLATFORM)
+  isSystem             Boolean              @default(true)
+  organizationId       String?
+  organizationRoleKind OrganizationRoleKind?
+  archivedAt           DateTime?
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   roleAssignments RoleAssignment[]
   permissions     RolePermission[]
+  inviteTokens    InviteTokenRole[]
 
-  @@unique([scope, name])
-  @@index([name])
+  @@index([scope, name])
+  @@index([scope, organizationId, organizationRoleKind, archivedAt])
 }
 
 model Permission {
@@ -265,7 +304,6 @@ model Carer {
   hireDate           DateTime
   employmentType     String
   experienceYears    Int              @default(0)
-  availability       String
   updatedAt          DateTime         @updatedAt
   status             EmploymentStatus @default(ACTIVE)
   organizationUserId String           @unique
@@ -278,11 +316,31 @@ model Carer {
   visitAssignments VisitAssignment[]
   dailyNotes       DailyNote[]
   visitTasks       VisitTask[]
+  availabilitySlots CarerAvailabilitySlot[]
 
   @@unique([id, organizationUserId])
   @@unique([id, organizationId])
   @@index([organizationId])
   @@index([status])
+}
+
+model CarerAvailabilitySlot {
+  id                String    @id @default(uuid())
+  carerId           String
+  organizationId    String
+  dayOfWeek         DayOfWeek
+  startTimeMinutes  Int
+  endTimeMinutes    Int
+  crossesMidnight   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  carer        Carer        @relation(fields: [carerId, organizationId], references: [id, organizationId])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([carerId, organizationId, dayOfWeek, startTimeMinutes, endTimeMinutes, crossesMidnight])
+  @@index([organizationId, dayOfWeek])
+  @@index([carerId, organizationId])
 }
 
 model Qualification {
@@ -583,6 +641,7 @@ model MedicationAdministration {
   patientId      String
   organizationId String
   result         MedicationAdministrationResult
+  slot           MedicationScheduleSlot?
   scheduledFor   DateTime?
   administeredAt DateTime?
   notes          String?
@@ -707,7 +766,10 @@ model InviteToken {
   id                 String    @id @default(uuid())
   organizationId     String
   organizationUserId String?
+  kind               InviteKind
   email              String
+  inviteeFirstName   String
+  inviteeLastName    String
   tokenHash          String    @unique
   expiresAt          DateTime
   usedAt             DateTime?
@@ -718,10 +780,22 @@ model InviteToken {
   organization     Organization      @relation(fields: [organizationId], references: [id])
   organizationUser OrganizationUser? @relation(fields: [organizationUserId], references: [id])
   createdBy        User              @relation(fields: [createdByUserId], references: [id])
+  roles            InviteTokenRole[]
 
   @@index([organizationId, email])
   @@index([organizationUserId])
   @@index([expiresAt])
+}
+
+model InviteTokenRole {
+  inviteTokenId String
+  roleId        String
+
+  inviteToken InviteToken @relation(fields: [inviteTokenId], references: [id], onDelete: Cascade)
+  role        Role        @relation(fields: [roleId], references: [id])
+
+  @@id([inviteTokenId, roleId])
+  @@index([roleId])
 }
 
 model PasswordResetToken {

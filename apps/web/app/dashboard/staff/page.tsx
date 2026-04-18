@@ -83,7 +83,9 @@ function CarerRow({ carer }: { carer: CarerListItem }) {
 	const avatarClassName = getAvatarColor(`${carer.firstName}${carer.lastName}`);
 
 	return (
-		<div className='flex items-center gap-4 px-6 py-4'>
+		<Link
+			href={`/dashboard/staff/${carer.id}`}
+			className='flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50'>
 			<span
 				className={cn(
 					'inline-flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-bold',
@@ -114,7 +116,7 @@ function CarerRow({ carer }: { carer: CarerListItem }) {
 			<p className='hidden w-24 shrink-0 text-xs text-slate-400 xl:block'>
 				{formatDate(carer.hireDate)}
 			</p>
-		</div>
+		</Link>
 	);
 }
 

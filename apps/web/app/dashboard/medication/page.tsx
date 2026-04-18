@@ -125,7 +125,7 @@ export default function MedicationPage() {
 					</div>
 					<p className='mt-3 max-w-3xl text-sm leading-relaxed text-slate-600'>
 						This organization-wide view keeps medication visibility broad, while
-						each patient retains their own medication workflow and administration log.
+						each patient retains their own medication workflow and digital MAR sheet.
 					</p>
 				</div>
 			</div>
@@ -187,7 +187,7 @@ export default function MedicationPage() {
 							{medication.patient.firstName} {medication.patient.lastName}
 						</p>
 						<p className='text-sm text-slate-600'>{medication.status}</p>
-						<p className='text-sm font-semibold text-care-blue'>Open workflow</p>
+						<p className='text-sm font-semibold text-care-blue'>Open MAR and workflow</p>
 					</Link>
 				))}
 				{medications.length === 0 ? (

@@ -59,6 +59,7 @@ export const ModelName = {
   RolePermission: 'RolePermission',
   RoleAssignment: 'RoleAssignment',
   Carer: 'Carer',
+  CarerAvailabilitySlot: 'CarerAvailabilitySlot',
   Qualification: 'Qualification',
   QualificationType: 'QualificationType',
   Patient: 'Patient',
@@ -80,6 +81,7 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   Address: 'Address',
   InviteToken: 'InviteToken',
+  InviteTokenRole: 'InviteTokenRole',
   PasswordResetToken: 'PasswordResetToken',
   Session: 'Session'
 } as const
@@ -145,8 +147,14 @@ export type OrganizationUserScalarFieldEnum = (typeof OrganizationUserScalarFiel
 
 export const RoleScalarFieldEnum = {
   id: 'id',
+  key: 'key',
   name: 'name',
-  scope: 'scope'
+  description: 'description',
+  scope: 'scope',
+  isSystem: 'isSystem',
+  organizationId: 'organizationId',
+  organizationRoleKind: 'organizationRoleKind',
+  archivedAt: 'archivedAt'
 } as const
 
 export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
@@ -184,7 +192,6 @@ export const CarerScalarFieldEnum = {
   hireDate: 'hireDate',
   employmentType: 'employmentType',
   experienceYears: 'experienceYears',
-  availability: 'availability',
   updatedAt: 'updatedAt',
   status: 'status',
   organizationUserId: 'organizationUserId',
@@ -192,6 +199,21 @@ export const CarerScalarFieldEnum = {
 } as const
 
 export type CarerScalarFieldEnum = (typeof CarerScalarFieldEnum)[keyof typeof CarerScalarFieldEnum]
+
+
+export const CarerAvailabilitySlotScalarFieldEnum = {
+  id: 'id',
+  carerId: 'carerId',
+  organizationId: 'organizationId',
+  dayOfWeek: 'dayOfWeek',
+  startTimeMinutes: 'startTimeMinutes',
+  endTimeMinutes: 'endTimeMinutes',
+  crossesMidnight: 'crossesMidnight',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarerAvailabilitySlotScalarFieldEnum = (typeof CarerAvailabilitySlotScalarFieldEnum)[keyof typeof CarerAvailabilitySlotScalarFieldEnum]
 
 
 export const QualificationScalarFieldEnum = {
@@ -425,6 +447,7 @@ export const MedicationAdministrationScalarFieldEnum = {
   patientId: 'patientId',
   organizationId: 'organizationId',
   result: 'result',
+  slot: 'slot',
   scheduledFor: 'scheduledFor',
   administeredAt: 'administeredAt',
   notes: 'notes',
@@ -515,7 +538,10 @@ export const InviteTokenScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
   organizationUserId: 'organizationUserId',
+  kind: 'kind',
   email: 'email',
+  inviteeFirstName: 'inviteeFirstName',
+  inviteeLastName: 'inviteeLastName',
   tokenHash: 'tokenHash',
   expiresAt: 'expiresAt',
   usedAt: 'usedAt',
@@ -525,6 +551,14 @@ export const InviteTokenScalarFieldEnum = {
 } as const
 
 export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
+
+
+export const InviteTokenRoleScalarFieldEnum = {
+  inviteTokenId: 'inviteTokenId',
+  roleId: 'roleId'
+} as const
+
+export type InviteTokenRoleScalarFieldEnum = (typeof InviteTokenRoleScalarFieldEnum)[keyof typeof InviteTokenRoleScalarFieldEnum]
 
 
 export const PasswordResetTokenScalarFieldEnum = {

@@ -18,11 +18,13 @@ import {
 	getCurrentOrgContext,
 	getOrgManagementError,
 	hasOrgPermission,
+	previewVisitAssignment,
 	unassignVisitCarer,
 	updateVisit,
 	type CarerListItem,
 	type OrgContext,
 	type PatientDetail,
+	type VisitAssignmentPreview,
 	type VisitRecord,
 	type VisitStatus,
 } from '@/lib/org-management';
@@ -83,6 +85,7 @@ export default function PatientRotaPage({
 	const [visitForm, setVisitForm] = useState<VisitForm>(emptyVisitForm());
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSaving, setIsSaving] = useState(false);
+	const [assignmentPreview, setAssignmentPreview] = useState<VisitAssignmentPreview | null>(null);
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
 
@@ -172,6 +175,8 @@ export default function PatientRotaPage({
 		if (visitId === 'new') {
 			setSelectedVisitId('new');
 			setVisitForm(emptyVisitForm());
+			setSelectedCarerId('');
+			setAssignmentPreview(null);
 			return;
 		}
 
@@ -182,7 +187,44 @@ export default function PatientRotaPage({
 
 		setSelectedVisitId(visitId);
 		setVisitForm(toVisitForm(visit));
+		setSelectedCarerId('');
+		setAssignmentPreview(null);
 	};
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const loadPreview = async () => {
+			if (!orgContext || !selectedVisit || !selectedCarerId || !canAssignVisits) {
+				setAssignmentPreview(null);
+				return;
+			}
+
+			try {
+				const preview = await previewVisitAssignment(
+					orgContext.organizationId,
+					selectedVisit.id,
+					selectedCarerId,
+				);
+				if (isMounted) {
+					setAssignmentPreview(preview);
+				}
+			} catch (error) {
+				if (isMounted) {
+					setAssignmentPreview(null);
+					setErrorMessage(
+						getOrgManagementError(error, 'Unable to evaluate this assignment.'),
+					);
+				}
+			}
+		};
+
+		void loadPreview();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [canAssignVisits, orgContext, selectedCarerId, selectedVisit]);
 
 	const handleSaveVisit = async () => {
 		if (!orgContext || !canManageVisits) {
@@ -255,9 +297,23 @@ export default function PatientRotaPage({
 
 		try {
 			setIsSaving(true);
+			if (!assignmentPreview) {
+				const preview = await previewVisitAssignment(
+					orgContext.organizationId,
+					selectedVisit.id,
+					selectedCarerId,
+				);
+				setAssignmentPreview(preview);
+				if (preview.warnings.length > 0) {
+					setSuccessMessage('');
+					return;
+				}
+			}
+
 			await assignVisitCarer(orgContext.organizationId, selectedVisit.id, selectedCarerId);
 			await refreshVisits(orgContext);
 			setSelectedCarerId('');
+			setAssignmentPreview(null);
 			setSuccessMessage('Carer assigned.');
 		} catch (error) {
 			setErrorMessage(getOrgManagementError(error, 'Unable to assign this carer.'));
@@ -531,13 +587,30 @@ export default function PatientRotaPage({
 										))}
 									</NativeSelect>
 								</div>
+								{assignmentPreview?.warnings.length ? (
+									<div className='mt-4 space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900'>
+										<p className='font-semibold'>Assignment warnings</p>
+										{assignmentPreview.warnings.map((warning, index) => (
+											<div key={`${warning.code}-${index}`} className='rounded-lg bg-white/70 p-3'>
+												<p>{warning.message}</p>
+												{warning.relatedVisit ? (
+													<p className='mt-1 text-xs text-amber-800'>
+														Related visit: {warning.relatedVisit.patientName} from{' '}
+														{formatDateTime(warning.relatedVisit.scheduledStart)} to{' '}
+														{formatDateTime(warning.relatedVisit.scheduledEnd)}
+													</p>
+												) : null}
+											</div>
+										))}
+									</div>
+								) : null}
 								<div className='mt-4 flex items-center gap-2 text-sm text-slate-500'>
 									<CalendarClock className='size-4' />
-									<span>Assignments only appear on saved visits.</span>
+									<span>Assignments only appear on saved visits and warnings are advisory only in this release.</span>
 								</div>
 								{canAssignVisits ? (
 									<Button type='button' className='mt-4' onClick={handleAssignCarer} disabled={!selectedVisit || !selectedCarerId || isSaving}>
-										Assign carer
+										{assignmentPreview?.warnings.length ? 'Assign anyway' : 'Assign carer'}
 									</Button>
 								) : null}
 							</div>

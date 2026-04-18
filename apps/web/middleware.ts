@@ -16,6 +16,50 @@ async function isValidAccessToken(token: string | undefined) {
 	}
 }
 
+function getBackendBaseUrl() {
+	return process.env.NEXT_PUBLIC_BACKEND_BASE_URL?.replace(/\/+$/, '') ?? null;
+}
+
+async function tryRefreshSession(req: NextRequest) {
+	const refreshToken = req.cookies.get('refresh_token')?.value;
+	const backendBaseUrl = getBackendBaseUrl();
+	if (!refreshToken || !backendBaseUrl) {
+		return { valid: false, setCookie: null as string | null };
+	}
+
+	try {
+		const response = await fetch(`${backendBaseUrl}/v1/auth/refresh`, {
+			method: 'POST',
+			headers: {
+				cookie: req.headers.get('cookie') ?? '',
+			},
+			cache: 'no-store',
+		});
+
+		if (!response.ok) {
+			return { valid: false, setCookie: null as string | null };
+		}
+
+		return {
+			valid: true,
+			setCookie: response.headers.get('set-cookie'),
+		};
+	} catch {
+		return { valid: false, setCookie: null as string | null };
+	}
+}
+
+function applyRefreshCookie(
+	response: NextResponse,
+	refreshSetCookie: string | null,
+) {
+	if (refreshSetCookie) {
+		response.headers.append('set-cookie', refreshSetCookie);
+	}
+
+	return response;
+}
+
 function getHost(req: NextRequest) {
 	return req.headers.get('host') ?? '';
 }
@@ -33,7 +77,14 @@ function hasSubdomain(host: string, baseDomain: string) {
 
 export async function middleware(req: NextRequest) {
 	const accessToken = req.cookies.get('access_token')?.value;
-	const valid = await isValidAccessToken(accessToken);
+	let valid = await isValidAccessToken(accessToken);
+	let refreshSetCookie: string | null = null;
+
+	if (!valid) {
+		const refreshResult = await tryRefreshSession(req);
+		valid = refreshResult.valid;
+		refreshSetCookie = refreshResult.setCookie;
+	}
 
 	const host = getHost(req);
 	const baseDomain = getBaseDomain();
@@ -48,30 +99,36 @@ export async function middleware(req: NextRequest) {
 	if (!orgSubdomainPresent && isDashboardRoute) {
 		const url = req.nextUrl.clone();
 		url.pathname = valid ? '/select-org' : '/login';
-		return NextResponse.redirect(url);
+		return applyRefreshCookie(NextResponse.redirect(url), refreshSetCookie);
 	}
 
 	// If subdomain exists, skip org selection
 	if (orgSubdomainPresent && isSelectOrgRoute) {
 		const url = req.nextUrl.clone();
 		url.pathname = '/dashboard';
-		return NextResponse.redirect(url);
+		return applyRefreshCookie(NextResponse.redirect(url), refreshSetCookie);
 	}
 
 	// Standard auth gating
 	if (isLoginRoute && valid) {
 		const url = req.nextUrl.clone();
 		url.pathname = '/dashboard';
-		return NextResponse.redirect(url);
+		return applyRefreshCookie(NextResponse.redirect(url), refreshSetCookie);
+	}
+
+	if (isSelectOrgRoute && !orgSubdomainPresent && !valid) {
+		const url = req.nextUrl.clone();
+		url.pathname = '/login';
+		return applyRefreshCookie(NextResponse.redirect(url), refreshSetCookie);
 	}
 
 	if (isDashboardRoute && !valid) {
 		const url = req.nextUrl.clone();
 		url.pathname = '/login';
-		return NextResponse.redirect(url);
+		return applyRefreshCookie(NextResponse.redirect(url), refreshSetCookie);
 	}
 
-	return NextResponse.next();
+	return applyRefreshCookie(NextResponse.next(), refreshSetCookie);
 }
 
 export const config = {

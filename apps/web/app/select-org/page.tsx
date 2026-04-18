@@ -1,6 +1,7 @@
 'use client';
 
 import { buildBaseAppUrl, buildOrgAppUrl } from '@/lib/auth-session';
+import { authApi } from '@/lib/api-client';
 import { Header } from '@/components/dashboard';
 import {
 	NativeSelect,
@@ -67,7 +68,7 @@ function SelectOrg() {
 			setErrorMessage('');
 			setOrganisations([]);
 
-			const res = await axios.get(`${baseUrl}/v1/auth/my-organizations`, {
+			const res = await authApi.get(`${baseUrl}/v1/auth/my-organizations`, {
 				withCredentials: true,
 			});
 

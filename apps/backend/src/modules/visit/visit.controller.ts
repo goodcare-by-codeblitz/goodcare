@@ -1,10 +1,17 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { logAudit } from '../../lib/audit';
 import {
-	assignCarerService, createVisitService, deleteVisitService, getVisitService,
-	listVisitsService, unassignCarerService, updateVisitService,
+	assignCarerService, createVisitService, deleteVisitService,
+	getVisitAssignmentPreviewService, getVisitService, listVisitsService,
+	unassignCarerService, updateVisitService,
 } from './visit.service';
-import type { AssignCarerBody, CreateVisitBody, UpdateVisitBody, VisitListQuery } from './visit.types';
+import type {
+	AssignCarerBody,
+	CreateVisitBody,
+	UpdateVisitBody,
+	VisitAssignmentPreviewQuery,
+	VisitListQuery,
+} from './visit.types';
 
 export async function createVisitController(request: FastifyRequest, reply: FastifyReply) {
 	const body = request.body as CreateVisitBody;
@@ -89,6 +96,21 @@ export async function assignCarerController(request: FastifyRequest, reply: Fast
 	});
 
 	return reply.status(201).send(assignment);
+}
+
+export async function previewAssignmentController(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	const { visitId } = request.params as { visitId: string };
+	const { carerId } = request.query as VisitAssignmentPreviewQuery;
+	const preview = await getVisitAssignmentPreviewService(
+		request.org.id,
+		visitId,
+		carerId,
+	);
+
+	return reply.send(preview);
 }
 
 export async function unassignCarerController(request: FastifyRequest, reply: FastifyReply) {

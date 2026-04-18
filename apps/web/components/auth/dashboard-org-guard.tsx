@@ -1,6 +1,7 @@
 'use client';
 
 import { buildBaseAppUrl, getCurrentOrgSlug } from '@/lib/auth-session';
+import { authApi } from '@/lib/api-client';
 import { useSessionStore } from '@/lib/stores/session-store';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -36,7 +37,7 @@ export function DashboardOrgGuard({
 
 			try {
 				const baseUrl = backendBaseUrl.replace(/\/+$/, '');
-				const response = await axios.get(
+				const response = await authApi.get(
 					`${baseUrl}/v1/auth/current-org-access`,
 					{
 						withCredentials: true,

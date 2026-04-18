@@ -7,6 +7,7 @@ import {
 	createMedicationController,
 	deleteMedicationController,
 	getMedicationController,
+	getPatientMarController,
 	listMedicationAdministrationsController,
 	listMedicationsController,
 	updateMedicationController,
@@ -16,6 +17,7 @@ import {
 	createMedicationSchema,
 	deleteMedicationOpts,
 	getMedicationSchema,
+	getMarSchema,
 	listAdministrationsSchema,
 	listMedicationsSchema,
 	updateMedicationSchema,
@@ -28,6 +30,12 @@ export async function medicationRoutes(app: FastifyInstance) {
 		'/:organizationId/medications',
 		{ ...listMedicationsSchema, preHandler: [auth, orgScope, authorize('view_medications')] },
 		listMedicationsController,
+	);
+
+	app.get(
+		'/:organizationId/patients/:patientId/mar',
+		{ ...getMarSchema, preHandler: [auth, orgScope, authorize('view_medications')] },
+		getPatientMarController,
 	);
 
 	app.post(

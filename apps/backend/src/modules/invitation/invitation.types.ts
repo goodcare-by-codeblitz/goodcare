@@ -1,6 +1,6 @@
 export type CreateInviteBody = {
   email: string;
-  roleId: string;
+  roleIds: string[];
   firstName: string;
   lastName: string;
 };
@@ -18,10 +18,19 @@ export type InviteSummary = {
   email: string;
   firstName: string;
   lastName: string;
-  role: {
+  roles: Array<{
     id: string;
+    key: string;
     name: string;
-  };
+    description: string | null;
+    isSystem: boolean;
+    organizationId: string | null;
+    permissions: Array<{
+      id: string;
+      key: string;
+      description: string;
+    }>;
+  }>;
   invitedAt: Date;
   expiresAt: Date;
   invitedBy: {
@@ -36,7 +45,7 @@ export type CreateInviteInput = {
   email: string;
   firstName: string;
   lastName: string;
-  roleId?: string;
+  roleIds?: string[];
   kind: InviteKind;
   organizationId: string;
   invitedByUserId: string;

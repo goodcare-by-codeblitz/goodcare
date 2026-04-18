@@ -1,5 +1,6 @@
 import type { ConnectionOptions } from 'bullmq';
 import { Worker, type Job } from 'bullmq';
+import { buildBaseAppUrl, buildOrgAppUrl } from '../../utils/app-url.js';
 import { sendEmail } from '../../utils/send-email.js';
 import { redisConnection } from '../lib/redis.js';
 import { EMAIL_QUEUE_NAME, type EmailJobPayload } from './job-types.js';
@@ -12,21 +13,21 @@ export async function processEmailJob(job: Job<EmailJobPayload>): Promise<void> 
       await sendEmail(
         data.to,
         'Welcome to GoodCare',
-        `Hi ${data.firstName}, your organisation "${data.organizationName}" is live at ${data.slug}.goodcarepro.co.uk`,
+        `Hi ${data.firstName}, your organisation "${data.organizationName}" is live at ${buildOrgAppUrl(data.slug, '/')}`,
       );
       break;
     case 'password_reset':
       await sendEmail(
         data.to,
         'Reset your GoodCare password',
-        `Reset your password using the link below (expires ${data.expiresAt.toISOString()}):\n\nhttps://app.goodcarepro.co.uk/reset-password?token=${data.resetToken}`,
+        `Reset your password using the link below (expires ${data.expiresAt.toISOString()}):\n\n${buildBaseAppUrl(`/reset-password?token=${data.resetToken}`)}`,
       );
       break;
     case 'invitation':
       await sendEmail(
         data.to,
         `You've been invited to ${data.organizationName} on GoodCare`,
-        `Hi ${data.firstName}, you've been invited to join ${data.organizationName} on GoodCare.\n\nAccept your invitation here:\nhttps://${data.slug}.goodcarepro.co.uk/invite/accept?token=${data.inviteToken}`,
+        `Hi ${data.firstName}, you've been invited to join ${data.organizationName} on GoodCare.\n\nAccept your invitation here:\n${buildOrgAppUrl(data.slug, `/invite/accept?token=${data.inviteToken}`)}`,
       );
       break;
     default: {

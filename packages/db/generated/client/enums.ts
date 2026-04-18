@@ -17,6 +17,22 @@ export const RoleScope = {
 export type RoleScope = (typeof RoleScope)[keyof typeof RoleScope]
 
 
+export const OrganizationRoleKind = {
+  TEAM: 'TEAM',
+  CARER: 'CARER'
+} as const
+
+export type OrganizationRoleKind = (typeof OrganizationRoleKind)[keyof typeof OrganizationRoleKind]
+
+
+export const InviteKind = {
+  TEAM: 'TEAM',
+  CARER: 'CARER'
+} as const
+
+export type InviteKind = (typeof InviteKind)[keyof typeof InviteKind]
+
+
 export const UserStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
@@ -168,6 +184,19 @@ export const Gender = {
 export type Gender = (typeof Gender)[keyof typeof Gender]
 
 
+export const DayOfWeek = {
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+  SUNDAY: 'SUNDAY'
+} as const
+
+export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek]
+
+
 export const MedicationStatus = {
   ACTIVE: 'ACTIVE',
   PRN: 'PRN',
@@ -185,3 +214,14 @@ export const MedicationAdministrationResult = {
 } as const
 
 export type MedicationAdministrationResult = (typeof MedicationAdministrationResult)[keyof typeof MedicationAdministrationResult]
+
+
+export const MedicationScheduleSlot = {
+  MORNING: 'MORNING',
+  NOON: 'NOON',
+  EVENING: 'EVENING',
+  NIGHT: 'NIGHT',
+  BEDTIME: 'BEDTIME'
+} as const
+
+export type MedicationScheduleSlot = (typeof MedicationScheduleSlot)[keyof typeof MedicationScheduleSlot]

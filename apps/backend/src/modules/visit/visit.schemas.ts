@@ -70,6 +70,28 @@ export const assignCarerSchema = {
 	},
 };
 
+export const previewAssignmentSchema = {
+	schema: {
+		tags: ['Visits'],
+		params: {
+			type: 'object',
+			required: ['organizationId', 'visitId'],
+			properties: {
+				organizationId: { type: 'string', format: 'uuid' },
+				visitId: { type: 'string', format: 'uuid' },
+			},
+		},
+		querystring: {
+			type: 'object',
+			required: ['carerId'],
+			properties: {
+				carerId: { type: 'string', format: 'uuid' },
+			},
+			additionalProperties: false,
+		},
+	},
+};
+
 export const unassignCarerSchema = {
 	schema: {
 		tags: ['Visits'],

@@ -25,3 +25,7 @@ export type VisitListQuery = {
 export type AssignCarerBody = {
 	carerId: string;
 };
+
+export type VisitAssignmentPreviewQuery = {
+	carerId: string;
+};

@@ -39,7 +39,6 @@ export type CarerMinAggregateOutputType = {
   hireDate: Date | null
   employmentType: string | null
   experienceYears: number | null
-  availability: string | null
   updatedAt: Date | null
   status: $Enums.EmploymentStatus | null
   organizationUserId: string | null
@@ -51,7 +50,6 @@ export type CarerMaxAggregateOutputType = {
   hireDate: Date | null
   employmentType: string | null
   experienceYears: number | null
-  availability: string | null
   updatedAt: Date | null
   status: $Enums.EmploymentStatus | null
   organizationUserId: string | null
@@ -63,7 +61,6 @@ export type CarerCountAggregateOutputType = {
   hireDate: number
   employmentType: number
   experienceYears: number
-  availability: number
   updatedAt: number
   status: number
   organizationUserId: number
@@ -85,7 +82,6 @@ export type CarerMinAggregateInputType = {
   hireDate?: true
   employmentType?: true
   experienceYears?: true
-  availability?: true
   updatedAt?: true
   status?: true
   organizationUserId?: true
@@ -97,7 +93,6 @@ export type CarerMaxAggregateInputType = {
   hireDate?: true
   employmentType?: true
   experienceYears?: true
-  availability?: true
   updatedAt?: true
   status?: true
   organizationUserId?: true
@@ -109,7 +104,6 @@ export type CarerCountAggregateInputType = {
   hireDate?: true
   employmentType?: true
   experienceYears?: true
-  availability?: true
   updatedAt?: true
   status?: true
   organizationUserId?: true
@@ -208,7 +202,6 @@ export type CarerGroupByOutputType = {
   hireDate: Date
   employmentType: string
   experienceYears: number
-  availability: string
   updatedAt: Date
   status: $Enums.EmploymentStatus
   organizationUserId: string
@@ -243,7 +236,6 @@ export type CarerWhereInput = {
   hireDate?: Prisma.DateTimeFilter<"Carer"> | Date | string
   employmentType?: Prisma.StringFilter<"Carer"> | string
   experienceYears?: Prisma.IntFilter<"Carer"> | number
-  availability?: Prisma.StringFilter<"Carer"> | string
   updatedAt?: Prisma.DateTimeFilter<"Carer"> | Date | string
   status?: Prisma.EnumEmploymentStatusFilter<"Carer"> | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFilter<"Carer"> | string
@@ -254,6 +246,7 @@ export type CarerWhereInput = {
   visitAssignments?: Prisma.VisitAssignmentListRelationFilter
   dailyNotes?: Prisma.DailyNoteListRelationFilter
   visitTasks?: Prisma.VisitTaskListRelationFilter
+  availabilitySlots?: Prisma.CarerAvailabilitySlotListRelationFilter
 }
 
 export type CarerOrderByWithRelationInput = {
@@ -261,7 +254,6 @@ export type CarerOrderByWithRelationInput = {
   hireDate?: Prisma.SortOrder
   employmentType?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
-  availability?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   organizationUserId?: Prisma.SortOrder
@@ -272,6 +264,7 @@ export type CarerOrderByWithRelationInput = {
   visitAssignments?: Prisma.VisitAssignmentOrderByRelationAggregateInput
   dailyNotes?: Prisma.DailyNoteOrderByRelationAggregateInput
   visitTasks?: Prisma.VisitTaskOrderByRelationAggregateInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotOrderByRelationAggregateInput
 }
 
 export type CarerWhereUniqueInput = Prisma.AtLeast<{
@@ -285,7 +278,6 @@ export type CarerWhereUniqueInput = Prisma.AtLeast<{
   hireDate?: Prisma.DateTimeFilter<"Carer"> | Date | string
   employmentType?: Prisma.StringFilter<"Carer"> | string
   experienceYears?: Prisma.IntFilter<"Carer"> | number
-  availability?: Prisma.StringFilter<"Carer"> | string
   updatedAt?: Prisma.DateTimeFilter<"Carer"> | Date | string
   status?: Prisma.EnumEmploymentStatusFilter<"Carer"> | $Enums.EmploymentStatus
   organizationId?: Prisma.StringFilter<"Carer"> | string
@@ -295,6 +287,7 @@ export type CarerWhereUniqueInput = Prisma.AtLeast<{
   visitAssignments?: Prisma.VisitAssignmentListRelationFilter
   dailyNotes?: Prisma.DailyNoteListRelationFilter
   visitTasks?: Prisma.VisitTaskListRelationFilter
+  availabilitySlots?: Prisma.CarerAvailabilitySlotListRelationFilter
 }, "id" | "organizationUserId" | "id_organizationUserId" | "id_organizationId">
 
 export type CarerOrderByWithAggregationInput = {
@@ -302,7 +295,6 @@ export type CarerOrderByWithAggregationInput = {
   hireDate?: Prisma.SortOrder
   employmentType?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
-  availability?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   organizationUserId?: Prisma.SortOrder
@@ -322,7 +314,6 @@ export type CarerScalarWhereWithAggregatesInput = {
   hireDate?: Prisma.DateTimeWithAggregatesFilter<"Carer"> | Date | string
   employmentType?: Prisma.StringWithAggregatesFilter<"Carer"> | string
   experienceYears?: Prisma.IntWithAggregatesFilter<"Carer"> | number
-  availability?: Prisma.StringWithAggregatesFilter<"Carer"> | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Carer"> | Date | string
   status?: Prisma.EnumEmploymentStatusWithAggregatesFilter<"Carer"> | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringWithAggregatesFilter<"Carer"> | string
@@ -334,7 +325,6 @@ export type CarerCreateInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -343,6 +333,7 @@ export type CarerCreateInput = {
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateInput = {
@@ -350,7 +341,6 @@ export type CarerUncheckedCreateInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -359,6 +349,7 @@ export type CarerUncheckedCreateInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUpdateInput = {
@@ -366,7 +357,6 @@ export type CarerUpdateInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -375,6 +365,7 @@ export type CarerUpdateInput = {
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateInput = {
@@ -382,7 +373,6 @@ export type CarerUncheckedUpdateInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -391,6 +381,7 @@ export type CarerUncheckedUpdateInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerCreateManyInput = {
@@ -398,7 +389,6 @@ export type CarerCreateManyInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -410,7 +400,6 @@ export type CarerUpdateManyMutationInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
 }
@@ -420,7 +409,6 @@ export type CarerUncheckedUpdateManyInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -457,7 +445,6 @@ export type CarerCountOrderByAggregateInput = {
   hireDate?: Prisma.SortOrder
   employmentType?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
-  availability?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   organizationUserId?: Prisma.SortOrder
@@ -473,7 +460,6 @@ export type CarerMaxOrderByAggregateInput = {
   hireDate?: Prisma.SortOrder
   employmentType?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
-  availability?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   organizationUserId?: Prisma.SortOrder
@@ -485,7 +471,6 @@ export type CarerMinOrderByAggregateInput = {
   hireDate?: Prisma.SortOrder
   employmentType?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
-  availability?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   organizationUserId?: Prisma.SortOrder
@@ -587,6 +572,20 @@ export type EnumEmploymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.EmploymentStatus
 }
 
+export type CarerCreateNestedOneWithoutAvailabilitySlotsInput = {
+  create?: Prisma.XOR<Prisma.CarerCreateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedCreateWithoutAvailabilitySlotsInput>
+  connectOrCreate?: Prisma.CarerCreateOrConnectWithoutAvailabilitySlotsInput
+  connect?: Prisma.CarerWhereUniqueInput
+}
+
+export type CarerUpdateOneRequiredWithoutAvailabilitySlotsNestedInput = {
+  create?: Prisma.XOR<Prisma.CarerCreateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedCreateWithoutAvailabilitySlotsInput>
+  connectOrCreate?: Prisma.CarerCreateOrConnectWithoutAvailabilitySlotsInput
+  upsert?: Prisma.CarerUpsertWithoutAvailabilitySlotsInput
+  connect?: Prisma.CarerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarerUpdateToOneWithWhereWithoutAvailabilitySlotsInput, Prisma.CarerUpdateWithoutAvailabilitySlotsInput>, Prisma.CarerUncheckedUpdateWithoutAvailabilitySlotsInput>
+}
+
 export type CarerCreateNestedOneWithoutQualificationsInput = {
   create?: Prisma.XOR<Prisma.CarerCreateWithoutQualificationsInput, Prisma.CarerUncheckedCreateWithoutQualificationsInput>
   connectOrCreate?: Prisma.CarerCreateOrConnectWithoutQualificationsInput
@@ -650,7 +649,6 @@ export type CarerCreateWithoutOrganizationInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -658,6 +656,7 @@ export type CarerCreateWithoutOrganizationInput = {
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutOrganizationInput = {
@@ -665,7 +664,6 @@ export type CarerUncheckedCreateWithoutOrganizationInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -673,6 +671,7 @@ export type CarerUncheckedCreateWithoutOrganizationInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutOrganizationInput = {
@@ -709,7 +708,6 @@ export type CarerScalarWhereInput = {
   hireDate?: Prisma.DateTimeFilter<"Carer"> | Date | string
   employmentType?: Prisma.StringFilter<"Carer"> | string
   experienceYears?: Prisma.IntFilter<"Carer"> | number
-  availability?: Prisma.StringFilter<"Carer"> | string
   updatedAt?: Prisma.DateTimeFilter<"Carer"> | Date | string
   status?: Prisma.EnumEmploymentStatusFilter<"Carer"> | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFilter<"Carer"> | string
@@ -721,7 +719,6 @@ export type CarerCreateWithoutOrganizationUserInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organization: Prisma.OrganizationCreateNestedOneWithoutCarersInput
@@ -729,6 +726,7 @@ export type CarerCreateWithoutOrganizationUserInput = {
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutOrganizationUserInput = {
@@ -736,7 +734,6 @@ export type CarerUncheckedCreateWithoutOrganizationUserInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationId: string
@@ -744,6 +741,7 @@ export type CarerUncheckedCreateWithoutOrganizationUserInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutOrganizationUserInput = {
@@ -767,7 +765,6 @@ export type CarerUpdateWithoutOrganizationUserInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarersNestedInput
@@ -775,6 +772,7 @@ export type CarerUpdateWithoutOrganizationUserInput = {
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutOrganizationUserInput = {
@@ -782,9 +780,85 @@ export type CarerUncheckedUpdateWithoutOrganizationUserInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutCarerNestedInput
+  visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
+  dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
+  visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
+}
+
+export type CarerCreateWithoutAvailabilitySlotsInput = {
+  id?: string
+  hireDate: Date | string
+  employmentType: string
+  experienceYears?: number
+  updatedAt?: Date | string
+  status?: $Enums.EmploymentStatus
+  organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
+  organization: Prisma.OrganizationCreateNestedOneWithoutCarersInput
+  qualifications?: Prisma.QualificationCreateNestedManyWithoutCarerInput
+  visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
+  dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
+  visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+}
+
+export type CarerUncheckedCreateWithoutAvailabilitySlotsInput = {
+  id?: string
+  hireDate: Date | string
+  employmentType: string
+  experienceYears?: number
+  updatedAt?: Date | string
+  status?: $Enums.EmploymentStatus
+  organizationUserId: string
+  organizationId: string
+  qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutCarerInput
+  visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
+  dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
+  visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+}
+
+export type CarerCreateOrConnectWithoutAvailabilitySlotsInput = {
+  where: Prisma.CarerWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarerCreateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedCreateWithoutAvailabilitySlotsInput>
+}
+
+export type CarerUpsertWithoutAvailabilitySlotsInput = {
+  update: Prisma.XOR<Prisma.CarerUpdateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedUpdateWithoutAvailabilitySlotsInput>
+  create: Prisma.XOR<Prisma.CarerCreateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedCreateWithoutAvailabilitySlotsInput>
+  where?: Prisma.CarerWhereInput
+}
+
+export type CarerUpdateToOneWithWhereWithoutAvailabilitySlotsInput = {
+  where?: Prisma.CarerWhereInput
+  data: Prisma.XOR<Prisma.CarerUpdateWithoutAvailabilitySlotsInput, Prisma.CarerUncheckedUpdateWithoutAvailabilitySlotsInput>
+}
+
+export type CarerUpdateWithoutAvailabilitySlotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  employmentType?: Prisma.StringFieldUpdateOperationsInput | string
+  experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
+  organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCarersNestedInput
+  qualifications?: Prisma.QualificationUpdateManyWithoutCarerNestedInput
+  visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
+  dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
+  visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+}
+
+export type CarerUncheckedUpdateWithoutAvailabilitySlotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  employmentType?: Prisma.StringFieldUpdateOperationsInput | string
+  experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
+  organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutCarerNestedInput
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
@@ -797,7 +871,6 @@ export type CarerCreateWithoutQualificationsInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -805,6 +878,7 @@ export type CarerCreateWithoutQualificationsInput = {
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutQualificationsInput = {
@@ -812,7 +886,6 @@ export type CarerUncheckedCreateWithoutQualificationsInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -820,6 +893,7 @@ export type CarerUncheckedCreateWithoutQualificationsInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutQualificationsInput = {
@@ -843,7 +917,6 @@ export type CarerUpdateWithoutQualificationsInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -851,6 +924,7 @@ export type CarerUpdateWithoutQualificationsInput = {
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutQualificationsInput = {
@@ -858,7 +932,6 @@ export type CarerUncheckedUpdateWithoutQualificationsInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -866,6 +939,7 @@ export type CarerUncheckedUpdateWithoutQualificationsInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerCreateWithoutVisitAssignmentsInput = {
@@ -873,7 +947,6 @@ export type CarerCreateWithoutVisitAssignmentsInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -881,6 +954,7 @@ export type CarerCreateWithoutVisitAssignmentsInput = {
   qualifications?: Prisma.QualificationCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutVisitAssignmentsInput = {
@@ -888,7 +962,6 @@ export type CarerUncheckedCreateWithoutVisitAssignmentsInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -896,6 +969,7 @@ export type CarerUncheckedCreateWithoutVisitAssignmentsInput = {
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutVisitAssignmentsInput = {
@@ -919,7 +993,6 @@ export type CarerUpdateWithoutVisitAssignmentsInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -927,6 +1000,7 @@ export type CarerUpdateWithoutVisitAssignmentsInput = {
   qualifications?: Prisma.QualificationUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutVisitAssignmentsInput = {
@@ -934,7 +1008,6 @@ export type CarerUncheckedUpdateWithoutVisitAssignmentsInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -942,6 +1015,7 @@ export type CarerUncheckedUpdateWithoutVisitAssignmentsInput = {
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerCreateWithoutVisitTasksInput = {
@@ -949,7 +1023,6 @@ export type CarerCreateWithoutVisitTasksInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -957,6 +1030,7 @@ export type CarerCreateWithoutVisitTasksInput = {
   qualifications?: Prisma.QualificationCreateNestedManyWithoutCarerInput
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteCreateNestedManyWithoutCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutVisitTasksInput = {
@@ -964,7 +1038,6 @@ export type CarerUncheckedCreateWithoutVisitTasksInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -972,6 +1045,7 @@ export type CarerUncheckedCreateWithoutVisitTasksInput = {
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutCarerInput
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   dailyNotes?: Prisma.DailyNoteUncheckedCreateNestedManyWithoutCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutVisitTasksInput = {
@@ -995,7 +1069,6 @@ export type CarerUpdateWithoutVisitTasksInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -1003,6 +1076,7 @@ export type CarerUpdateWithoutVisitTasksInput = {
   qualifications?: Prisma.QualificationUpdateManyWithoutCarerNestedInput
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutVisitTasksInput = {
@@ -1010,7 +1084,6 @@ export type CarerUncheckedUpdateWithoutVisitTasksInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1018,6 +1091,7 @@ export type CarerUncheckedUpdateWithoutVisitTasksInput = {
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutCarerNestedInput
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerCreateWithoutDailyNotesInput = {
@@ -1025,7 +1099,6 @@ export type CarerCreateWithoutDailyNotesInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUser: Prisma.OrganizationUserCreateNestedOneWithoutCarerInput
@@ -1033,6 +1106,7 @@ export type CarerCreateWithoutDailyNotesInput = {
   qualifications?: Prisma.QualificationCreateNestedManyWithoutCarerInput
   visitAssignments?: Prisma.VisitAssignmentCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotCreateNestedManyWithoutCarerInput
 }
 
 export type CarerUncheckedCreateWithoutDailyNotesInput = {
@@ -1040,7 +1114,6 @@ export type CarerUncheckedCreateWithoutDailyNotesInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -1048,6 +1121,7 @@ export type CarerUncheckedCreateWithoutDailyNotesInput = {
   qualifications?: Prisma.QualificationUncheckedCreateNestedManyWithoutCarerInput
   visitAssignments?: Prisma.VisitAssignmentUncheckedCreateNestedManyWithoutCarerInput
   visitTasks?: Prisma.VisitTaskUncheckedCreateNestedManyWithoutCompletedByCarerInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedCreateNestedManyWithoutCarerInput
 }
 
 export type CarerCreateOrConnectWithoutDailyNotesInput = {
@@ -1071,7 +1145,6 @@ export type CarerUpdateWithoutDailyNotesInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -1079,6 +1152,7 @@ export type CarerUpdateWithoutDailyNotesInput = {
   qualifications?: Prisma.QualificationUpdateManyWithoutCarerNestedInput
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutDailyNotesInput = {
@@ -1086,7 +1160,6 @@ export type CarerUncheckedUpdateWithoutDailyNotesInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1094,6 +1167,7 @@ export type CarerUncheckedUpdateWithoutDailyNotesInput = {
   qualifications?: Prisma.QualificationUncheckedUpdateManyWithoutCarerNestedInput
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerCreateManyOrganizationInput = {
@@ -1101,7 +1175,6 @@ export type CarerCreateManyOrganizationInput = {
   hireDate: Date | string
   employmentType: string
   experienceYears?: number
-  availability: string
   updatedAt?: Date | string
   status?: $Enums.EmploymentStatus
   organizationUserId: string
@@ -1112,7 +1185,6 @@ export type CarerUpdateWithoutOrganizationInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUser?: Prisma.OrganizationUserUpdateOneRequiredWithoutCarerNestedInput
@@ -1120,6 +1192,7 @@ export type CarerUpdateWithoutOrganizationInput = {
   visitAssignments?: Prisma.VisitAssignmentUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateWithoutOrganizationInput = {
@@ -1127,7 +1200,6 @@ export type CarerUncheckedUpdateWithoutOrganizationInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1135,6 +1207,7 @@ export type CarerUncheckedUpdateWithoutOrganizationInput = {
   visitAssignments?: Prisma.VisitAssignmentUncheckedUpdateManyWithoutCarerNestedInput
   dailyNotes?: Prisma.DailyNoteUncheckedUpdateManyWithoutCarerNestedInput
   visitTasks?: Prisma.VisitTaskUncheckedUpdateManyWithoutCompletedByCarerNestedInput
+  availabilitySlots?: Prisma.CarerAvailabilitySlotUncheckedUpdateManyWithoutCarerNestedInput
 }
 
 export type CarerUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1142,7 +1215,6 @@ export type CarerUncheckedUpdateManyWithoutOrganizationInput = {
   hireDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employmentType?: Prisma.StringFieldUpdateOperationsInput | string
   experienceYears?: Prisma.IntFieldUpdateOperationsInput | number
-  availability?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus
   organizationUserId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1158,6 +1230,7 @@ export type CarerCountOutputType = {
   visitAssignments: number
   dailyNotes: number
   visitTasks: number
+  availabilitySlots: number
 }
 
 export type CarerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1165,6 +1238,7 @@ export type CarerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   visitAssignments?: boolean | CarerCountOutputTypeCountVisitAssignmentsArgs
   dailyNotes?: boolean | CarerCountOutputTypeCountDailyNotesArgs
   visitTasks?: boolean | CarerCountOutputTypeCountVisitTasksArgs
+  availabilitySlots?: boolean | CarerCountOutputTypeCountAvailabilitySlotsArgs
 }
 
 /**
@@ -1205,13 +1279,19 @@ export type CarerCountOutputTypeCountVisitTasksArgs<ExtArgs extends runtime.Type
   where?: Prisma.VisitTaskWhereInput
 }
 
+/**
+ * CarerCountOutputType without action
+ */
+export type CarerCountOutputTypeCountAvailabilitySlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarerAvailabilitySlotWhereInput
+}
+
 
 export type CarerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   hireDate?: boolean
   employmentType?: boolean
   experienceYears?: boolean
-  availability?: boolean
   updatedAt?: boolean
   status?: boolean
   organizationUserId?: boolean
@@ -1222,6 +1302,7 @@ export type CarerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   visitAssignments?: boolean | Prisma.Carer$visitAssignmentsArgs<ExtArgs>
   dailyNotes?: boolean | Prisma.Carer$dailyNotesArgs<ExtArgs>
   visitTasks?: boolean | Prisma.Carer$visitTasksArgs<ExtArgs>
+  availabilitySlots?: boolean | Prisma.Carer$availabilitySlotsArgs<ExtArgs>
   _count?: boolean | Prisma.CarerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carer"]>
 
@@ -1230,7 +1311,6 @@ export type CarerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   hireDate?: boolean
   employmentType?: boolean
   experienceYears?: boolean
-  availability?: boolean
   updatedAt?: boolean
   status?: boolean
   organizationUserId?: boolean
@@ -1244,7 +1324,6 @@ export type CarerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   hireDate?: boolean
   employmentType?: boolean
   experienceYears?: boolean
-  availability?: boolean
   updatedAt?: boolean
   status?: boolean
   organizationUserId?: boolean
@@ -1258,14 +1337,13 @@ export type CarerSelectScalar = {
   hireDate?: boolean
   employmentType?: boolean
   experienceYears?: boolean
-  availability?: boolean
   updatedAt?: boolean
   status?: boolean
   organizationUserId?: boolean
   organizationId?: boolean
 }
 
-export type CarerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "hireDate" | "employmentType" | "experienceYears" | "availability" | "updatedAt" | "status" | "organizationUserId" | "organizationId", ExtArgs["result"]["carer"]>
+export type CarerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "hireDate" | "employmentType" | "experienceYears" | "updatedAt" | "status" | "organizationUserId" | "organizationId", ExtArgs["result"]["carer"]>
 export type CarerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizationUser?: boolean | Prisma.OrganizationUserDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1273,6 +1351,7 @@ export type CarerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   visitAssignments?: boolean | Prisma.Carer$visitAssignmentsArgs<ExtArgs>
   dailyNotes?: boolean | Prisma.Carer$dailyNotesArgs<ExtArgs>
   visitTasks?: boolean | Prisma.Carer$visitTasksArgs<ExtArgs>
+  availabilitySlots?: boolean | Prisma.Carer$availabilitySlotsArgs<ExtArgs>
   _count?: boolean | Prisma.CarerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CarerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1293,13 +1372,13 @@ export type $CarerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     visitAssignments: Prisma.$VisitAssignmentPayload<ExtArgs>[]
     dailyNotes: Prisma.$DailyNotePayload<ExtArgs>[]
     visitTasks: Prisma.$VisitTaskPayload<ExtArgs>[]
+    availabilitySlots: Prisma.$CarerAvailabilitySlotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     hireDate: Date
     employmentType: string
     experienceYears: number
-    availability: string
     updatedAt: Date
     status: $Enums.EmploymentStatus
     organizationUserId: string
@@ -1704,6 +1783,7 @@ export interface Prisma__CarerClient<T, Null = never, ExtArgs extends runtime.Ty
   visitAssignments<T extends Prisma.Carer$visitAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Carer$visitAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dailyNotes<T extends Prisma.Carer$dailyNotesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Carer$dailyNotesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DailyNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitTasks<T extends Prisma.Carer$visitTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Carer$visitTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  availabilitySlots<T extends Prisma.Carer$availabilitySlotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Carer$availabilitySlotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarerAvailabilitySlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1737,7 +1817,6 @@ export interface CarerFieldRefs {
   readonly hireDate: Prisma.FieldRef<"Carer", 'DateTime'>
   readonly employmentType: Prisma.FieldRef<"Carer", 'String'>
   readonly experienceYears: Prisma.FieldRef<"Carer", 'Int'>
-  readonly availability: Prisma.FieldRef<"Carer", 'String'>
   readonly updatedAt: Prisma.FieldRef<"Carer", 'DateTime'>
   readonly status: Prisma.FieldRef<"Carer", 'EmploymentStatus'>
   readonly organizationUserId: Prisma.FieldRef<"Carer", 'String'>
@@ -2231,6 +2310,30 @@ export type Carer$visitTasksArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.VisitTaskScalarFieldEnum | Prisma.VisitTaskScalarFieldEnum[]
+}
+
+/**
+ * Carer.availabilitySlots
+ */
+export type Carer$availabilitySlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarerAvailabilitySlot
+   */
+  select?: Prisma.CarerAvailabilitySlotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarerAvailabilitySlot
+   */
+  omit?: Prisma.CarerAvailabilitySlotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarerAvailabilitySlotInclude<ExtArgs> | null
+  where?: Prisma.CarerAvailabilitySlotWhereInput
+  orderBy?: Prisma.CarerAvailabilitySlotOrderByWithRelationInput | Prisma.CarerAvailabilitySlotOrderByWithRelationInput[]
+  cursor?: Prisma.CarerAvailabilitySlotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarerAvailabilitySlotScalarFieldEnum | Prisma.CarerAvailabilitySlotScalarFieldEnum[]
 }
 
 /**

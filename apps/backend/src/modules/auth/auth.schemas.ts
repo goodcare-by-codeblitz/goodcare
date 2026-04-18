@@ -158,7 +158,7 @@ export const acceptInviteSchema: FastifySchema = {
 	tags: ['Auth'],
 	body: {
 		type: 'object',
-		required: ['token', 'password'],
+		required: ['token'],
 		properties: {
 			token: { type: 'string', minLength: 1 },
 			password: { type: 'string', minLength: 8 },
@@ -169,6 +169,67 @@ export const acceptInviteSchema: FastifySchema = {
 	},
 	response: {
 		200: messageResponse,
+		400: errorResponse,
+	},
+};
+
+export const invitePreviewSchema: FastifySchema = {
+	tags: ['Auth'],
+	querystring: {
+		type: 'object',
+		required: ['token'],
+		properties: {
+			token: { type: 'string', minLength: 1 },
+		},
+		additionalProperties: false,
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {
+				organization: {
+					type: 'object',
+					properties: {
+						id: { type: 'string' },
+						slug: { type: 'string' },
+						name: { type: 'string' },
+					},
+				},
+				kind: { type: 'string', enum: ['TEAM', 'CARER'] },
+				email: { type: 'string' },
+				firstName: { type: 'string' },
+				lastName: { type: 'string' },
+				acceptanceMode: {
+					type: 'string',
+					enum: ['new_user', 'existing_user_login_required', 'signed_in_match'],
+				},
+				roles: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							id: { type: 'string' },
+							key: { type: 'string' },
+							name: { type: 'string' },
+							description: { type: ['string', 'null'] },
+							isSystem: { type: 'boolean' },
+							organizationId: { type: ['string', 'null'] },
+							permissions: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: {
+										id: { type: 'string' },
+										key: { type: 'string' },
+										description: { type: 'string' },
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		400: errorResponse,
 	},
 };
@@ -235,3 +296,4 @@ export const orgSlugCheckOpts = { schema: orgSlugCheckSchema };
 export const forgotPasswordOpts = { schema: forgotPasswordSchema };
 export const resetPasswordOpts = { schema: resetPasswordSchema };
 export const acceptInviteOpts = { schema: acceptInviteSchema };
+export const invitePreviewOpts = { schema: invitePreviewSchema };

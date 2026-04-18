@@ -81,7 +81,6 @@ export function authenticate(app: FastifyInstance) {
 			organizationMemberships: user.organizationUsers.map((ou) => ({
 				orgId: ou.organization.id,
 				orgSlug: ou.organization.slug,
-				role: '',
 				status: ou.status,
 			})),
 		};

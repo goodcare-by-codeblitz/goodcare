@@ -61,6 +61,20 @@ function RolePill({ name }: { name: string }) {
 	);
 }
 
+function RolePillList({ roles }: { roles: Array<{ id: string; name: string }> }) {
+	if (roles.length === 0) {
+		return <RolePill name='Unassigned' />;
+	}
+
+	return (
+		<div className='flex flex-wrap gap-1.5'>
+			{roles.map((role) => (
+				<RolePill key={role.id} name={role.name} />
+			))}
+		</div>
+	);
+}
+
 function MemberRow({ member }: { member: TeamMember }) {
 	const initials = `${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
 
@@ -80,8 +94,8 @@ function MemberRow({ member }: { member: TeamMember }) {
 				<p className='truncate text-xs text-slate-500'>{member.user.email}</p>
 			</div>
 
-			<div className='hidden w-56 flex-wrap gap-1.5 lg:flex'>
-				{member.role ? <RolePill name={member.role.name} /> : <RolePill name='Unassigned' />}
+			<div className='hidden w-72 flex-wrap gap-1.5 lg:flex'>
+				<RolePillList roles={member.roles} />
 			</div>
 
 			<div className='hidden sm:block'>
@@ -125,7 +139,7 @@ function PendingInviteRow({
 			</div>
 
 			<div className='hidden lg:block'>
-				<RolePill name={invite.role.name} />
+				<RolePillList roles={invite.roles} />
 			</div>
 
 			<div className='hidden sm:block'>
@@ -209,7 +223,7 @@ export default function TeamSettingsPage() {
 		return (
 			fullName.includes(query) ||
 			member.user.email.toLowerCase().includes(query) ||
-			(member.role?.name.toLowerCase().includes(query) ?? false)
+			member.roles.some((role) => role.name.toLowerCase().includes(query))
 		);
 	});
 
@@ -268,12 +282,20 @@ export default function TeamSettingsPage() {
 					</p>
 				</div>
 
-				<Link href='/dashboard/settings/team/invite' className='shrink-0'>
-					<Button className='h-10 gap-2 bg-care-blue text-sm font-semibold shadow-md hover:bg-care-blue-hover'>
-						<UserPlus className='size-4' aria-hidden='true' />
-						Invite Team Member
-					</Button>
-				</Link>
+				<div className='flex shrink-0 flex-wrap gap-3'>
+					<Link href='/dashboard/settings/team/roles'>
+						<Button variant='outline' className='h-10 text-sm font-semibold'>
+							<Shield className='size-4' aria-hidden='true' />
+							Manage Roles
+						</Button>
+					</Link>
+					<Link href='/dashboard/settings/team/invite'>
+						<Button className='h-10 gap-2 bg-care-blue text-sm font-semibold shadow-md hover:bg-care-blue-hover'>
+							<UserPlus className='size-4' aria-hidden='true' />
+							Invite Team Member
+						</Button>
+					</Link>
+				</div>
 			</div>
 
 			<div className='mb-4 min-h-5'>
@@ -333,7 +355,7 @@ export default function TeamSettingsPage() {
 						</div>
 					</div>
 
-					<div className='hidden grid-cols-[auto_1fr_14rem_7rem_6rem_1.5rem] items-center gap-4 border-b border-border px-6 py-2.5 lg:grid'>
+					<div className='hidden grid-cols-[auto_1fr_18rem_7rem_6rem_1.5rem] items-center gap-4 border-b border-border px-6 py-2.5 lg:grid'>
 						<span className='w-10' />
 						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
 							Member

@@ -16,3 +16,5 @@ process.env.NODE_ENV = 'test';
 process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.SENDGRID_API_KEY = 'SG.test-key';
 process.env.SENDGRID_FROM_EMAIL = 'test@example.com';
+process.env.APP_BASE_DOMAIN = 'goodcare.local:3000';
+process.env.APP_PROTOCOL = 'http';

@@ -3,6 +3,7 @@ import {
 	acceptInviteController,
 	forgotPasswordController,
 	currentOrgAccessController,
+	invitePreviewController,
 	loginController,
 	logoutController,
 	refreshController,
@@ -15,6 +16,7 @@ import {
 	changePasswordOpts,
 	currentOrgAccessOpts,
 	forgotPasswordOpts,
+	invitePreviewOpts,
 	loginOpts,
 	orgSlugCheckOpts,
 	registerOpts,
@@ -44,6 +46,7 @@ export async function authRoutes(app: FastifyInstance) {
 		{ ...changePasswordOpts, preHandler: [authenticate(app)] },
 		changePasswordController(app),
 	);
+	app.get('/invite-preview', invitePreviewOpts, invitePreviewController(app));
 	app.post('/accept-invite', acceptInviteOpts, acceptInviteController(app));
 	app.post('/refresh', refreshController(app));
 

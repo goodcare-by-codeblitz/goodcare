@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getCurrentOrgSlug } from '@/lib/auth-session';
+import { authApi } from '@/lib/api-client';
 
 export type OrgContext = {
 	organizationId: string;
@@ -15,9 +16,20 @@ export type PaginationMeta = {
 	totalPages: number;
 };
 
+export type TeamPermission = {
+	id: string;
+	key: string;
+	description: string;
+};
+
 export type TeamRole = {
 	id: string;
+	key: string;
 	name: string;
+	description: string | null;
+	isSystem: boolean;
+	organizationId: string | null;
+	permissions: TeamPermission[];
 };
 
 export type TeamMember = {
@@ -37,7 +49,7 @@ export type TeamMember = {
 		firstName: string;
 		lastName: string;
 	};
-	role: TeamRole | null;
+	roles: TeamRole[];
 };
 
 export type TeamInvite = {
@@ -45,7 +57,7 @@ export type TeamInvite = {
 	email: string;
 	firstName: string;
 	lastName: string;
-	role: TeamRole;
+	roles: TeamRole[];
 	invitedAt: string;
 	expiresAt: string;
 	invitedBy: {
@@ -57,6 +69,27 @@ export type TeamInvite = {
 };
 
 export type CarerStatus = 'ACTIVE' | 'ON_LEAVE' | 'SUSPENDED' | 'TERMINATED';
+
+export type AvailabilityDayKey =
+	| 'monday'
+	| 'tuesday'
+	| 'wednesday'
+	| 'thursday'
+	| 'friday'
+	| 'saturday'
+	| 'sunday';
+
+export type CarerAvailabilitySlot = {
+	id: string;
+	startTime: string;
+	endTime: string;
+	crossesMidnight: boolean;
+};
+
+export type WeeklyAvailability = Record<
+	AvailabilityDayKey,
+	CarerAvailabilitySlot[]
+>;
 
 export type CarerListItem = {
 	id: string;
@@ -71,12 +104,16 @@ export type CarerListItem = {
 	updatedAt: string;
 };
 
+export type CarerDetail = CarerListItem & {
+	availability: WeeklyAvailability;
+};
+
 export type CarerInvite = {
 	id: string;
 	email: string;
 	firstName: string;
 	lastName: string;
-	role: TeamRole;
+	roles: TeamRole[];
 	invitedAt: string;
 	expiresAt: string;
 	invitedBy: {
@@ -201,6 +238,12 @@ export type CarePlanDetail = CarePlanListItem & {
 
 export type MedicationStatus = 'ACTIVE' | 'PRN' | 'DISCONTINUED';
 export type MedicationAdministrationResult = 'GIVEN' | 'MISSED' | 'REFUSED' | 'NA';
+export type MedicationScheduleSlot =
+	| 'morning'
+	| 'noon'
+	| 'evening'
+	| 'night'
+	| 'bedtime';
 
 export type MedicationSchedule = {
 	morning: boolean;
@@ -238,6 +281,7 @@ export type MedicationAdministrationRecord = {
 	patientId: string;
 	organizationId: string;
 	result: MedicationAdministrationResult;
+	slot: MedicationScheduleSlot | null;
 	scheduledFor: string | null;
 	administeredAt: string | null;
 	notes: string | null;
@@ -248,6 +292,64 @@ export type MedicationAdministrationRecord = {
 	} | null;
 	createdAt: string;
 	updatedAt: string;
+};
+
+export type MedicationMarCellStatus =
+	| MedicationAdministrationResult
+	| 'DUE'
+	| 'NOT_SCHEDULED';
+
+export type MedicationMarCell = {
+	status: MedicationMarCellStatus;
+	administration: MedicationAdministrationRecord | null;
+};
+
+export type MedicationMarDay = {
+	key: string;
+	label: string;
+	dayOfMonth: number;
+	isToday: boolean;
+};
+
+export type MedicationMarRow = {
+	medication: MedicationRecord;
+	cells: Record<
+		string,
+		Partial<Record<MedicationScheduleSlot, MedicationMarCell>>
+	>;
+};
+
+export type MedicationMarSheet = {
+	patient: {
+		id: string;
+		firstName: string;
+		lastName: string;
+	};
+	view: 'daily' | 'monthly';
+	referenceDate: string;
+	slots: MedicationScheduleSlot[];
+	days: MedicationMarDay[];
+	rows: MedicationMarRow[];
+	history: MedicationAdministrationRecord[];
+};
+
+export type InviteAcceptanceMode =
+	| 'new_user'
+	| 'existing_user_login_required'
+	| 'signed_in_match';
+
+export type InvitePreview = {
+	organization: {
+		id: string;
+		slug: string;
+		name: string;
+	};
+	kind: 'TEAM' | 'CARER';
+	email: string;
+	firstName: string;
+	lastName: string;
+	roles: TeamRole[];
+	acceptanceMode: InviteAcceptanceMode;
 };
 
 export type VisitStatus =
@@ -269,6 +371,36 @@ export type VisitAssignment = {
 			};
 		};
 	};
+};
+
+export type VisitAssignmentWarning = {
+	code: 'OVERLAPPING_VISIT' | 'OUTSIDE_AVAILABILITY';
+	message: string;
+	relatedVisit?: {
+		id: string;
+		patientId: string;
+		patientName: string;
+		scheduledStart: string;
+		scheduledEnd: string;
+		status: VisitStatus;
+	};
+};
+
+export type VisitAssignmentPreview = {
+	visit: {
+		id: string;
+		patientId: string;
+		patientName: string;
+		scheduledStart: string;
+		scheduledEnd: string;
+		status: VisitStatus;
+	};
+	carer: {
+		id: string;
+		firstName: string;
+		lastName: string;
+	};
+	warnings: VisitAssignmentWarning[];
 };
 
 export type VisitRecord = {
@@ -305,6 +437,10 @@ type CarerApiRecord = {
 			email: string;
 		};
 	};
+};
+
+type CarerApiDetailRecord = CarerApiRecord & {
+	availability: WeeklyAvailability;
 };
 
 export const TEAM_ROLE_META: Record<
@@ -372,7 +508,7 @@ export function getOrgManagementStatusCode(error: unknown) {
 export async function getCurrentOrgContext(): Promise<OrgContext> {
 	const baseUrl = getBackendBaseUrl();
 	const orgSlug = getOrgHeader();
-	const response = await axios.get(`${baseUrl}/v1/auth/current-org-access`, {
+	const response = await authApi.get(`${baseUrl}/v1/auth/current-org-access`, {
 		withCredentials: true,
 		headers: {
 			'x-org-slug': orgSlug,
@@ -402,7 +538,7 @@ export function hasOrgPermission(
 
 export async function fetchTeamRoles(organizationId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/roles`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/roles`, {
 		params: { kind: 'team' },
 		withCredentials: true,
 	});
@@ -410,9 +546,75 @@ export async function fetchTeamRoles(organizationId: string) {
 	return response.data.roles as TeamRole[];
 }
 
+export async function fetchRolePermissions(organizationId: string) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.get(
+		`${baseUrl}/v1/orgs/${organizationId}/permissions`,
+		{
+			withCredentials: true,
+		},
+	);
+
+	return response.data.permissions as TeamPermission[];
+}
+
+export async function createCustomTeamRole(
+	organizationId: string,
+	input: {
+		name: string;
+		description?: string;
+		permissionKeys: string[];
+	},
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.post(
+		`${baseUrl}/v1/orgs/${organizationId}/roles`,
+		{
+			kind: 'team',
+			...input,
+		},
+		{
+			withCredentials: true,
+		},
+	);
+
+	return response.data.role as TeamRole;
+}
+
+export async function updateCustomTeamRole(
+	organizationId: string,
+	roleId: string,
+	input: {
+		name?: string;
+		description?: string | null;
+		permissionKeys?: string[];
+	},
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.patch(
+		`${baseUrl}/v1/orgs/${organizationId}/roles/${roleId}`,
+		input,
+		{
+			withCredentials: true,
+		},
+	);
+
+	return response.data.role as TeamRole;
+}
+
+export async function archiveCustomTeamRole(
+	organizationId: string,
+	roleId: string,
+) {
+	const baseUrl = getBackendBaseUrl();
+	await authApi.delete(`${baseUrl}/v1/orgs/${organizationId}/roles/${roleId}`, {
+		withCredentials: true,
+	});
+}
+
 export async function fetchTeamMembers(organizationId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/members`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/members`, {
 		withCredentials: true,
 	});
 
@@ -421,7 +623,7 @@ export async function fetchTeamMembers(organizationId: string) {
 
 export async function fetchTeamInvites(organizationId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/invitations`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/invitations`, {
 		withCredentials: true,
 	});
 
@@ -434,11 +636,11 @@ export async function createTeamInvite(
 		firstName: string;
 		lastName: string;
 		email: string;
-		roleId: string;
+		roleIds: string[];
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/invitations`,
 		input,
 		{
@@ -458,7 +660,7 @@ export async function createCarerInvite(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/carer-invitations`,
 		input,
 		{
@@ -479,7 +681,7 @@ export async function fetchCarers(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/carers`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/carers`, {
 		params,
 		withCredentials: true,
 	});
@@ -498,9 +700,70 @@ export async function fetchCarers(
 	})) as CarerListItem[];
 }
 
+export async function fetchCarer(organizationId: string, carerId: string) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.get(
+		`${baseUrl}/v1/orgs/${organizationId}/carers/${carerId}`,
+		{
+			withCredentials: true,
+		},
+	);
+
+	const carer = response.data as CarerApiDetailRecord;
+	return {
+		id: carer.id,
+		organizationUserId: carer.organizationUserId,
+		firstName: carer.organizationUser.user.firstName,
+		lastName: carer.organizationUser.user.lastName,
+		email: carer.organizationUser.user.email,
+		employmentType: carer.employmentType,
+		experienceYears: carer.experienceYears,
+		hireDate: carer.hireDate,
+		status: carer.status,
+		updatedAt: carer.updatedAt,
+		availability: carer.availability,
+	} as CarerDetail;
+}
+
+export async function updateCarer(
+	organizationId: string,
+	carerId: string,
+	input: {
+		hireDate?: string;
+		employmentType?: string;
+		experienceYears?: number;
+		status?: CarerStatus;
+		availability?: WeeklyAvailability;
+	},
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.patch(
+		`${baseUrl}/v1/orgs/${organizationId}/carers/${carerId}`,
+		input,
+		{
+			withCredentials: true,
+		},
+	);
+
+	const carer = response.data as CarerApiDetailRecord;
+	return {
+		id: carer.id,
+		organizationUserId: carer.organizationUserId,
+		firstName: carer.organizationUser.user.firstName,
+		lastName: carer.organizationUser.user.lastName,
+		email: carer.organizationUser.user.email,
+		employmentType: carer.employmentType,
+		experienceYears: carer.experienceYears,
+		hireDate: carer.hireDate,
+		status: carer.status,
+		updatedAt: carer.updatedAt,
+		availability: carer.availability,
+	} as CarerDetail;
+}
+
 export async function fetchCarerInvites(organizationId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/carer-invitations`,
 		{
 			withCredentials: true,
@@ -512,7 +775,7 @@ export async function fetchCarerInvites(organizationId: string) {
 
 export async function revokeCarerInvite(organizationId: string, inviteId: string) {
 	const baseUrl = getBackendBaseUrl();
-	await axios.delete(
+	await authApi.delete(
 		`${baseUrl}/v1/orgs/${organizationId}/carer-invitations/${inviteId}`,
 		{
 			withCredentials: true,
@@ -530,7 +793,7 @@ export async function fetchPatients(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/patients`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/patients`, {
 		params,
 		withCredentials: true,
 	});
@@ -543,7 +806,7 @@ export async function fetchPatients(
 
 export async function fetchPatient(organizationId: string, patientId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}`,
 		{
 			withCredentials: true,
@@ -558,7 +821,7 @@ export async function fetchPatientProfile(
 	patientId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/profile`,
 		{
 			withCredentials: true,
@@ -579,7 +842,7 @@ export async function createPatient(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(`${baseUrl}/v1/orgs/${organizationId}/patients`, input, {
+	const response = await authApi.post(`${baseUrl}/v1/orgs/${organizationId}/patients`, input, {
 		withCredentials: true,
 	});
 
@@ -599,7 +862,7 @@ export async function updatePatient(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.patch(
+	const response = await authApi.patch(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}`,
 		input,
 		{
@@ -639,7 +902,7 @@ export async function updatePatientProfile(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.patch(
+	const response = await authApi.patch(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/profile`,
 		input,
 		{
@@ -652,7 +915,7 @@ export async function updatePatientProfile(
 
 export async function deletePatient(organizationId: string, patientId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.delete(
+	const response = await authApi.delete(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}`,
 		{
 			withCredentials: true,
@@ -672,7 +935,7 @@ export async function fetchCarePlans(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/care-plans`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/care-plans`, {
 		params,
 		withCredentials: true,
 	});
@@ -685,7 +948,7 @@ export async function fetchCarePlans(
 
 export async function fetchCarePlan(organizationId: string, carePlanId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/care-plans/${carePlanId}`,
 		{
 			withCredentials: true,
@@ -730,7 +993,7 @@ export async function createCarePlan(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/care-plans`,
 		input,
 		{
@@ -776,7 +1039,7 @@ export async function updateCarePlan(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.patch(
+	const response = await authApi.patch(
 		`${baseUrl}/v1/orgs/${organizationId}/care-plans/${carePlanId}`,
 		input,
 		{
@@ -789,7 +1052,7 @@ export async function updateCarePlan(
 
 export async function deleteCarePlan(organizationId: string, carePlanId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.delete(
+	const response = await authApi.delete(
 		`${baseUrl}/v1/orgs/${organizationId}/care-plans/${carePlanId}`,
 		{
 			withCredentials: true,
@@ -810,7 +1073,7 @@ export async function fetchMedications(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/medications`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/medications`, {
 		params,
 		withCredentials: true,
 	});
@@ -827,7 +1090,7 @@ export async function fetchMedication(
 	medicationId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications/${medicationId}`,
 		{
 			withCredentials: true,
@@ -857,7 +1120,7 @@ export async function createMedication(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications`,
 		input,
 		{
@@ -889,7 +1152,7 @@ export async function updateMedication(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.patch(
+	const response = await authApi.patch(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications/${medicationId}`,
 		input,
 		{
@@ -906,7 +1169,7 @@ export async function deleteMedication(
 	medicationId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.delete(
+	const response = await authApi.delete(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications/${medicationId}`,
 		{
 			withCredentials: true,
@@ -922,7 +1185,7 @@ export async function fetchMedicationAdministrations(
 	medicationId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications/${medicationId}/administrations`,
 		{
 			withCredentials: true,
@@ -932,19 +1195,40 @@ export async function fetchMedicationAdministrations(
 	return response.data as { administrations: MedicationAdministrationRecord[] };
 }
 
+export async function fetchPatientMarSheet(
+	organizationId: string,
+	patientId: string,
+	params?: {
+		view?: 'daily' | 'monthly';
+		date?: string;
+	},
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.get(
+		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/mar`,
+		{
+			params,
+			withCredentials: true,
+		},
+	);
+
+	return response.data as MedicationMarSheet;
+}
+
 export async function createMedicationAdministration(
 	organizationId: string,
 	patientId: string,
 	medicationId: string,
 	input: {
 		result: MedicationAdministrationResult;
+		slot?: MedicationScheduleSlot;
 		scheduledFor?: string;
 		administeredAt?: string;
 		notes?: string;
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/patients/${patientId}/medications/${medicationId}/administrations`,
 		input,
 		{
@@ -967,7 +1251,7 @@ export async function fetchVisits(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(`${baseUrl}/v1/orgs/${organizationId}/visits`, {
+	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/visits`, {
 		params,
 		withCredentials: true,
 	});
@@ -980,7 +1264,7 @@ export async function fetchVisits(
 
 export async function fetchVisit(organizationId: string, visitId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.get(
+	const response = await authApi.get(
 		`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}`,
 		{
 			withCredentials: true,
@@ -1000,7 +1284,7 @@ export async function createVisit(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(`${baseUrl}/v1/orgs/${organizationId}/visits`, input, {
+	const response = await authApi.post(`${baseUrl}/v1/orgs/${organizationId}/visits`, input, {
 		withCredentials: true,
 	});
 
@@ -1019,7 +1303,7 @@ export async function updateVisit(
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.patch(
+	const response = await authApi.patch(
 		`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}`,
 		input,
 		{
@@ -1032,7 +1316,7 @@ export async function updateVisit(
 
 export async function deleteVisit(organizationId: string, visitId: string) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.delete(`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}`, {
+	const response = await authApi.delete(`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}`, {
 		withCredentials: true,
 	});
 
@@ -1045,7 +1329,7 @@ export async function assignVisitCarer(
 	carerId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.post(
+	const response = await authApi.post(
 		`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}/assign`,
 		{ carerId },
 		{
@@ -1056,13 +1340,30 @@ export async function assignVisitCarer(
 	return response.data as { id: string };
 }
 
+export async function previewVisitAssignment(
+	organizationId: string,
+	visitId: string,
+	carerId: string,
+) {
+	const baseUrl = getBackendBaseUrl();
+	const response = await authApi.get(
+		`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}/assignment-preview`,
+		{
+			params: { carerId },
+			withCredentials: true,
+		},
+	);
+
+	return response.data as VisitAssignmentPreview;
+}
+
 export async function unassignVisitCarer(
 	organizationId: string,
 	visitId: string,
 	carerId: string,
 ) {
 	const baseUrl = getBackendBaseUrl();
-	const response = await axios.delete(
+	const response = await authApi.delete(
 		`${baseUrl}/v1/orgs/${organizationId}/visits/${visitId}/assign/${carerId}`,
 		{
 			withCredentials: true,
@@ -1076,26 +1377,26 @@ export async function updateTeamMember(
 	organizationId: string,
 	userId: string,
 	input: {
-		roleId?: string | null;
+		roleIds?: string[];
 		status?: 'ACTIVE' | 'SUSPENDED';
 	},
 ) {
 	const baseUrl = getBackendBaseUrl();
-	await axios.patch(`${baseUrl}/v1/orgs/${organizationId}/members/${userId}`, input, {
+	await authApi.patch(`${baseUrl}/v1/orgs/${organizationId}/members/${userId}`, input, {
 		withCredentials: true,
 	});
 }
 
 export async function removeTeamMember(organizationId: string, userId: string) {
 	const baseUrl = getBackendBaseUrl();
-	await axios.delete(`${baseUrl}/v1/orgs/${organizationId}/members/${userId}`, {
+	await authApi.delete(`${baseUrl}/v1/orgs/${organizationId}/members/${userId}`, {
 		withCredentials: true,
 	});
 }
 
 export async function revokeTeamInvite(organizationId: string, inviteId: string) {
 	const baseUrl = getBackendBaseUrl();
-	await axios.delete(`${baseUrl}/v1/orgs/${organizationId}/invitations/${inviteId}`, {
+	await authApi.delete(`${baseUrl}/v1/orgs/${organizationId}/invitations/${inviteId}`, {
 		withCredentials: true,
 	});
 }

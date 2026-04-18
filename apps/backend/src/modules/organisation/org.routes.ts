@@ -3,14 +3,27 @@ import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
 import { orgScope } from '../../middleware/org-scope';
 import {
+  archiveRoleController,
+  createRoleController,
   getOrgController,
+  listPermissionsController,
   listRolesController,
   listMembersController,
   removeMemberController,
+  updateRoleController,
   updateMemberController,
   updateOrgController,
 } from './org.controller';
-import { listRolesOpts, memberParamsOpts, orgIdParamsOpts, updateMemberOpts, updateOrgOpts } from './org.schemas';
+import {
+  createRoleOpts,
+  listRolesOpts,
+  memberParamsOpts,
+  orgIdParamsOpts,
+  roleParamsOpts,
+  updateMemberOpts,
+  updateOrgOpts,
+  updateRoleOpts,
+} from './org.schemas';
 import { invitationRoutes } from '../invitation/invitation.routes';
 
 export async function orgRoutes(app: FastifyInstance) {
@@ -42,6 +55,30 @@ export async function orgRoutes(app: FastifyInstance) {
     '/:organizationId/roles',
     { ...listRolesOpts, preHandler: [auth, orgScope, authorize('view_roles')] },
     listRolesController,
+  );
+
+  app.get(
+    '/:organizationId/permissions',
+    { ...orgIdParamsOpts, preHandler: [auth, orgScope, authorize('view_roles')] },
+    listPermissionsController,
+  );
+
+  app.post(
+    '/:organizationId/roles',
+    { ...createRoleOpts, preHandler: [auth, orgScope, authorize('manage_roles')] },
+    createRoleController,
+  );
+
+  app.patch(
+    '/:organizationId/roles/:roleId',
+    { ...updateRoleOpts, preHandler: [auth, orgScope, authorize('manage_roles')] },
+    updateRoleController,
+  );
+
+  app.delete(
+    '/:organizationId/roles/:roleId',
+    { ...roleParamsOpts, preHandler: [auth, orgScope, authorize('manage_roles')] },
+    archiveRoleController,
   );
 
   // PATCH /orgs/:organizationId/members/:userId — update member

@@ -6,6 +6,13 @@ export type MedicationAdministrationResult =
 	| 'REFUSED'
 	| 'NA';
 
+export type MedicationScheduleSlot =
+	| 'morning'
+	| 'noon'
+	| 'evening'
+	| 'night'
+	| 'bedtime';
+
 export type MedicationScheduleInput = {
 	morning?: boolean | undefined;
 	noon?: boolean | undefined;
@@ -42,7 +49,13 @@ export type MedicationListQuery = {
 
 export type CreateMedicationAdministrationBody = {
 	result: MedicationAdministrationResult;
+	slot?: MedicationScheduleSlot | undefined;
 	scheduledFor?: string | undefined;
 	administeredAt?: string | undefined;
 	notes?: string | undefined;
+};
+
+export type MedicationMarQuery = {
+	view?: 'daily' | 'monthly' | undefined;
+	date?: string | undefined;
 };

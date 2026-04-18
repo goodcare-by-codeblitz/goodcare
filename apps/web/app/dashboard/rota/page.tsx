@@ -1,21 +1,26 @@
 'use client';
 
 import { BoundingBox } from '@/components/dashboard/bounding-box';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
 	NativeSelect,
 	NativeSelectOption,
 } from '@/components/ui/native-select';
 import {
+	assignVisitCarer,
 	fetchCarers,
 	fetchPatients,
 	fetchVisits,
 	getCurrentOrgContext,
 	getOrgManagementError,
 	hasOrgPermission,
+	previewVisitAssignment,
+	unassignVisitCarer,
 	type CarerListItem,
 	type OrgContext,
 	type PatientListItem,
+	type VisitAssignmentPreview,
 	type VisitRecord,
 	type VisitStatus,
 } from '@/lib/org-management';
@@ -24,11 +29,13 @@ import {
 	CalendarDays,
 	ChevronLeft,
 	ChevronRight,
+	ExternalLink,
 	Search,
 	UsersRound,
+	X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type DragEvent } from 'react';
 
 type FilterStatus = 'ALL' | VisitStatus;
 
@@ -111,14 +118,55 @@ function StatusBadge({ status }: { status: VisitStatus }) {
 	);
 }
 
-function VisitBar({ visit }: { visit: VisitRecord }) {
+function WarningList({
+	preview,
+}: {
+	preview: VisitAssignmentPreview | null;
+}) {
+	if (!preview || preview.warnings.length === 0) {
+		return null;
+	}
+
+	return (
+		<div className='space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900'>
+			<p className='font-semibold'>Assignment warnings</p>
+			{preview.warnings.map((warning, index) => (
+				<div key={`${warning.code}-${index}`} className='rounded-lg bg-white/70 p-3'>
+					<p>{warning.message}</p>
+					{warning.relatedVisit ? (
+						<p className='mt-1 text-xs text-amber-800'>
+							Related visit: {warning.relatedVisit.patientName} from{' '}
+							{formatDateTime(warning.relatedVisit.scheduledStart)} to{' '}
+							{formatTime(warning.relatedVisit.scheduledEnd)}
+						</p>
+					) : null}
+				</div>
+			))}
+		</div>
+	);
+}
+
+function VisitBar({
+	visit,
+	canAssign,
+	onOpen,
+	onDragStart,
+}: {
+	visit: VisitRecord;
+	canAssign: boolean;
+	onOpen: (visitId: string) => void;
+	onDragStart: (visitId: string) => void;
+}) {
 	const firstAssignment = visit.assignments[0] ?? null;
 
 	return (
-		<Link
-			href={`/dashboard/patients/${visit.patientId}/rota`}
+		<button
+			type='button'
+			draggable={canAssign}
+			onDragStart={() => onDragStart(visit.id)}
+			onClick={() => onOpen(visit.id)}
 			className={cn(
-				'absolute top-2 h-[60px] rounded-xl border-l-4 px-3 py-2 shadow-sm transition-transform hover:-translate-y-0.5',
+				'absolute top-2 h-[60px] rounded-xl border-l-4 px-3 py-2 text-left shadow-sm transition-transform hover:-translate-y-0.5',
 				statusBarClassNames[visit.status],
 			)}
 			style={{
@@ -136,7 +184,7 @@ function VisitBar({ visit }: { visit: VisitRecord }) {
 					? `${firstAssignment.carer.organizationUser.user.firstName} ${firstAssignment.carer.organizationUser.user.lastName}`
 					: 'Open visit'}
 			</p>
-		</Link>
+		</button>
 	);
 }
 
@@ -149,8 +197,55 @@ export default function RotaPage() {
 	const [status, setStatus] = useState<FilterStatus>('ALL');
 	const [search, setSearch] = useState('');
 	const [selectedDate, setSelectedDate] = useState('');
+	const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
+	const [drawerCarerId, setDrawerCarerId] = useState('');
+	const [rowCarerSelections, setRowCarerSelections] = useState<Record<string, string>>({});
+	const [preview, setPreview] = useState<VisitAssignmentPreview | null>(null);
+	const [pendingAssignment, setPendingAssignment] = useState<{
+		visitId: string;
+		carerId: string;
+	} | null>(null);
+	const [draggedVisitId, setDraggedVisitId] = useState<string | null>(null);
+	const [dropTargetCarerId, setDropTargetCarerId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isAssigning, setIsAssigning] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
+	const [successMessage, setSuccessMessage] = useState('');
+
+	const canAssignVisits = orgContext
+		? hasOrgPermission(orgContext, 'assign_visits')
+		: false;
+
+	const loadData = async (contextOverride?: OrgContext) => {
+		const context = contextOverride ?? (await getCurrentOrgContext());
+		const [patientResult, carerResult, visitResult] = await Promise.all([
+			fetchPatients(context.organizationId, { page: 1, limit: 100 }),
+			fetchCarers(context.organizationId, { page: 1, limit: 100 }),
+			fetchVisits(context.organizationId, {
+				page: 1,
+				limit: 200,
+				...(selectedPatientId !== 'ALL' ? { patientId: selectedPatientId } : {}),
+				...(status !== 'ALL' ? { status } : {}),
+			}),
+		]);
+
+		setPatients(patientResult.patients);
+		setCarers(carerResult.filter((carer) => carer.status !== 'TERMINATED'));
+		setVisits(visitResult.visits);
+
+		const availableDates = Array.from(
+			new Set(visitResult.visits.map((visit) => getDateKey(visit.scheduledStart))),
+		).sort();
+		if (availableDates.length > 0) {
+			setSelectedDate((current) =>
+				current && availableDates.includes(current) ? current : availableDates[0],
+			);
+		} else {
+			setSelectedDate(new Date().toISOString().slice(0, 10));
+		}
+
+		return { context, visits: visitResult.visits };
+	};
 
 	useEffect(() => {
 		let isMounted = true;
@@ -168,35 +263,7 @@ export default function RotaPage() {
 					return;
 				}
 
-				const [patientResult, carerResult, visitResult] = await Promise.all([
-					fetchPatients(context.organizationId, { page: 1, limit: 100 }),
-					fetchCarers(context.organizationId, { page: 1, limit: 100 }),
-					fetchVisits(context.organizationId, {
-						page: 1,
-						limit: 200,
-						...(selectedPatientId !== 'ALL' ? { patientId: selectedPatientId } : {}),
-						...(status !== 'ALL' ? { status } : {}),
-					}),
-				]);
-
-				if (!isMounted) {
-					return;
-				}
-
-				setPatients(patientResult.patients);
-				setCarers(carerResult.filter((carer) => carer.status !== 'TERMINATED'));
-				setVisits(visitResult.visits);
-
-				const availableDates = Array.from(
-					new Set(visitResult.visits.map((visit) => getDateKey(visit.scheduledStart))),
-				).sort();
-				if (availableDates.length > 0) {
-					setSelectedDate((current) =>
-						current && availableDates.includes(current) ? current : availableDates[0],
-					);
-				} else {
-					setSelectedDate(new Date().toISOString().slice(0, 10));
-				}
+				await loadData(context);
 			} catch (error) {
 				if (isMounted) {
 					setErrorMessage(getOrgManagementError(error, 'Unable to load the rota.'));
@@ -235,7 +302,7 @@ export default function RotaPage() {
 				return true;
 			}
 
-			const carerNames = visit.assignments
+			const assignmentNames = visit.assignments
 				.map(
 					(assignment) =>
 						`${assignment.carer.organizationUser.user.firstName} ${assignment.carer.organizationUser.user.lastName}`,
@@ -245,7 +312,7 @@ export default function RotaPage() {
 
 			return (
 				`${visit.patient.firstName} ${visit.patient.lastName}`.toLowerCase().includes(needle) ||
-				carerNames.includes(needle)
+				assignmentNames.includes(needle)
 			);
 		});
 	}, [search, selectedDate, visits]);
@@ -268,29 +335,28 @@ export default function RotaPage() {
 		}
 
 		for (const entry of grouped.values()) {
-			entry.sort((left, right) =>
-				left.scheduledStart.localeCompare(right.scheduledStart),
-			);
+			entry.sort((left, right) => left.scheduledStart.localeCompare(right.scheduledStart));
 		}
 
-		unassigned.sort((left, right) =>
-			left.scheduledStart.localeCompare(right.scheduledStart),
-		);
-
+		unassigned.sort((left, right) => left.scheduledStart.localeCompare(right.scheduledStart));
 		return { grouped, unassigned };
 	}, [visibleVisits]);
 
 	const visibleCarers = useMemo(() => {
 		const needle = search.trim().toLowerCase();
 		return carers.filter((carer) => {
-			if (needle && !`${carer.firstName} ${carer.lastName}`.toLowerCase().includes(needle)) {
-				const hasPatientMatch = (visitsByCarer.grouped.get(carer.id) ?? []).length > 0;
-				if (!hasPatientMatch) {
-					return false;
-				}
+			if (!needle) {
+				return true;
 			}
 
-			return true;
+			const ownName = `${carer.firstName} ${carer.lastName}`.toLowerCase();
+			if (ownName.includes(needle)) {
+				return true;
+			}
+
+			return (visitsByCarer.grouped.get(carer.id) ?? []).some((visit) =>
+				`${visit.patient.firstName} ${visit.patient.lastName}`.toLowerCase().includes(needle),
+			);
 		});
 	}, [carers, search, visitsByCarer.grouped]);
 
@@ -305,11 +371,156 @@ export default function RotaPage() {
 	);
 
 	const now = new Date();
-	const nowDateKey = now.toISOString().slice(0, 10);
-	const showNowLine = selectedDate === nowDateKey;
+	const showNowLine = selectedDate === now.toISOString().slice(0, 10);
 	const nowX = showNowLine
 		? ((now.getHours() - DAY_START) * 60 + now.getMinutes()) / 60 * HOUR_WIDTH
 		: null;
+
+	const selectedVisit = selectedVisitId
+		? visits.find((visit) => visit.id === selectedVisitId) ?? null
+		: null;
+
+	const availableCarersForVisit = useMemo(() => {
+		if (!selectedVisit) {
+			return carers;
+		}
+
+		const assignedIds = new Set(selectedVisit.assignments.map((assignment) => assignment.carer.id));
+		return carers.filter((carer) => !assignedIds.has(carer.id));
+	}, [carers, selectedVisit]);
+
+	const resetAssignmentState = () => {
+		setPreview(null);
+		setPendingAssignment(null);
+		setDrawerCarerId('');
+	};
+
+	const openDrawer = (visitId: string) => {
+		setSelectedVisitId(visitId);
+		resetAssignmentState();
+	};
+
+	const refreshAfterAssignment = async () => {
+		if (!orgContext) {
+			return;
+		}
+
+		const result = await loadData(orgContext);
+		if (selectedVisitId) {
+			const stillSelected = result.visits.find((visit) => visit.id === selectedVisitId);
+			if (!stillSelected) {
+				setSelectedVisitId(null);
+			}
+		}
+	};
+
+	const beginAssignment = async (visitId: string, carerId: string) => {
+		if (!orgContext || !canAssignVisits) {
+			return;
+		}
+
+		const visit = visits.find((entry) => entry.id === visitId);
+		if (!visit) {
+			return;
+		}
+
+		if (visit.assignments.some((assignment) => assignment.carer.id === carerId)) {
+			setErrorMessage('That carer is already assigned to this visit.');
+			return;
+		}
+
+		try {
+			setIsAssigning(true);
+			setErrorMessage('');
+			setSuccessMessage('');
+
+			const nextPreview = await previewVisitAssignment(
+				orgContext.organizationId,
+				visitId,
+				carerId,
+			);
+			setPreview(nextPreview);
+			setPendingAssignment({ visitId, carerId });
+			setSelectedVisitId(visitId);
+
+			if (nextPreview.warnings.length === 0) {
+				await assignVisitCarer(orgContext.organizationId, visitId, carerId);
+				await refreshAfterAssignment();
+				setPreview(null);
+				setPendingAssignment(null);
+				setSuccessMessage('Carer assigned to visit.');
+			}
+		} catch (error) {
+			setErrorMessage(getOrgManagementError(error, 'Unable to assign this carer.'));
+		} finally {
+			setIsAssigning(false);
+		}
+	};
+
+	const confirmAssignment = async () => {
+		if (!orgContext || !pendingAssignment) {
+			return;
+		}
+
+		try {
+			setIsAssigning(true);
+			setErrorMessage('');
+			await assignVisitCarer(
+				orgContext.organizationId,
+				pendingAssignment.visitId,
+				pendingAssignment.carerId,
+			);
+			await refreshAfterAssignment();
+			setSuccessMessage('Carer assigned to visit.');
+			setPreview(null);
+			setPendingAssignment(null);
+			setDrawerCarerId('');
+		} catch (error) {
+			setErrorMessage(getOrgManagementError(error, 'Unable to assign this carer.'));
+		} finally {
+			setIsAssigning(false);
+		}
+	};
+
+	const handleUnassign = async (visitId: string, carerId: string) => {
+		if (!orgContext || !canAssignVisits) {
+			return;
+		}
+
+		try {
+			setIsAssigning(true);
+			setErrorMessage('');
+			await unassignVisitCarer(orgContext.organizationId, visitId, carerId);
+			await refreshAfterAssignment();
+			setSuccessMessage('Carer removed from visit.');
+		} catch (error) {
+			setErrorMessage(getOrgManagementError(error, 'Unable to remove this carer.'));
+		} finally {
+			setIsAssigning(false);
+		}
+	};
+
+	const handleDragStart = (visitId: string) => {
+		if (!canAssignVisits) {
+			return;
+		}
+		setDraggedVisitId(visitId);
+	};
+
+	const handleDropOnCarer = async (
+		event: DragEvent<HTMLDivElement>,
+		carerId: string,
+	) => {
+		event.preventDefault();
+		setDropTargetCarerId(null);
+		const visitId = draggedVisitId;
+		setDraggedVisitId(null);
+		if (!visitId) {
+			return;
+		}
+
+		await beginAssignment(visitId, carerId);
+	};
 
 	if (isLoading) {
 		return (
@@ -338,13 +549,13 @@ export default function RotaPage() {
 							<CalendarDays className='size-5' />
 						</div>
 						<h1 className='font-heading text-2xl font-bold tracking-tight text-foreground'>
-							Visits &amp; Roster
+							Visits & Roster
 						</h1>
 					</div>
 					<p className='mt-3 max-w-3xl text-sm leading-relaxed text-slate-600'>
-						The organization-wide rota is back in a gant-style schedule so you can scan
-						assignments by carer, spot gaps quickly, and jump into each patient&apos;s
-						detailed rota workflow when you need to manage a specific visit.
+						Manage calls on the organization-wide gant roster, assign carers inline,
+						and use drag-and-drop to place visits quickly while still surfacing
+						availability and overlap warnings before you commit.
 					</p>
 				</div>
 				<div className='flex flex-wrap gap-2'>
@@ -366,7 +577,12 @@ export default function RotaPage() {
 				</div>
 			</div>
 
-			{errorMessage ? <p className='mb-4 text-sm font-medium text-red-600'>{errorMessage}</p> : null}
+			<div className='mb-4 min-h-5'>
+				{errorMessage ? <p className='text-sm font-medium text-red-600'>{errorMessage}</p> : null}
+				{successMessage ? (
+					<p className='text-sm font-medium text-green-600'>{successMessage}</p>
+				) : null}
+			</div>
 
 			<div className='mb-6 grid gap-4 rounded-2xl border border-border bg-white p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_15rem_12rem_16rem]'>
 				<div className='relative'>
@@ -447,7 +663,9 @@ export default function RotaPage() {
 				</div>
 				<div className='flex items-center gap-2 text-xs text-slate-500'>
 					<UsersRound className='size-4' />
-					<span>Click any bar to open that patient&apos;s rota workflow</span>
+					<span>
+						Drag a visit onto a carer row to assign it, or open a visit to manage it in the drawer.
+					</span>
 				</div>
 			</div>
 
@@ -501,7 +719,13 @@ export default function RotaPage() {
 								/>
 							))}
 							{visitsByCarer.unassigned.map((visit) => (
-								<VisitBar key={visit.id} visit={visit} />
+								<VisitBar
+									key={visit.id}
+									visit={visit}
+									canAssign={canAssignVisits}
+									onOpen={openDrawer}
+									onDragStart={handleDragStart}
+								/>
 							))}
 						</div>
 					</div>
@@ -514,6 +738,7 @@ export default function RotaPage() {
 								className={cn(
 									'flex border-b border-border',
 									index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60',
+									dropTargetCarerId === carer.id && 'ring-2 ring-care-blue/30',
 								)}>
 								<div
 									className={cn(
@@ -529,11 +754,21 @@ export default function RotaPage() {
 											{carer.firstName} {carer.lastName}
 										</p>
 										<p className='text-xs text-slate-500'>
-											{carer.employmentType} • {rowVisits.length} visit{rowVisits.length === 1 ? '' : 's'}
+											{carer.employmentType} · {rowVisits.length} visit{rowVisits.length === 1 ? '' : 's'}
 										</p>
 									</div>
 								</div>
-								<div className='relative h-[76px] flex-1'>
+								<div
+									className='relative h-[76px] flex-1'
+									onDragOver={(event) => {
+										if (!canAssignVisits) {
+											return;
+										}
+										event.preventDefault();
+										setDropTargetCarerId(carer.id);
+									}}
+									onDragLeave={() => setDropTargetCarerId((current) => (current === carer.id ? null : current))}
+									onDrop={(event) => void handleDropOnCarer(event, carer.id)}>
 									{HOURS.map((hour, hourIndex) => (
 										<div
 											key={hour}
@@ -548,7 +783,13 @@ export default function RotaPage() {
 										/>
 									) : null}
 									{rowVisits.map((visit) => (
-										<VisitBar key={`${carer.id}-${visit.id}`} visit={visit} />
+										<VisitBar
+											key={`${carer.id}-${visit.id}`}
+											visit={visit}
+											canAssign={canAssignVisits}
+											onOpen={openDrawer}
+											onDragStart={handleDragStart}
+										/>
 									))}
 								</div>
 							</div>
@@ -558,47 +799,242 @@ export default function RotaPage() {
 			</div>
 
 			<div className='mt-6 overflow-hidden rounded-2xl border border-border bg-white shadow-sm'>
-				<div className='grid gap-4 border-b border-border px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid-cols-[minmax(0,1fr)_10rem_12rem_8rem]'>
+				<div className='grid gap-4 border-b border-border px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid-cols-[minmax(0,1fr)_10rem_16rem_18rem_10rem]'>
 					<span>Visit details</span>
 					<span>Status</span>
 					<span>Assignments</span>
+					<span>Quick assign</span>
 					<span>Open</span>
 				</div>
-				{visibleVisits.map((visit) => (
-					<Link
-						key={visit.id}
-						href={`/dashboard/patients/${visit.patientId}/rota`}
-						className='grid gap-4 border-b border-border px-6 py-4 transition-colors hover:bg-slate-50 md:grid-cols-[minmax(0,1fr)_10rem_12rem_8rem] md:items-center'>
-						<div className='min-w-0'>
-							<p className='truncate text-sm font-semibold text-foreground'>
-								{visit.patient.firstName} {visit.patient.lastName}
-							</p>
-							<p className='mt-1 text-sm text-slate-600'>
-								{formatDateTime(visit.scheduledStart)} - {formatTime(visit.scheduledEnd)}
-							</p>
+				{visibleVisits.map((visit) => {
+					const selectedCarerId = rowCarerSelections[visit.id] ?? '';
+					const unassignedCarers = carers.filter(
+						(carer) =>
+							!visit.assignments.some((assignment) => assignment.carer.id === carer.id),
+					);
+
+					return (
+						<div
+							key={visit.id}
+							className='grid gap-4 border-b border-border px-6 py-4 md:grid-cols-[minmax(0,1fr)_10rem_16rem_18rem_10rem] md:items-center'>
+							<div className='min-w-0'>
+								<p className='truncate text-sm font-semibold text-foreground'>
+									{visit.patient.firstName} {visit.patient.lastName}
+								</p>
+								<p className='mt-1 text-sm text-slate-600'>
+									{formatDateTime(visit.scheduledStart)} - {formatTime(visit.scheduledEnd)}
+								</p>
+							</div>
+							<div>
+								<StatusBadge status={visit.status} />
+							</div>
+							<div className='space-y-2'>
+								{visit.assignments.length > 0 ? (
+									visit.assignments.map((assignment) => (
+										<div
+											key={assignment.id}
+											className='flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm'>
+											<span className='truncate'>
+												{assignment.carer.organizationUser.user.firstName}{' '}
+												{assignment.carer.organizationUser.user.lastName}
+											</span>
+											{canAssignVisits ? (
+												<button
+													type='button'
+													onClick={() => void handleUnassign(visit.id, assignment.carer.id)}
+													className='font-semibold text-red-600 hover:underline'>
+													Remove
+												</button>
+											) : null}
+										</div>
+									))
+								) : (
+									<p className='text-sm text-slate-500'>Unassigned</p>
+								)}
+							</div>
+							<div className='space-y-2'>
+								<NativeSelect
+									className='w-full'
+									disabled={!canAssignVisits || unassignedCarers.length === 0}
+									value={selectedCarerId}
+									onChange={(event) =>
+										setRowCarerSelections((current) => ({
+											...current,
+											[visit.id]: event.target.value,
+										}))
+									}>
+									<NativeSelectOption value=''>Select carer</NativeSelectOption>
+									{unassignedCarers.map((carer) => (
+										<NativeSelectOption key={carer.id} value={carer.id}>
+											{carer.firstName} {carer.lastName}
+										</NativeSelectOption>
+									))}
+								</NativeSelect>
+								{canAssignVisits ? (
+									<Button
+										type='button'
+										size='sm'
+										variant='outline'
+										disabled={!selectedCarerId || isAssigning}
+										onClick={() => void beginAssignment(visit.id, selectedCarerId)}>
+										Assign
+									</Button>
+								) : null}
+							</div>
+							<div className='flex items-center gap-3'>
+								<Button type='button' size='sm' variant='outline' onClick={() => openDrawer(visit.id)}>
+									Manage
+								</Button>
+								<Link
+									href={`/dashboard/patients/${visit.patientId}/rota`}
+									className='text-sm font-semibold text-care-blue hover:underline'>
+									Patient rota
+								</Link>
+							</div>
 						</div>
-						<div>
-							<StatusBadge status={visit.status} />
-						</div>
-						<p className='text-sm text-slate-600'>
-							{visit.assignments.length > 0
-								? visit.assignments
-										.map(
-											(assignment) =>
-												`${assignment.carer.organizationUser.user.firstName} ${assignment.carer.organizationUser.user.lastName}`,
-										)
-										.join(', ')
-								: 'Unassigned'}
-						</p>
-						<p className='text-sm font-semibold text-care-blue'>Open workflow</p>
-					</Link>
-				))}
+					);
+				})}
 				{visibleVisits.length === 0 ? (
 					<div className='px-6 py-10 text-sm text-slate-500'>
 						No visits match the current filters for this day.
 					</div>
 				) : null}
 			</div>
+
+			{selectedVisit ? (
+				<div className='fixed inset-y-0 right-0 z-50 w-full max-w-xl border-l border-border bg-white shadow-2xl'>
+					<div className='flex h-full flex-col'>
+						<div className='flex items-start justify-between border-b border-border px-6 py-5'>
+							<div>
+								<p className='text-sm font-semibold text-slate-500'>Visit assignment</p>
+								<h2 className='mt-1 font-heading text-xl font-bold text-foreground'>
+									{selectedVisit.patient.firstName} {selectedVisit.patient.lastName}
+								</h2>
+								<p className='mt-2 text-sm text-slate-600'>
+									{formatDateTime(selectedVisit.scheduledStart)} - {formatTime(selectedVisit.scheduledEnd)}
+								</p>
+							</div>
+							<button
+								type='button'
+								onClick={() => {
+									setSelectedVisitId(null);
+									resetAssignmentState();
+								}}
+								className='rounded-lg border border-border p-2 text-slate-500 hover:bg-muted'>
+								<X className='size-4' />
+							</button>
+						</div>
+
+						<div className='flex-1 space-y-6 overflow-y-auto px-6 py-6'>
+							<div className='flex items-center justify-between rounded-xl border border-border bg-slate-50 px-4 py-3'>
+								<div>
+									<p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+										Status
+									</p>
+									<div className='mt-2'>
+										<StatusBadge status={selectedVisit.status} />
+									</div>
+								</div>
+								<Link
+									href={`/dashboard/patients/${selectedVisit.patientId}/rota`}
+									className='inline-flex items-center gap-2 text-sm font-semibold text-care-blue hover:underline'>
+									Open patient rota
+									<ExternalLink className='size-4' />
+								</Link>
+							</div>
+
+							<section className='space-y-3'>
+								<h3 className='text-sm font-semibold text-foreground'>Assigned carers</h3>
+								{selectedVisit.assignments.length > 0 ? (
+									selectedVisit.assignments.map((assignment) => (
+										<div
+											key={assignment.id}
+											className='flex items-center justify-between rounded-xl border border-border px-4 py-3'>
+											<div>
+												<p className='text-sm font-semibold text-foreground'>
+													{assignment.carer.organizationUser.user.firstName}{' '}
+													{assignment.carer.organizationUser.user.lastName}
+												</p>
+												<p className='mt-1 text-xs text-slate-500'>
+													Currently assigned to this visit
+												</p>
+											</div>
+											{canAssignVisits ? (
+												<Button
+													type='button'
+													variant='outline'
+													size='sm'
+													onClick={() =>
+														void handleUnassign(selectedVisit.id, assignment.carer.id)
+													}
+													disabled={isAssigning}>
+													Remove
+												</Button>
+											) : null}
+										</div>
+									))
+								) : (
+									<p className='text-sm text-slate-500'>No carers assigned yet.</p>
+								)}
+							</section>
+
+							<section className='space-y-4 rounded-xl border border-border p-4'>
+								<div>
+									<h3 className='text-sm font-semibold text-foreground'>Assign a carer</h3>
+									<p className='mt-1 text-sm text-slate-600'>
+										Preview warnings before assigning, or drag this visit onto a
+										carer row from the roster board.
+									</p>
+								</div>
+								<NativeSelect
+									className='w-full'
+									disabled={!canAssignVisits || availableCarersForVisit.length === 0}
+									value={drawerCarerId}
+									onChange={(event) => {
+										setDrawerCarerId(event.target.value);
+										setPreview(null);
+										setPendingAssignment(null);
+									}}>
+									<NativeSelectOption value=''>Select carer</NativeSelectOption>
+									{availableCarersForVisit.map((carer) => (
+										<NativeSelectOption key={carer.id} value={carer.id}>
+											{carer.firstName} {carer.lastName}
+										</NativeSelectOption>
+									))}
+								</NativeSelect>
+
+								{pendingAssignment?.visitId === selectedVisit.id &&
+								pendingAssignment.carerId === drawerCarerId ? (
+									<WarningList preview={preview} />
+								) : null}
+
+								{canAssignVisits ? (
+									<div className='flex flex-wrap gap-3'>
+										<Button
+											type='button'
+											variant='outline'
+											disabled={!drawerCarerId || isAssigning}
+											onClick={() => void beginAssignment(selectedVisit.id, drawerCarerId)}>
+											Preview assignment
+										</Button>
+										{preview &&
+										preview.warnings.length > 0 &&
+										pendingAssignment?.visitId === selectedVisit.id &&
+										pendingAssignment.carerId === drawerCarerId ? (
+											<Button
+												type='button'
+												disabled={isAssigning}
+												onClick={() => void confirmAssignment()}>
+												Assign anyway
+											</Button>
+										) : null}
+									</div>
+								) : null}
+							</section>
+						</div>
+					</div>
+				</div>
+			) : null}
 		</BoundingBox>
 	);
 }

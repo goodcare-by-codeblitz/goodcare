@@ -58,6 +58,11 @@ export type RoleAssignment = Prisma.RoleAssignmentModel
  */
 export type Carer = Prisma.CarerModel
 /**
+ * Model CarerAvailabilitySlot
+ * 
+ */
+export type CarerAvailabilitySlot = Prisma.CarerAvailabilitySlotModel
+/**
  * Model Qualification
  * 
  */
@@ -162,6 +167,11 @@ export type Address = Prisma.AddressModel
  * 
  */
 export type InviteToken = Prisma.InviteTokenModel
+/**
+ * Model InviteTokenRole
+ * 
+ */
+export type InviteTokenRole = Prisma.InviteTokenRoleModel
 /**
  * Model PasswordResetToken
  * 

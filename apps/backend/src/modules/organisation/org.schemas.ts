@@ -23,11 +23,10 @@ export const updateMemberSchema: FastifySchema = {
   body: {
     type: 'object',
     properties: {
-      roleId: {
-        anyOf: [
-          { type: 'string', format: 'uuid' },
-          { type: 'null' },
-        ],
+      roleIds: {
+        type: 'array',
+        items: { type: 'string', format: 'uuid' },
+        uniqueItems: true,
       },
       status: { type: 'string', enum: ['ACTIVE', 'SUSPENDED'] },
     },
@@ -61,6 +60,74 @@ export const listRolesSchema: FastifySchema = {
   },
 };
 
+export const createRoleSchema: FastifySchema = {
+  tags: ['Organizations'],
+  body: {
+    type: 'object',
+    required: ['kind', 'name', 'permissionKeys'],
+    properties: {
+      kind: { type: 'string', enum: ['team', 'carer'] },
+      name: { type: 'string', minLength: 2 },
+      description: { type: 'string' },
+      permissionKeys: {
+        type: 'array',
+        minItems: 1,
+        uniqueItems: true,
+        items: { type: 'string', minLength: 1 },
+      },
+      cloneRoleId: { type: 'string', format: 'uuid' },
+    },
+    additionalProperties: false,
+  },
+  params: {
+    type: 'object',
+    required: ['organizationId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+    },
+  },
+};
+
+export const updateRoleSchema: FastifySchema = {
+  tags: ['Organizations'],
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 2 },
+      description: {
+        anyOf: [{ type: 'string' }, { type: 'null' }],
+      },
+      permissionKeys: {
+        type: 'array',
+        minItems: 1,
+        uniqueItems: true,
+        items: { type: 'string', minLength: 1 },
+      },
+    },
+    additionalProperties: false,
+  },
+  params: {
+    type: 'object',
+    required: ['organizationId', 'roleId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+      roleId: { type: 'string', format: 'uuid' },
+    },
+  },
+};
+
+export const roleParamsSchema: FastifySchema = {
+  tags: ['Organizations'],
+  params: {
+    type: 'object',
+    required: ['organizationId', 'roleId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+      roleId: { type: 'string', format: 'uuid' },
+    },
+  },
+};
+
 export const orgIdParamsSchema: FastifySchema = {
   tags: ['Organizations'],
   params: {
@@ -87,5 +154,8 @@ export const memberParamsSchema: FastifySchema = {
 export const updateOrgOpts = { schema: updateOrgSchema };
 export const updateMemberOpts = { schema: updateMemberSchema };
 export const listRolesOpts = { schema: listRolesSchema };
+export const createRoleOpts = { schema: createRoleSchema };
+export const updateRoleOpts = { schema: updateRoleSchema };
+export const roleParamsOpts = { schema: roleParamsSchema };
 export const orgIdParamsOpts = { schema: orgIdParamsSchema };
 export const memberParamsOpts = { schema: memberParamsSchema };

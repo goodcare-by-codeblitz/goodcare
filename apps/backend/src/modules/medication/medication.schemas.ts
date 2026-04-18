@@ -37,6 +37,11 @@ const medicationScheduleSchema = {
 	additionalProperties: false,
 };
 
+const medicationSlotSchema = {
+	type: 'string',
+	enum: ['morning', 'noon', 'evening', 'night', 'bedtime'],
+};
+
 const medicationBodySchema = {
 	type: 'object',
 	required: [
@@ -126,6 +131,21 @@ export const listAdministrationsSchema = {
 	},
 };
 
+export const getMarSchema = {
+	schema: {
+		tags: ['Medications'],
+		params: orgPatientParams,
+		querystring: {
+			type: 'object',
+			properties: {
+				view: { type: 'string', enum: ['daily', 'monthly'] },
+				date: { type: 'string', format: 'date' },
+			},
+			additionalProperties: false,
+		},
+	},
+};
+
 export const createAdministrationSchema = {
 	schema: {
 		tags: ['Medications'],
@@ -135,6 +155,7 @@ export const createAdministrationSchema = {
 			required: ['result'],
 			properties: {
 				result: { type: 'string', enum: ['GIVEN', 'MISSED', 'REFUSED', 'NA'] },
+				slot: medicationSlotSchema,
 				scheduledFor: { type: 'string', format: 'date-time' },
 				administeredAt: { type: 'string', format: 'date-time' },
 				notes: { type: 'string' },

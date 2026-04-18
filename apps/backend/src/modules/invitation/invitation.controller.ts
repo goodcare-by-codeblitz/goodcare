@@ -38,7 +38,10 @@ export async function createInviteController(request: FastifyRequest, reply: Fas
     action: 'CREATE',
     entityType: 'InviteToken',
     entityId: result.invite.id,
-    newValues: { email: result.invite.email },
+    newValues: {
+      email: result.invite.email,
+      roleIds: result.invite.roles.map((role) => role.id),
+    },
     organizationId,
     actorUserId: request.user.id,
     ipAddress: request.ip,

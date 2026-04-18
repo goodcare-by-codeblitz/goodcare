@@ -1,6 +1,7 @@
 'use client';
 
 import { broadcastAuthEvent, buildBaseAppUrl } from '@/lib/auth-session';
+import { authApi } from '@/lib/api-client';
 import { useSessionStore } from '@/lib/stores/session-store';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
@@ -1307,7 +1308,7 @@ function Nav() {
 				'',
 			);
 
-			await axios.delete(`${baseUrl}/v1/auth/logout`, {
+			await authApi.delete(`${baseUrl}/v1/auth/logout`, {
 				withCredentials: true,
 			});
 			setIsAuthed(false);
@@ -1341,7 +1342,7 @@ function Nav() {
 					/\/+$/,
 					'',
 				);
-				await axios.get(`${baseUrl}/v1/auth/me`, {
+				await authApi.get(`${baseUrl}/v1/auth/me`, {
 					withCredentials: true,
 				});
 				setIsAuthed(true);
