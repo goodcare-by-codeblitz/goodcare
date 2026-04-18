@@ -21,7 +21,7 @@ import {
 	Shield,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 function FormSection({
@@ -45,7 +45,9 @@ function FormSection({
 					className='font-heading text-base font-bold text-foreground'>
 					{title}
 				</h2>
-				{description ? <p className='mt-1 text-sm text-slate-600'>{description}</p> : null}
+				{description ? (
+					<p className='mt-1 text-sm text-slate-600'>{description}</p>
+				) : null}
 			</div>
 			<div className='px-6 py-6'>{children}</div>
 		</section>
@@ -110,12 +112,20 @@ function RoleCard({
 
 export default function InviteTeamMemberPage() {
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [roles, setRoles] = useState<TeamRole[]>([]);
 	const [organizationId, setOrganizationId] = useState<string | null>(null);
-	const [firstName, setFirstName] = useState('');
-	const [lastName, setLastName] = useState('');
-	const [email, setEmail] = useState('');
-	const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+	const [firstName, setFirstName] = useState(
+		searchParams.get('firstName') ?? '',
+	);
+	const [lastName, setLastName] = useState(searchParams.get('lastName') ?? '');
+	const [email, setEmail] = useState(searchParams.get('email') ?? '');
+	const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(
+		(searchParams.get('roleIds') ?? '')
+			.split(',')
+			.map((value) => value.trim())
+			.filter(Boolean),
+	);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
@@ -136,6 +146,11 @@ export default function InviteTeamMemberPage() {
 
 				setOrganizationId(org.organizationId);
 				setRoles(teamRoles);
+				setSelectedRoleIds((current) =>
+					current.filter((roleId) =>
+						teamRoles.some((role) => role.id === roleId),
+					),
+				);
 			} catch (error) {
 				if (isMounted) {
 					setErrorMessage(
@@ -212,7 +227,7 @@ export default function InviteTeamMemberPage() {
 	};
 
 	return (
-		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
+		<div className='mx-auto max-w-10/12 p-4 lg:p-8'>
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -384,10 +399,14 @@ export default function InviteTeamMemberPage() {
 						aria-hidden='true'
 					/>
 					<div>
-						<p className='text-sm font-bold text-foreground'>What happens next?</p>
+						<p className='text-sm font-bold text-foreground'>
+							What happens next?
+						</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							The invitee will receive an email with a secure link to set their
-							password and activate access to this organization.
+							New people can set up their password from the invite. If this
+							email already belongs to a preserved GoodCare account, the invite
+							page will guide them to sign in or reset their password before
+							rejoining.
 						</p>
 					</div>
 				</div>

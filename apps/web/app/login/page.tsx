@@ -25,16 +25,18 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { loginSchema } from './login-validation';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+const CARER_DASHBOARD_ACCESS_ERROR = 'CARER_DASHBOARD_ACCESS_NOT_ALLOWED';
 
 export default function LoginPage() {
 	const searchParams = useSearchParams();
 	const nextPath = searchParams.get('next');
+	const invitedEmail = searchParams.get('email') ?? '';
 	const [showPassword, setShowPassword] = useState(false);
-	const [email, setEmail] = useState('');
+	const [email, setEmail] = useState(invitedEmail);
 	const [password, setPassword] = useState('');
 	const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +50,18 @@ export default function LoginPage() {
 		email?: boolean;
 		password?: boolean;
 	}>({});
+	const forgotPasswordHref = useMemo(() => {
+		const params = new URLSearchParams();
+		if (email.trim()) {
+			params.set('email', email.trim());
+		}
+		if (nextPath && nextPath.startsWith('/')) {
+			params.set('next', nextPath);
+		}
+
+		const query = params.toString();
+		return query ? `/forgot-password?${query}` : '/forgot-password';
+	}, [email, nextPath]);
 
 	const setOrganizations = useSessionStore((state) => state.setOrganisations);
 
@@ -133,7 +147,19 @@ export default function LoginPage() {
 			}
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
+				const code =
+					typeof error.response?.data?.details?.reason === 'string'
+						? error.response.data.details.reason
+						: typeof error.response?.data?.code === 'string'
+							? error.response.data.code
+							: null;
 				const serverError = error.response?.data?.error;
+				if (code === CARER_DASHBOARD_ACCESS_ERROR) {
+					setErrorMessage(
+						'This account is a carer account and cannot use the management dashboard. Contact your manager if you expected team access.',
+					);
+					return;
+				}
 				setErrorMessage(
 					typeof serverError === 'string' ? serverError : error.message,
 				);
@@ -288,7 +314,7 @@ export default function LoginPage() {
 										Password
 									</Label>
 									<Link
-										href='/forgot-password'
+										href={forgotPasswordHref}
 										className='text-sm font-medium text-care-blue hover:underline'>
 										Forgot password?
 									</Link>

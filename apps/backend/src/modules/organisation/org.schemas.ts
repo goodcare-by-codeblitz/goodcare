@@ -139,6 +139,24 @@ export const orgIdParamsSchema: FastifySchema = {
   },
 };
 
+export const listMembersSchema: FastifySchema = {
+  tags: ['Members'],
+  params: {
+    type: 'object',
+    required: ['organizationId'],
+    properties: {
+      organizationId: { type: 'string', format: 'uuid' },
+    },
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      view: { type: 'string', enum: ['active', 'former'] },
+    },
+    additionalProperties: false,
+  },
+};
+
 export const memberParamsSchema: FastifySchema = {
   tags: ['Members'],
   params: {
@@ -154,6 +172,7 @@ export const memberParamsSchema: FastifySchema = {
 export const updateOrgOpts = { schema: updateOrgSchema };
 export const updateMemberOpts = { schema: updateMemberSchema };
 export const listRolesOpts = { schema: listRolesSchema };
+export const listMembersOpts = { schema: listMembersSchema };
 export const createRoleOpts = { schema: createRoleSchema };
 export const updateRoleOpts = { schema: updateRoleSchema };
 export const roleParamsOpts = { schema: roleParamsSchema };

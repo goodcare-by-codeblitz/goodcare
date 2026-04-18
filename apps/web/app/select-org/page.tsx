@@ -147,7 +147,7 @@ function SelectOrg() {
 					)}
 					{!isLoading && !errorMessage && organisations.length === 0 && (
 						<p className='mt-3 text-sm text-gray-600'>
-							No organizations are available for the current account.
+							No dashboard organizations are available for the current account.
 						</p>
 					)}
 				</div>

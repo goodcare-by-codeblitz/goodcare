@@ -22,6 +22,8 @@ export type LoginResult = {
 	}>;
 };
 
+export type CurrentOrgAccessReason = 'CARER_ONLY_ACCOUNT' | null;
+
 export type RegisterResult = {
 	organizationId: string;
 	email: string;
@@ -42,6 +44,7 @@ export type LoginInput = LoginBody & { session: ISessionInput };
 
 export type ForgotPasswordBody = {
 	email: string;
+	nextPath?: string | undefined;
 };
 
 export type ForgotPasswordInput = {
@@ -54,10 +57,18 @@ export type ForgotPasswordResult = {
 } | null;
 
 export type ResetPasswordBody = {
+	token: string;
 	newPassword: string;
 };
 
-export type ResetPasswordInput = ResetPasswordBody;
+export type ResetPasswordInput = ResetPasswordBody & {
+	session: ISessionInput;
+};
+
+export type ResetPasswordResult = {
+	userId: string;
+	email: string;
+};
 
 export type AcceptInviteBody = {
 	token: string;
@@ -69,7 +80,10 @@ export type AcceptInviteBody = {
 export type InviteAcceptanceMode =
 	| 'new_user'
 	| 'existing_user_login_required'
-	| 'signed_in_match';
+	| 'signed_in_match'
+	| 'signed_in_mismatch';
+
+export type InviteState = 'pending' | 'accepted';
 
 export type InvitePreviewResult = {
 	organization: { id: string; slug: string; name: string };
@@ -77,6 +91,13 @@ export type InvitePreviewResult = {
 	email: string;
 	firstName: string;
 	lastName: string;
+	membershipStatus: 'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'LEFT';
+	hasExistingAccount: boolean;
+	wasFormerMember: boolean;
+	currentSessionUser: {
+		id: string;
+		email: string;
+	} | null;
 	roles: Array<{
 		id: string;
 		key: string;
@@ -91,6 +112,7 @@ export type InvitePreviewResult = {
 		}>;
 	}>;
 	acceptanceMode: InviteAcceptanceMode;
+	inviteState: InviteState;
 };
 
 export type AcceptInviteInput = AcceptInviteBody & {
@@ -102,6 +124,10 @@ export type AcceptInviteResult = {
 	userId: string;
 	email: string;
 	organization: { id: string; slug: string; name: string };
+	inviteKind: 'TEAM' | 'CARER';
+	setAuthSession: boolean;
+	nextStep: 'dashboard' | 'carer_app_download';
+	inviteState: InviteState;
 };
 
 export type RefreshResult = {

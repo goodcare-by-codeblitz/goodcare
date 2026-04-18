@@ -129,6 +129,7 @@ export const forgotPasswordSchema: FastifySchema = {
 		required: ['email'],
 		properties: {
 			email: { type: 'string', format: 'email' },
+			nextPath: { type: 'string', minLength: 1 },
 		},
 		additionalProperties: false,
 	},
@@ -149,7 +150,26 @@ export const resetPasswordSchema: FastifySchema = {
 		additionalProperties: false,
 	},
 	response: {
-		200: messageResponse,
+		200: {
+			type: 'object',
+			properties: {
+				message: { type: 'string' },
+				email: { type: 'string' },
+				organization: {
+					type: 'object',
+					properties: {
+						id: { type: 'string' },
+						slug: { type: 'string' },
+						name: { type: 'string' },
+					},
+				},
+				inviteKind: { type: 'string', enum: ['TEAM', 'CARER'] },
+				nextStep: {
+					type: 'string',
+					enum: ['dashboard', 'carer_app_download'],
+				},
+			},
+		},
 		400: errorResponse,
 	},
 };
@@ -168,7 +188,30 @@ export const acceptInviteSchema: FastifySchema = {
 		additionalProperties: false,
 	},
 	response: {
-		200: messageResponse,
+		200: {
+			type: 'object',
+			properties: {
+				message: { type: 'string' },
+				email: { type: 'string' },
+				organization: {
+					type: 'object',
+					properties: {
+						id: { type: 'string' },
+						slug: { type: 'string' },
+						name: { type: 'string' },
+					},
+				},
+				inviteKind: { type: 'string', enum: ['TEAM', 'CARER'] },
+				nextStep: {
+					type: 'string',
+					enum: ['dashboard', 'carer_app_download'],
+				},
+				inviteState: {
+					type: 'string',
+					enum: ['pending', 'accepted'],
+				},
+			},
+		},
 		400: errorResponse,
 	},
 };
@@ -199,9 +242,36 @@ export const invitePreviewSchema: FastifySchema = {
 				email: { type: 'string' },
 				firstName: { type: 'string' },
 				lastName: { type: 'string' },
+				membershipStatus: {
+					type: 'string',
+					enum: ['INVITED', 'ACTIVE', 'SUSPENDED', 'LEFT'],
+				},
+				hasExistingAccount: { type: 'boolean' },
+				wasFormerMember: { type: 'boolean' },
+				currentSessionUser: {
+					anyOf: [
+						{
+							type: 'object',
+							properties: {
+								id: { type: 'string' },
+								email: { type: 'string' },
+							},
+						},
+						{ type: 'null' },
+					],
+				},
 				acceptanceMode: {
 					type: 'string',
-					enum: ['new_user', 'existing_user_login_required', 'signed_in_match'],
+					enum: [
+						'new_user',
+						'existing_user_login_required',
+						'signed_in_match',
+						'signed_in_mismatch',
+					],
+				},
+				inviteState: {
+					type: 'string',
+					enum: ['pending', 'accepted'],
 				},
 				roles: {
 					type: 'array',
@@ -231,6 +301,7 @@ export const invitePreviewSchema: FastifySchema = {
 			},
 		},
 		400: errorResponse,
+		403: errorResponse,
 	},
 };
 
@@ -276,6 +347,10 @@ export const currentOrgAccessSchema: FastifySchema = {
 				organizationId: { type: ['string', 'null'] },
 				organizationSlug: { type: ['string', 'null'] },
 				organizationName: { type: ['string', 'null'] },
+				reason: {
+					type: ['string', 'null'],
+					enum: ['CARER_ONLY_ACCOUNT', null],
+				},
 				permissions: {
 					type: 'array',
 					items: { type: 'string' },

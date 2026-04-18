@@ -35,9 +35,10 @@ export type TeamRole = {
 export type TeamMember = {
 	id: string;
 	userId: string;
-	status: 'ACTIVE' | 'SUSPENDED';
+	status: 'ACTIVE' | 'SUSPENDED' | 'LEFT';
 	invitedAt: string;
 	joinedAt: string | null;
+	leftAt: string | null;
 	invitedBy: {
 		firstName: string;
 		lastName: string;
@@ -336,7 +337,10 @@ export type MedicationMarSheet = {
 export type InviteAcceptanceMode =
 	| 'new_user'
 	| 'existing_user_login_required'
-	| 'signed_in_match';
+	| 'signed_in_match'
+	| 'signed_in_mismatch';
+
+export type InviteState = 'pending' | 'accepted';
 
 export type InvitePreview = {
 	organization: {
@@ -348,8 +352,16 @@ export type InvitePreview = {
 	email: string;
 	firstName: string;
 	lastName: string;
+	membershipStatus: 'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'LEFT';
+	hasExistingAccount: boolean;
+	wasFormerMember: boolean;
+	currentSessionUser: {
+		id: string;
+		email: string;
+	} | null;
 	roles: TeamRole[];
 	acceptanceMode: InviteAcceptanceMode;
+	inviteState: InviteState;
 };
 
 export type VisitStatus =
@@ -505,6 +517,22 @@ export function getOrgManagementStatusCode(error: unknown) {
 	return null;
 }
 
+export function getOrgManagementErrorCode(error: unknown) {
+	if (axios.isAxiosError(error)) {
+		const detailsReason = error.response?.data?.details?.reason;
+		if (typeof detailsReason === 'string' && detailsReason.length > 0) {
+			return detailsReason;
+		}
+
+		const code = error.response?.data?.code;
+		if (typeof code === 'string' && code.length > 0) {
+			return code;
+		}
+	}
+
+	return null;
+}
+
 export async function getCurrentOrgContext(): Promise<OrgContext> {
 	const baseUrl = getBackendBaseUrl();
 	const orgSlug = getOrgHeader();
@@ -612,9 +640,13 @@ export async function archiveCustomTeamRole(
 	});
 }
 
-export async function fetchTeamMembers(organizationId: string) {
+export async function fetchTeamMembers(
+	organizationId: string,
+	view: 'active' | 'former' = 'active',
+) {
 	const baseUrl = getBackendBaseUrl();
 	const response = await authApi.get(`${baseUrl}/v1/orgs/${organizationId}/members`, {
+		params: { view },
 		withCredentials: true,
 	});
 

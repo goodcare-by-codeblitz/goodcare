@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 type MemberStatus = 'ACTIVE' | 'SUSPENDED';
+type FormerMemberStatus = 'LEFT';
 
 function formatDate(date: string | null) {
 	if (!date) {
@@ -61,7 +62,19 @@ function RolePill({ name }: { name: string }) {
 	);
 }
 
-function RolePillList({ roles }: { roles: Array<{ id: string; name: string }> }) {
+function FormerMemberStatusBadge({ status }: { status: FormerMemberStatus }) {
+	return (
+		<span className='inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600'>
+			{status === 'LEFT' ? 'Former member' : status}
+		</span>
+	);
+}
+
+function RolePillList({
+	roles,
+}: {
+	roles: Array<{ id: string; name: string }>;
+}) {
 	if (roles.length === 0) {
 		return <RolePill name='Unassigned' />;
 	}
@@ -76,7 +89,8 @@ function RolePillList({ roles }: { roles: Array<{ id: string; name: string }> })
 }
 
 function MemberRow({ member }: { member: TeamMember }) {
-	const initials = `${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
+	const initials =
+		`${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
 
 	return (
 		<Link
@@ -99,7 +113,7 @@ function MemberRow({ member }: { member: TeamMember }) {
 			</div>
 
 			<div className='hidden sm:block'>
-				<MemberStatusBadge status={member.status} />
+				<MemberStatusBadge status={member.status as MemberStatus} />
 			</div>
 
 			<p className='hidden w-24 shrink-0 text-xs text-slate-400 xl:block'>
@@ -108,6 +122,62 @@ function MemberRow({ member }: { member: TeamMember }) {
 
 			<ChevronRight className='size-4 shrink-0 text-slate-300 transition-colors group-hover:text-slate-500' />
 		</Link>
+	);
+}
+
+function buildReinviteHref(member: TeamMember) {
+	const params = new URLSearchParams({
+		firstName: member.user.firstName,
+		lastName: member.user.lastName,
+		email: member.user.email,
+	});
+
+	if (member.roles.length > 0) {
+		params.set('roleIds', member.roles.map((role) => role.id).join(','));
+	}
+
+	return `/dashboard/settings/team/invite?${params.toString()}`;
+}
+
+function FormerMemberRow({ member }: { member: TeamMember }) {
+	const initials =
+		`${member.user.firstName[0] ?? ''}${member.user.lastName[0] ?? ''}`.toUpperCase();
+
+	return (
+		<div className='flex items-center gap-4 px-6 py-4'>
+			<span className='inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600'>
+				{initials}
+			</span>
+
+			<div className='min-w-0 flex-1'>
+				<p className='truncate text-sm font-semibold text-foreground'>
+					{member.user.firstName} {member.user.lastName}
+				</p>
+				<p className='truncate text-xs text-slate-500'>{member.user.email}</p>
+			</div>
+
+			<div className='hidden w-72 flex-wrap gap-1.5 lg:flex'>
+				<RolePillList roles={member.roles} />
+			</div>
+
+			<div className='hidden sm:block'>
+				<FormerMemberStatusBadge status='LEFT' />
+			</div>
+
+			<p className='hidden w-24 shrink-0 text-xs text-slate-400 xl:block'>
+				{formatDate(member.leftAt)}
+			</p>
+
+			<Link href={buildReinviteHref(member)}>
+				<Button
+					variant='outline'
+					size='sm'
+					className='h-9 text-xs font-semibold'>
+					<UserPlus className='size-3.5' aria-hidden='true' />
+					Reinvite
+				</Button>
+			</Link>
+		</div>
 	);
 }
 
@@ -167,6 +237,7 @@ function PendingInviteRow({
 export default function TeamSettingsPage() {
 	const [search, setSearch] = useState('');
 	const [members, setMembers] = useState<TeamMember[]>([]);
+	const [formerMembers, setFormerMembers] = useState<TeamMember[]>([]);
 	const [invites, setInvites] = useState<TeamInvite[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState('');
@@ -180,16 +251,20 @@ export default function TeamSettingsPage() {
 				setIsLoading(true);
 				setErrorMessage('');
 				const org = await getCurrentOrgContext();
-				const [nextMembers, nextInvites] = await Promise.all([
-					fetchTeamMembers(org.organizationId),
-					fetchTeamInvites(org.organizationId),
-				]);
+				const [nextMembers, nextFormerMembers, nextInvites] = await Promise.all(
+					[
+						fetchTeamMembers(org.organizationId, 'active'),
+						fetchTeamMembers(org.organizationId, 'former'),
+						fetchTeamInvites(org.organizationId),
+					],
+				);
 
 				if (!isMounted) {
 					return;
 				}
 
 				setMembers(nextMembers);
+				setFormerMembers(nextFormerMembers);
 				setInvites(nextInvites);
 			} catch (error) {
 				if (!isMounted) {
@@ -219,7 +294,8 @@ export default function TeamSettingsPage() {
 			return true;
 		}
 
-		const fullName = `${member.user.firstName} ${member.user.lastName}`.toLowerCase();
+		const fullName =
+			`${member.user.firstName} ${member.user.lastName}`.toLowerCase();
 		return (
 			fullName.includes(query) ||
 			member.user.email.toLowerCase().includes(query) ||
@@ -227,7 +303,9 @@ export default function TeamSettingsPage() {
 		);
 	});
 
-	const activeCount = members.filter((member) => member.status === 'ACTIVE').length;
+	const activeCount = members.filter(
+		(member) => member.status === 'ACTIVE',
+	).length;
 
 	const handleRevokeInvite = async (inviteId: string) => {
 		try {
@@ -235,7 +313,9 @@ export default function TeamSettingsPage() {
 			setActionMessage('');
 			const org = await getCurrentOrgContext();
 			await revokeTeamInvite(org.organizationId, inviteId);
-			setInvites((current) => current.filter((invite) => invite.id !== inviteId));
+			setInvites((current) =>
+				current.filter((invite) => invite.id !== inviteId),
+			);
 			setActionMessage('Invitation revoked successfully.');
 		} catch (error) {
 			setErrorMessage(
@@ -245,7 +325,7 @@ export default function TeamSettingsPage() {
 	};
 
 	return (
-		<div className='mx-auto max-w-6/12 p-4 lg:p-8'>
+		<div className='mx-auto max-w-10/12 p-4 lg:p-8'>
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -277,8 +357,8 @@ export default function TeamSettingsPage() {
 						</h1>
 					</div>
 					<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-						Manage organization admins, managers, and viewers. Carers are onboarded
-						separately through the Staff area.
+						Manage organization admins, managers, and viewers. Carers are
+						onboarded separately through the Staff area.
 					</p>
 				</div>
 
@@ -312,7 +392,9 @@ export default function TeamSettingsPage() {
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						Total Members
 					</p>
-					<p className='mt-1 text-2xl font-bold text-foreground'>{members.length}</p>
+					<p className='mt-1 text-2xl font-bold text-foreground'>
+						{members.length}
+					</p>
 				</div>
 				<div className='px-5 py-4'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
@@ -322,9 +404,11 @@ export default function TeamSettingsPage() {
 				</div>
 				<div className='px-5 py-4'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
-						Pending Invites
+						Former Members
 					</p>
-					<p className='mt-1 text-2xl font-bold text-care-blue'>{invites.length}</p>
+					<p className='mt-1 text-2xl font-bold text-slate-700'>
+						{formerMembers.length}
+					</p>
 				</div>
 			</div>
 
@@ -373,7 +457,9 @@ export default function TeamSettingsPage() {
 					</div>
 
 					{isLoading ? (
-						<div className='px-6 py-12 text-sm text-slate-500'>Loading team members...</div>
+						<div className='px-6 py-12 text-sm text-slate-500'>
+							Loading team members...
+						</div>
 					) : filteredMembers.length > 0 ? (
 						<ul role='list' className='divide-y divide-border'>
 							{filteredMembers.map((member) => (
@@ -385,7 +471,9 @@ export default function TeamSettingsPage() {
 					) : (
 						<div className='flex flex-col items-center gap-2 px-6 py-12 text-center'>
 							<Search className='size-8 text-slate-300' aria-hidden='true' />
-							<p className='text-sm font-semibold text-foreground'>No members found</p>
+							<p className='text-sm font-semibold text-foreground'>
+								No members found
+							</p>
 							<p className='text-xs text-slate-500'>
 								Try a different name, email, or role.
 							</p>
@@ -408,7 +496,8 @@ export default function TeamSettingsPage() {
 									</span>
 								</h2>
 								<p className='mt-0.5 text-xs text-slate-500'>
-									These invitations are awaiting acceptance and expire after 7 days.
+									These invitations are awaiting acceptance and expire after 7
+									days.
 								</p>
 							</div>
 							<Link
@@ -422,13 +511,72 @@ export default function TeamSettingsPage() {
 						<ul role='list' className='divide-y divide-border'>
 							{invites.map((invite) => (
 								<li key={invite.id}>
-									<PendingInviteRow invite={invite} onRevoke={handleRevokeInvite} />
+									<PendingInviteRow
+										invite={invite}
+										onRevoke={handleRevokeInvite}
+									/>
 								</li>
 							))}
 						</ul>
 					</div>
 				</section>
 			)}
+
+			<section aria-labelledby='former-members-heading' className='mt-6'>
+				<div className='rounded-xl border border-border bg-white shadow-sm'>
+					<div className='flex items-center justify-between border-b border-border px-6 py-4'>
+						<div>
+							<h2
+								id='former-members-heading'
+								className='font-heading text-base font-bold text-foreground'>
+								Former Members
+								<span className='ml-2 text-sm font-normal text-slate-400'>
+									({formerMembers.length})
+								</span>
+							</h2>
+							<p className='mt-0.5 text-xs text-slate-500'>
+								These accounts no longer belong to this organization, but their
+								global GoodCare identities were preserved for history and audit
+								records.
+							</p>
+						</div>
+					</div>
+
+					<div className='hidden grid-cols-[auto_1fr_18rem_8rem_7rem] items-center gap-4 border-b border-border px-6 py-2.5 lg:grid'>
+						<span className='w-10' />
+						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+							Member
+						</span>
+						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+							Last Team Roles
+						</span>
+						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+							Status
+						</span>
+						<span className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+							Left
+						</span>
+					</div>
+
+					{isLoading ? (
+						<div className='px-6 py-10 text-sm text-slate-500'>
+							Loading former members...
+						</div>
+					) : formerMembers.length > 0 ? (
+						<ul role='list' className='divide-y divide-border'>
+							{formerMembers.map((member) => (
+								<li key={member.id}>
+									<FormerMemberRow member={member} />
+								</li>
+							))}
+						</ul>
+					) : (
+						<div className='px-6 py-10 text-sm text-slate-500'>
+							No former team members yet.
+						</div>
+					)}
+				</div>
+			</section>
 		</div>
 	);
 }

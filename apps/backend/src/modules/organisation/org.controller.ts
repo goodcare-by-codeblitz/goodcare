@@ -47,7 +47,8 @@ export async function updateOrgController(request: FastifyRequest, reply: Fastif
 
 export async function listMembersController(request: FastifyRequest, reply: FastifyReply) {
   const { organizationId } = request.params as { organizationId: string };
-  const members = await listMembersService(organizationId);
+  const { view } = request.query as { view?: 'active' | 'former' };
+  const members = await listMembersService(organizationId, view ?? 'active');
   return reply.send({ members });
 }
 

@@ -49,6 +49,7 @@ export type OrgMember = {
   status: string;
   invitedAt: Date;
   joinedAt: Date | null;
+  leftAt: Date | null;
   invitedBy: {
     firstName: string;
     lastName: string;

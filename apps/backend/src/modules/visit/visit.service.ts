@@ -594,15 +594,29 @@ export async function unassignCarerService(
 	visitId: string,
 	carerId: string,
 ): Promise<{ message: string }> {
-	const assignment = await prisma.visitAssignment.findFirst({
-		where: { visitId, carerId, organizationId, isActive: true },
-		select: { id: true },
-	});
-	if (!assignment) throw new NotFoundError('Active assignment not found');
+	await prisma.$transaction(async (tx) => {
+		const assignment = await tx.visitAssignment.findFirst({
+			where: { visitId, carerId, organizationId, isActive: true },
+			select: { id: true },
+		});
+		if (!assignment) throw new NotFoundError('Active assignment not found');
 
-	await prisma.visitAssignment.update({
-		where: { id: assignment.id },
-		data: { isActive: false, unassignedAt: new Date() },
+		// The current schema only permits one inactive row for a visit/carer pair,
+		// so discard older inactive history before archiving the latest assignment.
+		await tx.visitAssignment.deleteMany({
+			where: {
+				visitId,
+				carerId,
+				organizationId,
+				isActive: false,
+			},
+		});
+
+		await tx.visitAssignment.update({
+			where: { id: assignment.id },
+			data: { isActive: false, unassignedAt: new Date() },
+		});
 	});
+
 	return { message: 'Carer unassigned successfully' };
 }

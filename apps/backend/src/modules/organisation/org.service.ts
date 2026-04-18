@@ -74,11 +74,12 @@ export async function updateOrgService(
 
 export async function listMembersService(
 	organizationId: string,
+	view: 'active' | 'former' = 'active',
 ): Promise<OrgMember[]> {
 	const members = await prisma.organizationUser.findMany({
 		where: {
 			organizationId,
-			status: { in: ['ACTIVE', 'SUSPENDED'] },
+			status: view === 'former' ? 'LEFT' : { in: ['ACTIVE', 'SUSPENDED'] },
 		},
 		select: {
 			id: true,
@@ -86,6 +87,7 @@ export async function listMembersService(
 			status: true,
 			invitedAt: true,
 			joinedAt: true,
+			leftAt: true,
 			invitedBy: {
 				select: {
 					firstName: true,
@@ -160,7 +162,14 @@ export async function listMembersService(
 					.get(member.userId)
 					?.slice()
 					.sort((left, right) => left.name.localeCompare(right.name)) ?? [],
-		}));
+		}))
+		.sort((left, right) => {
+			if (view === 'former') {
+				return (right.leftAt?.getTime() ?? 0) - (left.leftAt?.getTime() ?? 0);
+			}
+
+			return (right.joinedAt?.getTime() ?? 0) - (left.joinedAt?.getTime() ?? 0);
+		});
 }
 
 export async function listRolesService(
@@ -451,10 +460,6 @@ export async function removeMemberService(
 		await tx.organizationUser.update({
 			where: { id: orgUser.id },
 			data: { status: 'LEFT', leftAt: new Date() },
-		});
-
-		await tx.roleAssignment.deleteMany({
-			where: { userId: targetUserId, organizationId },
 		});
 
 		await ensureGovernanceCoverage(tx, organizationId, {

@@ -18,10 +18,71 @@ import type {
 	InvitePreviewResult,
 	LoginInput,
 	LoginResult,
+	ResetPasswordInput,
+	ResetPasswordResult,
 	RefreshResult,
 	RegisterInput,
 	RegisterResult,
 } from './auth.types';
+
+const DEFAULT_CARER_EMPLOYMENT_TYPE = 'Pending';
+
+type DashboardOrganization = {
+	id: string;
+	slug: string;
+	name: string;
+};
+
+async function listDashboardOrganizationsForUser(
+	userId: string,
+): Promise<DashboardOrganization[]> {
+	const memberships = await prisma.organizationUser.findMany({
+		where: {
+			userId,
+			status: 'ACTIVE',
+		},
+		select: {
+			organizationId: true,
+			organization: {
+				select: {
+					id: true,
+					slug: true,
+					name: true,
+				},
+			},
+		},
+	});
+
+	if (memberships.length === 0) {
+		return [];
+	}
+
+	const teamAssignments = await prisma.roleAssignment.findMany({
+		where: {
+			userId,
+			organizationId: {
+				in: memberships.map((membership) => membership.organizationId),
+			},
+			role: {
+				organizationRoleKind: 'TEAM',
+				archivedAt: null,
+			},
+		},
+		select: {
+			organizationId: true,
+		},
+	});
+
+	const dashboardOrgIds = new Set(
+		teamAssignments
+			.map((assignment) => assignment.organizationId)
+			.filter((organizationId): organizationId is string => Boolean(organizationId)),
+	);
+
+	return memberships
+		.filter((membership) => dashboardOrgIds.has(membership.organizationId))
+		.map((membership) => membership.organization);
+}
 
 export async function registerService(
 	input: RegisterInput,
@@ -146,9 +207,7 @@ export async function loginService(input: LoginInput): Promise<LoginResult> {
 			organizationUsers: {
 				where: { status: 'ACTIVE' },
 				select: {
-					organization: {
-						select: { id: true, slug: true, name: true },
-					},
+					id: true,
 				},
 			},
 		},
@@ -168,6 +227,19 @@ export async function loginService(input: LoginInput): Promise<LoginResult> {
 		});
 	}
 
+	const organizations = await listDashboardOrganizationsForUser(user.id);
+
+	if (user.organizationUsers.length > 0 && organizations.length === 0) {
+		throw new ForbiddenError(
+			'This account is for carer access and cannot use the management dashboard.',
+			{
+				reason: 'CARER_DASHBOARD_ACCESS_NOT_ALLOWED',
+				code: 'CARER_DASHBOARD_ACCESS_NOT_ALLOWED',
+				statusCode: 403,
+			},
+		);
+	}
+
 	await prisma.session.create({
 		data: {
 			sessionId: input.session.sessionId,
@@ -178,8 +250,6 @@ export async function loginService(input: LoginInput): Promise<LoginResult> {
 			ip: input.session.ip,
 		},
 	});
-
-	const organizations = user.organizationUsers.map((ou) => ou.organization);
 
 	// TODO: consider returning only the "current" org (e.g. the one they last logged into) and loading others on demand, to reduce token size and improve security and return the organization slug and id, use the id for audit logs.
 	return {
@@ -219,6 +289,82 @@ export async function forgotPasswordService(
 	return { resetToken: rawToken, expiresAt };
 }
 
+export async function resetPasswordService(
+	input: ResetPasswordInput,
+): Promise<ResetPasswordResult> {
+	const tokenHash = hashToken(input.token);
+	const passwordResetToken = await prisma.passwordResetToken.findUnique({
+		where: { tokenHash },
+		select: {
+			id: true,
+			userId: true,
+			usedAt: true,
+			expiresAt: true,
+			user: {
+				select: {
+					id: true,
+					email: true,
+					status: true,
+				},
+			},
+		},
+	});
+
+	if (
+		!passwordResetToken ||
+		passwordResetToken.usedAt ||
+		passwordResetToken.expiresAt < new Date()
+	) {
+		throw new BadRequestError('Invalid or expired password reset token', {
+			reason: 'INVALID_RESET_TOKEN',
+			code: 'INVALID_RESET_TOKEN',
+			statusCode: 400,
+		});
+	}
+
+	if (passwordResetToken.user.status !== 'ACTIVE') {
+		throw new ForbiddenError('User account is not active', {
+			reason: 'USER_NOT_ACTIVE',
+			code: 'USER_NOT_ACTIVE',
+			statusCode: 403,
+		});
+	}
+
+	const passwordHash = await hashPassword(input.newPassword);
+
+	await prisma.$transaction(async (tx) => {
+		await tx.user.update({
+			where: { id: passwordResetToken.userId },
+			data: { passwordHash },
+		});
+
+		await tx.passwordResetToken.update({
+			where: { id: passwordResetToken.id },
+			data: { usedAt: new Date() },
+		});
+
+		await tx.session.deleteMany({
+			where: { userId: passwordResetToken.userId },
+		});
+
+		await tx.session.create({
+			data: {
+				sessionId: input.session.sessionId,
+				userId: passwordResetToken.userId,
+				refreshTokenHash: input.session.tokenHash,
+				expiresAt: input.session.expiresAt,
+				userAgent: input.session.userAgent,
+				ip: input.session.ip,
+			},
+		});
+	});
+
+	return {
+		userId: passwordResetToken.user.id,
+		email: passwordResetToken.user.email,
+	};
+}
+
 export async function changePasswordService(
 	input: ChangePasswordInput,
 ): Promise<void> {
@@ -249,14 +395,48 @@ export async function changePasswordService(
 export async function acceptInviteService(
 	input: AcceptInviteInput,
 ): Promise<AcceptInviteResult> {
-	const inviteToken = await getValidatedInviteToken(input.token);
+	const inviteTokenRecord = await getInviteTokenByToken(input.token);
+	const acceptedCarerInvite = getAcceptedCarerInvite(inviteTokenRecord);
+
+	if (acceptedCarerInvite) {
+		return buildAcceptedCarerInviteResult(acceptedCarerInvite);
+	}
+
+	const inviteToken = getPendingInviteTokenOrThrow(inviteTokenRecord);
 	const organizationUser = inviteToken.organizationUser!;
 	const invitedUser = organizationUser.user;
 	const isExistingUser = invitedUser.passwordHash.trim().length > 0;
+	const isCarerInvite = inviteToken.kind === 'CARER';
 
-	if (isExistingUser && input.currentUserId !== organizationUser.userId) {
+	if (
+		!isCarerInvite &&
+		input.currentUserId &&
+		input.currentUserId !== organizationUser.userId
+	) {
 		throw new ForbiddenError(
 			'Please sign in as the invited user before accepting this invitation.',
+			{
+				reason: 'SIGNED_IN_AS_DIFFERENT_USER',
+				code: 'SIGNED_IN_AS_DIFFERENT_USER',
+				statusCode: 403,
+				email: inviteToken.email,
+			},
+		);
+	}
+
+	if (
+		!isCarerInvite &&
+		isExistingUser &&
+		input.currentUserId !== organizationUser.userId
+	) {
+		throw new ForbiddenError(
+			'Please sign in as the invited user before accepting this invitation.',
+			{
+				reason: 'INVITED_ACCOUNT_SIGN_IN_REQUIRED',
+				code: 'INVITED_ACCOUNT_SIGN_IN_REQUIRED',
+				statusCode: 403,
+				email: inviteToken.email,
+			},
 		);
 	}
 
@@ -317,6 +497,40 @@ export async function acceptInviteService(
 			},
 		});
 
+		if (inviteToken.kind === 'CARER') {
+			const existingCarer = await tx.carer.findUnique({
+				where: {
+					organizationUserId: organizationUser.id,
+				},
+				select: {
+					id: true,
+					status: true,
+				},
+			});
+
+			if (existingCarer) {
+				await tx.carer.update({
+					where: { id: existingCarer.id },
+					data: {
+						status:
+							existingCarer.status === 'TERMINATED'
+								? 'ACTIVE'
+								: existingCarer.status,
+					},
+				});
+			} else {
+				await tx.carer.create({
+					data: {
+						organizationId: inviteToken.organization.id,
+						organizationUserId: organizationUser.id,
+						hireDate: new Date(),
+						employmentType: DEFAULT_CARER_EMPLOYMENT_TYPE,
+						experienceYears: 0,
+					},
+				});
+			}
+		}
+
 		await tx.inviteToken.updateMany({
 			where: {
 				organizationUserId: organizationUser.id,
@@ -334,16 +548,18 @@ export async function acceptInviteService(
 			},
 		});
 
-		await tx.session.create({
-			data: {
-				sessionId: input.session.sessionId,
-				userId: user.id,
-				refreshTokenHash: input.session.tokenHash,
-				expiresAt: input.session.expiresAt,
-				userAgent: input.session.userAgent,
-				ip: input.session.ip,
-			},
-		});
+		if (!isCarerInvite) {
+			await tx.session.create({
+				data: {
+					sessionId: input.session.sessionId,
+					userId: user.id,
+					refreshTokenHash: input.session.tokenHash,
+					expiresAt: input.session.expiresAt,
+					userAgent: input.session.userAgent,
+					ip: input.session.ip,
+				},
+			});
+		}
 
 		return { userId: user.id, email: user.email };
 	});
@@ -352,24 +568,75 @@ export async function acceptInviteService(
 		userId: result.userId,
 		email: result.email,
 		organization: inviteToken.organization,
+		inviteKind: inviteToken.kind,
+		setAuthSession: !isCarerInvite,
+		nextStep: isCarerInvite ? 'carer_app_download' : 'dashboard',
+		inviteState: 'accepted',
 	};
 }
 
 export async function getInvitePreviewService(
 	token: string,
-	currentUserId?: string | null,
+	currentSessionUser?: { id: string; email: string } | null,
 ): Promise<InvitePreviewResult> {
-	const inviteToken = await getValidatedInviteToken(token);
+	const inviteTokenRecord = await getInviteTokenByToken(token);
+	const acceptedCarerInvite = getAcceptedCarerInvite(inviteTokenRecord);
+
+	if (acceptedCarerInvite) {
+		const organizationUser = acceptedCarerInvite.organizationUser!;
+		const invitedUser = organizationUser.user;
+		const isExistingUser = invitedUser.passwordHash.trim().length > 0;
+
+		return {
+			organization: acceptedCarerInvite.organization,
+			kind: acceptedCarerInvite.kind,
+			email: acceptedCarerInvite.email,
+			firstName: acceptedCarerInvite.inviteeFirstName,
+			lastName: acceptedCarerInvite.inviteeLastName,
+			membershipStatus: organizationUser.status,
+			hasExistingAccount: isExistingUser,
+			wasFormerMember: Boolean(organizationUser.leftAt),
+			currentSessionUser: currentSessionUser
+				? {
+						id: currentSessionUser.id,
+						email: currentSessionUser.email,
+					}
+				: null,
+			roles: acceptedCarerInvite.roles.map((entry) => ({
+				id: entry.role.id,
+				key: entry.role.key,
+				name: entry.role.name,
+				description: entry.role.description,
+				isSystem: entry.role.isSystem,
+				organizationId: entry.role.organizationId,
+				permissions: entry.role.permissions.map(
+					(permissionEntry) => permissionEntry.permission,
+				),
+			})),
+			acceptanceMode: isExistingUser
+				? 'existing_user_login_required'
+				: 'new_user',
+			inviteState: 'accepted',
+		};
+	}
+
+	const inviteToken = getPendingInviteTokenOrThrow(inviteTokenRecord);
 	const organizationUser = inviteToken.organizationUser!;
 	const invitedUser = organizationUser.user;
 	const isExistingUser = invitedUser.passwordHash.trim().length > 0;
 
 	const acceptanceMode =
-		currentUserId === organizationUser.userId
-			? 'signed_in_match'
-			: isExistingUser
+		inviteToken.kind === 'CARER'
+			? isExistingUser
 				? 'existing_user_login_required'
-				: 'new_user';
+				: 'new_user'
+			: currentSessionUser?.id === organizationUser.userId
+				? 'signed_in_match'
+				: currentSessionUser
+					? 'signed_in_mismatch'
+					: isExistingUser
+						? 'existing_user_login_required'
+						: 'new_user';
 
 	return {
 		organization: inviteToken.organization,
@@ -377,6 +644,15 @@ export async function getInvitePreviewService(
 		email: inviteToken.email,
 		firstName: inviteToken.inviteeFirstName,
 		lastName: inviteToken.inviteeLastName,
+		membershipStatus: organizationUser.status,
+		hasExistingAccount: isExistingUser,
+		wasFormerMember: Boolean(organizationUser.leftAt),
+		currentSessionUser: currentSessionUser
+			? {
+					id: currentSessionUser.id,
+					email: currentSessionUser.email,
+				}
+			: null,
 		roles: inviteToken.roles.map((entry) => ({
 			id: entry.role.id,
 			key: entry.role.key,
@@ -387,6 +663,7 @@ export async function getInvitePreviewService(
 			permissions: entry.role.permissions.map((permissionEntry) => permissionEntry.permission),
 		})),
 		acceptanceMode,
+		inviteState: 'pending',
 	};
 }
 
@@ -422,20 +699,15 @@ export async function refreshService(
 }
 
 export async function myOrganizationsService(userId: string) {
-	const orgs = await prisma.organizationUser.findMany({
-		where: { userId, status: 'ACTIVE' },
-		select: {
-			organization: { select: { id: true, name: true, slug: true } },
-		},
-	});
-
-	return orgs;
+	return (await listDashboardOrganizationsForUser(userId)).map((organization) => ({
+		organization,
+	}));
 }
 
-async function getValidatedInviteToken(token: string) {
+async function getInviteTokenByToken(token: string) {
 	const tokenHash = hashToken(token);
 
-	const inviteToken = await prisma.inviteToken.findUnique({
+	return prisma.inviteToken.findUnique({
 		where: { tokenHash },
 		include: {
 			organization: { select: { id: true, slug: true, name: true } },
@@ -443,11 +715,18 @@ async function getValidatedInviteToken(token: string) {
 				select: {
 					id: true,
 					userId: true,
+					status: true,
+					leftAt: true,
 					user: {
 						select: {
 							id: true,
 							email: true,
 							passwordHash: true,
+						},
+					},
+					carer: {
+						select: {
+							id: true,
 						},
 					},
 				},
@@ -479,7 +758,11 @@ async function getValidatedInviteToken(token: string) {
 			},
 		},
 	});
+}
 
+function getPendingInviteTokenOrThrow(
+	inviteToken: Awaited<ReturnType<typeof getInviteTokenByToken>>,
+) {
 	if (
 		!inviteToken ||
 		inviteToken.usedAt ||
@@ -495,4 +778,36 @@ async function getValidatedInviteToken(token: string) {
 	}
 
 	return inviteToken;
+}
+
+function getAcceptedCarerInvite(
+	inviteToken: Awaited<ReturnType<typeof getInviteTokenByToken>>,
+) {
+	if (
+		!inviteToken ||
+		inviteToken.kind !== 'CARER' ||
+		!inviteToken.usedAt ||
+		inviteToken.revokedAt ||
+		!inviteToken.organizationUser ||
+		inviteToken.organizationUser.status !== 'ACTIVE' ||
+		!inviteToken.organizationUser.carer
+	) {
+		return null;
+	}
+
+	return inviteToken;
+}
+
+function buildAcceptedCarerInviteResult(
+	inviteToken: NonNullable<ReturnType<typeof getAcceptedCarerInvite>>,
+): AcceptInviteResult {
+	return {
+		userId: inviteToken.organizationUser!.userId,
+		email: inviteToken.email,
+		organization: inviteToken.organization,
+		inviteKind: inviteToken.kind,
+		setAuthSession: false,
+		nextStep: 'carer_app_download',
+		inviteState: 'accepted',
+	};
 }

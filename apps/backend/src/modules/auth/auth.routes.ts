@@ -10,6 +10,7 @@ import {
 	registerController,
 	changePasswordController,
 	myOrganizationsController,
+	resetPasswordController,
 } from './auth.controller';
 import {
 	acceptInviteOpts,
@@ -41,6 +42,7 @@ export async function authRoutes(app: FastifyInstance) {
 		forgotPasswordOpts,
 		forgotPasswordController(app),
 	);
+	app.post('/reset-password', resetPasswordOpts, resetPasswordController(app));
 	app.put(
 		'/change-password',
 		{ ...changePasswordOpts, preHandler: [authenticate(app)] },

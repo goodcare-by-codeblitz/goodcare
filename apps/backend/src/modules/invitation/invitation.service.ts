@@ -100,8 +100,6 @@ export async function createInviteService(input: CreateInviteInput) {
 			update: {
 				status: 'INVITED',
 				invitedById: invitedByUserId,
-				leftAt: null,
-				joinedAt: null,
 			},
 			create: {
 				userId: user.id,

@@ -17,12 +17,19 @@ export async function processEmailJob(job: Job<EmailJobPayload>): Promise<void> 
       );
       break;
     case 'password_reset':
-      await sendEmail(
-        data.to,
-        'Reset your GoodCare password',
-        `Reset your password using the link below (expires ${data.expiresAt.toISOString()}):\n\n${buildBaseAppUrl(`/reset-password?token=${data.resetToken}`)}`,
-      );
-      break;
+      {
+        const params = new URLSearchParams({ token: data.resetToken });
+        if (data.nextPath) {
+          params.set('next', data.nextPath);
+        }
+
+        await sendEmail(
+          data.to,
+          'Reset your GoodCare password',
+          `Reset your password using the link below (expires ${data.expiresAt.toISOString()}):\n\n${buildBaseAppUrl(`/reset-password?${params.toString()}`)}`,
+        );
+        break;
+      }
     case 'invitation':
       await sendEmail(
         data.to,

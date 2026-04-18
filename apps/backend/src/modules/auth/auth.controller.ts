@@ -14,10 +14,12 @@ import {
 
 import { resolveOrganizationFromRequest } from '../../../utils/org-resolver';
 import { hashToken } from '../../../utils/token-hash';
+import { CARER_ROLE_NAME } from '../organisation/org-role.utils';
 import {
 	enqueuePasswordResetEmail,
 	enqueueWelcomeEmail,
 } from '../../jobs/email-queue';
+import { AppError } from '../../lib/errors';
 import { logAudit } from '../../lib/audit';
 import {
 	acceptInviteService,
@@ -27,6 +29,7 @@ import {
 	loginService,
 	logoutService,
 	myOrganizationsService,
+	resetPasswordService,
 	refreshService,
 	registerService,
 } from './auth.service';
@@ -36,6 +39,7 @@ import type {
 	ForgotPasswordBody,
 	LoginBody,
 	RegisterBody,
+	ResetPasswordBody,
 } from './auth.types';
 
 export function registerController(app: FastifyInstance) {
@@ -205,6 +209,9 @@ export function forgotPasswordController(app: FastifyInstance) {
 					to: request.body.email.toLowerCase().trim(),
 					resetToken: result.resetToken,
 					expiresAt: result.expiresAt,
+					...(request.body.nextPath
+						? { nextPath: request.body.nextPath }
+						: {}),
 				});
 			}
 
@@ -215,6 +222,56 @@ export function forgotPasswordController(app: FastifyInstance) {
 		} catch (err: any) {
 			app.log.error({ err }, 'forgot-password failed');
 			return reply.status(500).send({ error: 'Internal server error' });
+		}
+	};
+}
+
+export function resetPasswordController(app: FastifyInstance) {
+	return async function handler(
+		request: FastifyRequest<{ Body: ResetPasswordBody }>,
+		reply: FastifyReply,
+	) {
+		try {
+			const sessionId = crypto.randomUUID();
+			const refreshToken = app.jwt.sign(
+				{ sid: sessionId, type: 'refresh' },
+				{ expiresIn: `${REFRESH_DAYS}d` },
+			);
+			const tokenHash = hashToken(refreshToken);
+			const expiresAt = refreshExpiryDate();
+			const ip = request.ip;
+			const userAgent = request.headers['user-agent'] ?? null;
+
+			const result = await resetPasswordService({
+				token: request.body.token,
+				newPassword: request.body.newPassword,
+				session: { sessionId, tokenHash, expiresAt, userAgent, ip },
+			});
+
+			const accessToken = app.jwt.sign(
+				{ sub: result.userId, email: result.email, type: 'access' },
+				{ expiresIn: ACCESS_TTL },
+			);
+
+			setAuthCookies(reply, { accessToken, refreshToken });
+
+			return reply.send({
+				message: 'Password reset successfully',
+				email: result.email,
+			});
+		} catch (err: any) {
+			app.log.error({ err }, 'reset-password failed');
+			if (err instanceof AppError) {
+				return reply.status(err.statusCode).send({
+					error: err.message,
+					code: err.code,
+					details: err.details,
+				});
+			}
+
+			return reply.status(400).send({
+				error: err?.message ?? 'Reset password failed',
+			});
 		}
 	};
 }
@@ -318,16 +375,18 @@ export function acceptInviteController(app: FastifyInstance) {
 				password: body.password,
 				firstName: body.firstName,
 				lastName: body.lastName,
-				currentUserId: await getCurrentUserIdFromSession(app, request),
+				currentUserId: (await getCurrentSessionUser(app, request))?.id ?? null,
 				session: { sessionId, tokenHash, expiresAt, userAgent, ip },
 			});
 
-			const accessToken = app.jwt.sign(
-				{ sub: result.userId, email: result.email, type: 'access' },
-				{ expiresIn: ACCESS_TTL },
-			);
+			if (result.setAuthSession) {
+				const accessToken = app.jwt.sign(
+					{ sub: result.userId, email: result.email, type: 'access' },
+					{ expiresIn: ACCESS_TTL },
+				);
 
-			setAuthCookies(reply, { accessToken, refreshToken });
+				setAuthCookies(reply, { accessToken, refreshToken });
+			}
 
 			logAudit({
 				action: 'CREATE',
@@ -347,9 +406,19 @@ export function acceptInviteController(app: FastifyInstance) {
 				message: 'Invitation accepted successfully',
 				email: result.email,
 				organization: result.organization,
+				inviteKind: result.inviteKind,
+				nextStep: result.nextStep,
+				inviteState: result.inviteState,
 			});
 		} catch (err: any) {
 			app.log.error({ err }, 'accept-invite failed');
+			if (err instanceof AppError) {
+				return reply.status(err.statusCode).send({
+					error: err.message,
+					code: err.code,
+					details: err.details,
+				});
+			}
 			return reply.status(400).send({
 				error: err?.message ?? 'Accept invite failed',
 			});
@@ -365,12 +434,19 @@ export function invitePreviewController(app: FastifyInstance) {
 		try {
 			const preview = await getInvitePreviewService(
 				request.query.token,
-				await getCurrentUserIdFromSession(app, request),
+				await getCurrentSessionUser(app, request),
 			);
 
 			return reply.send(preview);
 		} catch (err: any) {
 			app.log.error({ err }, 'invite-preview failed');
+			if (err instanceof AppError) {
+				return reply.status(err.statusCode).send({
+					error: err.message,
+					code: err.code,
+					details: err.details,
+				});
+			}
 			return reply.status(400).send({
 				error: err?.message ?? 'Unable to preview invite',
 			});
@@ -445,10 +521,12 @@ export function currentOrgAccessController() {
 	return async function handler(request: FastifyRequest, reply: FastifyReply) {
 		const user = request.user as { id: string };
 		const org = await resolveOrganizationFromRequest(request, user.id);
-		const authorized = org?.organizationUser?.status === 'ACTIVE';
+		const membershipActive = org?.organizationUser?.status === 'ACTIVE';
+		let authorized = false;
+		let reason: 'CARER_ONLY_ACCOUNT' | null = null;
 		let permissions: string[] = [];
 
-		if (authorized) {
+		if (membershipActive && org) {
 			const roleAssignments = await prisma.roleAssignment.findMany({
 				where: {
 					userId: user.id,
@@ -459,6 +537,7 @@ export function currentOrgAccessController() {
 						select: {
 							name: true,
 							scope: true,
+							organizationRoleKind: true,
 							permissions: {
 								select: {
 									permission: {
@@ -473,73 +552,95 @@ export function currentOrgAccessController() {
 				},
 			});
 
-			permissions = [
-				...new Set(
-					roleAssignments.flatMap((assignment) =>
-						assignment.role.permissions.map((entry) => entry.permission.key),
-					),
-				),
-			];
-
-			// Compatibility bridge: older environments may not have been reseeded yet
-			// with the new medication permissions, but Admin/Manager/Caregiver/Viewer
-			// should still retain the expected access model.
-			const roleKeys = new Set(
-				roleAssignments.map((assignment) =>
-					assignment.role.scope === 'ORGANIZATION'
-						? assignment.role.name
-						: `${assignment.role.scope}:${assignment.role.name}`,
-				),
+			const hasTeamRole = roleAssignments.some(
+				(assignment) => assignment.role.organizationRoleKind === 'TEAM',
+			);
+			const hasCarerRole = roleAssignments.some(
+				(assignment) => assignment.role.name === CARER_ROLE_NAME,
 			);
 
-			if (!permissions.includes('view_medications')) {
-				if (
-					roleKeys.has('Admin') ||
-					roleKeys.has('Manager') ||
-					roleKeys.has('Caregiver') ||
-					roleKeys.has('ORGANIZATION:Viewer')
-				) {
-					permissions.push('view_medications');
-				}
+			authorized = hasTeamRole;
+			if (!authorized && hasCarerRole) {
+				reason = 'CARER_ONLY_ACCOUNT';
 			}
 
-			if (!permissions.includes('manage_medications')) {
-				if (roleKeys.has('Admin') || roleKeys.has('Manager')) {
-					permissions.push('manage_medications');
-				}
-			}
+			if (authorized) {
+				permissions = [
+					...new Set(
+						roleAssignments.flatMap((assignment) =>
+							assignment.role.permissions.map((entry) => entry.permission.key),
+						),
+					),
+				];
 
-			if (!permissions.includes('administer_medications')) {
-				if (
-					roleKeys.has('Admin') ||
-					roleKeys.has('Manager') ||
-					roleKeys.has('Caregiver')
-				) {
-					permissions.push('administer_medications');
+				// Compatibility bridge: older environments may not have been reseeded yet
+				// with the new medication permissions, but Admin/Manager/Caregiver/Viewer
+				// should still retain the expected access model.
+				const roleKeys = new Set(
+					roleAssignments.map((assignment) =>
+						assignment.role.scope === 'ORGANIZATION'
+							? assignment.role.name
+							: `${assignment.role.scope}:${assignment.role.name}`,
+					),
+				);
+
+				if (!permissions.includes('view_medications')) {
+					if (
+						roleKeys.has('Admin') ||
+						roleKeys.has('Manager') ||
+						roleKeys.has('Caregiver') ||
+						roleKeys.has('ORGANIZATION:Viewer')
+					) {
+						permissions.push('view_medications');
+					}
+				}
+
+				if (!permissions.includes('manage_medications')) {
+					if (roleKeys.has('Admin') || roleKeys.has('Manager')) {
+						permissions.push('manage_medications');
+					}
+				}
+
+				if (!permissions.includes('administer_medications')) {
+					if (
+						roleKeys.has('Admin') ||
+						roleKeys.has('Manager') ||
+						roleKeys.has('Caregiver')
+					) {
+						permissions.push('administer_medications');
+					}
 				}
 			}
 		}
 
 		return reply.send({
 			authorized,
-			organizationId: authorized ? org.id : null,
-			organizationSlug: authorized ? org.slug : null,
-			organizationName: authorized ? org.name : null,
+			organizationId: authorized && org ? org.id : null,
+			organizationSlug: authorized && org ? org.slug : null,
+			organizationName: authorized && org ? org.name : null,
 			permissions,
+			reason,
 		});
 	};
 }
 
-async function getCurrentUserIdFromSession(
+async function getCurrentSessionUser(
 	app: FastifyInstance,
 	request: FastifyRequest,
 ) {
 	const token = request.cookies.access_token;
 	if (token) {
 		try {
-			const decoded = app.jwt.verify<{ sub: string; type: string }>(token);
+			const decoded = app.jwt.verify<{
+				sub: string;
+				email: string;
+				type: string;
+			}>(token);
 			if (decoded.type === 'access') {
-				return decoded.sub;
+				return {
+					id: decoded.sub,
+					email: decoded.email,
+				};
 			}
 		} catch {
 			// fall through to refresh-session lookup
@@ -563,6 +664,11 @@ async function getCurrentUserIdFromSession(
 				userId: true,
 				revokedAt: true,
 				expiresAt: true,
+				user: {
+					select: {
+						email: true,
+					},
+				},
 			},
 		});
 
@@ -570,7 +676,10 @@ async function getCurrentUserIdFromSession(
 			return null;
 		}
 
-		return session.userId;
+		return {
+			id: session.userId,
+			email: session.user.email,
+		};
 	} catch {
 		return null;
 	}

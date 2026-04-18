@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authApi } from '@/lib/api-client';
 import type { InvitePreview } from '@/lib/org-management';
 
 function getBackendBaseUrl() {
@@ -19,6 +20,22 @@ export function getInviteErrorMessage(error: unknown, fallback: string) {
 	}
 
 	return fallback;
+}
+
+export function getInviteErrorCode(error: unknown) {
+	if (axios.isAxiosError(error)) {
+		const detailsReason = error.response?.data?.details?.reason;
+		if (typeof detailsReason === 'string' && detailsReason.length > 0) {
+			return detailsReason;
+		}
+
+		const code = error.response?.data?.code;
+		if (typeof code === 'string' && code.length > 0) {
+			return code;
+		}
+	}
+
+	return null;
 }
 
 export async function previewInvite(token: string) {
@@ -52,5 +69,18 @@ export async function acceptInvite(input: {
 			slug: string;
 			name: string;
 		};
+		inviteKind: 'TEAM' | 'CARER';
+		nextStep: 'dashboard' | 'carer_app_download';
+		inviteState: 'pending' | 'accepted';
 	};
+}
+
+export async function logoutForInviteFlow() {
+	try {
+		await authApi.delete('/v1/auth/logout', {
+			withCredentials: true,
+		});
+	} catch {
+		// Ignore logout failures here so users can still continue to sign in.
+	}
 }

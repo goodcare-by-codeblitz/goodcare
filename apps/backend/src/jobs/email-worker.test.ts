@@ -61,5 +61,26 @@ describe('processEmailJob', () => {
 		);
 		expect(mocks.sendEmail.mock.calls[0]?.[2]).not.toContain('app.goodcarepro.co.uk');
 	});
-});
 
+	it('preserves the requested return path in password reset emails', async () => {
+		const expiresAt = new Date('2026-04-18T12:00:00.000Z');
+
+		await processEmailJob({
+			data: {
+				type: 'password_reset',
+				to: 'invitee@example.com',
+				resetToken: 'reset-123',
+				expiresAt,
+				nextPath: '/invite/accept?token=invite-789',
+			},
+		} as any);
+
+		expect(mocks.sendEmail).toHaveBeenCalledWith(
+			'invitee@example.com',
+			'Reset your GoodCare password',
+			expect.stringContaining(
+				'http://goodcare.local:3000/reset-password?token=reset-123&next=%2Finvite%2Faccept%3Ftoken%3Dinvite-789',
+			),
+		);
+	});
+});

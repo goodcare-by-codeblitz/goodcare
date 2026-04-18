@@ -3,13 +3,34 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { broadcastAuthEvent, buildOrgAppUrl } from '@/lib/auth-session';
-import { acceptInvite, getInviteErrorMessage, previewInvite } from '@/lib/invite';
+import { buildOrgAppUrl } from '@/lib/auth-session';
+import {
+	acceptInvite,
+	getInviteErrorCode,
+	getInviteErrorMessage,
+	previewInvite,
+} from '@/lib/invite';
 import type { InvitePreview } from '@/lib/org-management';
-import { ArrowRight, CheckCircle2, Lock, Mail, Shield } from 'lucide-react';
+import {
+	ArrowRight,
+	CheckCircle2,
+	KeyRound,
+	Lock,
+	Mail,
+	Shield,
+	UserRoundCheck,
+	UserX2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+	FormEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 
 function roleSummary(preview: InvitePreview) {
 	return preview.roles.map((role) => role.name).join(', ');
@@ -31,55 +52,200 @@ export default function AcceptInvitePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
+	const [statusMessage, setStatusMessage] = useState('');
+	const autoAcceptAttemptedRef = useRef(false);
+	const isSubmittingRef = useRef(false);
+	const redirectingRef = useRef(false);
 
-	useEffect(() => {
-		let isMounted = true;
-
-		const load = async () => {
-			if (!token) {
-				setErrorMessage('This invitation link is missing its token.');
-				setIsLoading(false);
+	const redirectToCarerAccepted = useCallback(
+		(details: { organizationName: string; email: string; name: string }) => {
+			if (redirectingRef.current) {
 				return;
 			}
 
-			try {
-				setIsLoading(true);
-				setErrorMessage('');
-				const result = await previewInvite(token);
-				if (!isMounted) {
-					return;
-				}
+			redirectingRef.current = true;
+			setErrorMessage('');
+			setStatusMessage('Opening mobile app setup...');
 
-				setPreview(result);
-				setFirstName(result.firstName);
-				setLastName(result.lastName);
-			} catch (error) {
-				if (!isMounted) {
-					return;
-				}
+			const params = new URLSearchParams({
+				org: details.organizationName,
+				email: details.email,
+				name: details.name,
+			});
+			window.location.replace(`/invite/accepted/carer?${params.toString()}`);
+		},
+		[],
+	);
 
-				setErrorMessage(
-					getInviteErrorMessage(error, 'Unable to load this invitation.'),
-				);
-			} finally {
-				if (isMounted) {
-					setIsLoading(false);
-				}
+	const loadPreview = useCallback(async () => {
+		if (redirectingRef.current) {
+			return;
+		}
+
+		if (!token) {
+			setErrorMessage('This invitation link is missing its token.');
+			setIsLoading(false);
+			return;
+		}
+
+		try {
+			setIsLoading(true);
+			setErrorMessage('');
+			const result = await previewInvite(token);
+			if (result.kind === 'CARER' && result.inviteState === 'accepted') {
+				redirectToCarerAccepted({
+					organizationName: result.organization.name,
+					email: result.email,
+					name: `${result.firstName} ${result.lastName}`.trim() || result.email,
+				});
+				return;
 			}
-		};
+			setPreview(result);
+			setFirstName(result.firstName);
+			setLastName(result.lastName);
+		} catch (error) {
+			if (redirectingRef.current) {
+				return;
+			}
+			setErrorMessage(
+				getInviteErrorMessage(error, 'Unable to load this invitation.'),
+			);
+		} finally {
+			if (!redirectingRef.current) {
+				setIsLoading(false);
+			}
+		}
+	}, [redirectToCarerAccepted, token]);
 
-		void load();
+	useEffect(() => {
+		autoAcceptAttemptedRef.current = false;
+		void loadPreview();
+	}, [loadPreview]);
 
-		return () => {
-			isMounted = false;
-		};
-	}, [token]);
+	const forgotPasswordPath = useMemo(() => {
+		if (!preview) {
+			return '/forgot-password';
+		}
 
+		const params = new URLSearchParams({
+			email: preview.email,
+			next: nextLoginPath,
+		});
+
+		return `/forgot-password?${params.toString()}`;
+	}, [nextLoginPath, preview]);
+
+	const loginHref = useMemo(() => {
+		const params = new URLSearchParams({
+			next: nextLoginPath,
+		});
+
+		if (preview?.email) {
+			params.set('email', preview.email);
+		}
+
+		return `/login?${params.toString()}`;
+	}, [nextLoginPath, preview?.email]);
+
+	const performAcceptance = useCallback(
+		async (input?: {
+			password?: string;
+			firstName?: string;
+			lastName?: string;
+		}) => {
+			if (!token || !preview || isSubmittingRef.current || redirectingRef.current) {
+				return;
+			}
+
+			isSubmittingRef.current = true;
+			setIsSubmitting(true);
+			setErrorMessage('');
+			setStatusMessage('Joining organization...');
+
+			try {
+				const result = await acceptInvite({
+					token,
+					password: input?.password,
+					firstName: input?.firstName,
+					lastName: input?.lastName,
+				});
+
+				if (result.inviteKind === 'CARER') {
+					redirectToCarerAccepted({
+						organizationName: result.organization.name,
+						email: result.email,
+						name: `${firstName.trim()} ${lastName.trim()}`.trim() || result.email,
+					});
+					return;
+				}
+
+				const destination =
+					buildOrgAppUrl(result.organization.slug, '/dashboard') ?? '/dashboard';
+				redirectingRef.current = true;
+				window.location.replace(destination);
+			} catch (error) {
+				const reason = getInviteErrorCode(error);
+				setStatusMessage('');
+				if (preview.kind === 'CARER' && reason === 'INVALID_INVITE_TOKEN') {
+					await loadPreview();
+					if (redirectingRef.current) {
+						return;
+					}
+
+					setErrorMessage(
+						getInviteErrorMessage(error, 'Unable to accept this invitation.'),
+					);
+				} else if (
+					reason === 'INVITED_ACCOUNT_SIGN_IN_REQUIRED' ||
+					reason === 'SIGNED_IN_AS_DIFFERENT_USER'
+				) {
+					await loadPreview();
+					setErrorMessage(
+						reason === 'SIGNED_IN_AS_DIFFERENT_USER'
+							? 'You are signed in as a different GoodCare account. Switch accounts and try again.'
+							: 'This invitation belongs to an existing account. Sign in or reset that account password before continuing.',
+					);
+				} else {
+					setErrorMessage(
+						getInviteErrorMessage(error, 'Unable to accept this invitation.'),
+					);
+				}
+				isSubmittingRef.current = false;
+				setIsSubmitting(false);
+			}
+		},
+		[firstName, lastName, loadPreview, preview, redirectToCarerAccepted, token],
+	);
+
+	useEffect(() => {
+		if (!preview || preview.kind === 'CARER') {
+			return;
+		}
+
+		if (preview.acceptanceMode !== 'signed_in_match') {
+			return;
+		}
+
+		if (autoAcceptAttemptedRef.current) {
+			return;
+		}
+
+		autoAcceptAttemptedRef.current = true;
+		void performAcceptance();
+	}, [performAcceptance, preview]);
+
+	const isCarerInvite = preview?.kind === 'CARER';
 	const requiresPassword = preview?.acceptanceMode === 'new_user';
+	const isExistingAccount = preview?.hasExistingAccount ?? false;
+	const isFormerMember = preview?.wasFormerMember ?? false;
+	const isSignedInMismatch = !isCarerInvite && preview?.acceptanceMode === 'signed_in_mismatch';
+	const isSignedInMatch = !isCarerInvite && preview?.acceptanceMode === 'signed_in_match';
+	const requiresExistingTeamLogin =
+		!isCarerInvite && preview?.acceptanceMode === 'existing_user_login_required';
 
 	const handleAccept = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		if (!preview || !token) {
+		if (!preview || !token || isSubmittingRef.current || redirectingRef.current) {
 			return;
 		}
 
@@ -95,25 +261,23 @@ export default function AcceptInvitePage() {
 			}
 		}
 
-		try {
-			setIsSubmitting(true);
-			setErrorMessage('');
-			const result = await acceptInvite({
-				token,
-				password: requiresPassword ? password : undefined,
-				firstName: firstName.trim() || undefined,
-				lastName: lastName.trim() || undefined,
-			});
+		await performAcceptance({
+			password: requiresPassword ? password : undefined,
+			firstName: firstName.trim() || undefined,
+			lastName: lastName.trim() || undefined,
+		});
+	};
 
-			broadcastAuthEvent('login');
-			const destination =
-				buildOrgAppUrl(result.organization.slug, '/dashboard') ?? '/dashboard';
-			window.location.replace(destination);
-		} catch (error) {
-			setErrorMessage(
-				getInviteErrorMessage(error, 'Unable to accept this invitation.'),
-			);
-			setIsSubmitting(false);
+	const handleCheckAgain = async () => {
+		if (redirectingRef.current) {
+			return;
+		}
+
+		autoAcceptAttemptedRef.current = false;
+		setStatusMessage('Checking sign-in status...');
+		await loadPreview();
+		if (!redirectingRef.current) {
+			setStatusMessage('');
 		}
 	};
 
@@ -152,6 +316,11 @@ export default function AcceptInvitePage() {
 							{errorMessage}
 						</div>
 					) : null}
+					{statusMessage ? (
+						<div className='rounded-2xl border border-care-blue/20 bg-care-blue-light/40 px-4 py-3 text-sm font-medium text-care-blue'>
+							{statusMessage}
+						</div>
+					) : null}
 
 					{preview ? (
 						<div className='grid gap-4 rounded-2xl border border-border bg-slate-50 px-5 py-5 sm:grid-cols-2'>
@@ -179,7 +348,86 @@ export default function AcceptInvitePage() {
 						</div>
 					) : null}
 
-					{preview?.acceptanceMode === 'existing_user_login_required' ? (
+					{preview && isExistingAccount ? (
+						<div className='rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5'>
+							<div className='flex items-start gap-3'>
+								<UserRoundCheck className='mt-0.5 size-5 shrink-0 text-slate-600' />
+								<div>
+									<p className='text-sm font-semibold text-foreground'>
+										{isFormerMember
+											? 'This person previously belonged to this organization.'
+											: 'This email already belongs to a GoodCare account.'}
+									</p>
+									<p className='mt-2 text-sm leading-relaxed text-slate-700'>
+										{isCarerInvite
+											? isFormerMember
+												? 'The earlier membership ended, but the carer account was preserved. You can accept this invite directly and continue to the mobile app setup screen.'
+												: 'This carer already has a GoodCare account, but you can still accept this invite directly from this page.'
+											: isFormerMember
+												? 'The organization membership ended earlier, but the underlying GoodCare account was preserved for history and audit records. Rejoining uses that same account.'
+												: 'This invite must be accepted by signing in as the existing account rather than creating a second user.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					) : null}
+
+					{isCarerInvite && preview?.currentSessionUser ? (
+						<div className='rounded-2xl border border-care-blue/20 bg-care-blue-light/40 px-5 py-5'>
+							<div className='flex items-start gap-3'>
+								<CheckCircle2 className='mt-0.5 size-5 shrink-0 text-care-blue' />
+								<div>
+									<p className='text-sm font-semibold text-foreground'>
+										This invite can be accepted directly.
+									</p>
+									<p className='mt-2 text-sm leading-relaxed text-slate-700'>
+										This browser is currently signed in as{' '}
+										<span className='font-semibold'>
+											{preview.currentSessionUser.email}
+										</span>
+										, but accepting this carer invite will not sign that user out or
+										change the current dashboard session.
+									</p>
+								</div>
+							</div>
+						</div>
+					) : null}
+
+					{isSignedInMismatch ? (
+						<div className='rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5'>
+							<div className='flex items-start gap-3'>
+								<UserX2 className='mt-0.5 size-5 shrink-0 text-amber-700' />
+								<div>
+									<p className='text-sm font-semibold text-foreground'>
+										You are signed in as a different account.
+									</p>
+									<p className='mt-2 text-sm leading-relaxed text-slate-700'>
+										This invitation is for{' '}
+										<span className='font-semibold'>{preview?.email}</span>, but this
+										browser is currently signed in as{' '}
+										<span className='font-semibold'>
+											{preview?.currentSessionUser?.email}
+										</span>
+										. Sign in as the invited user to continue.
+									</p>
+									<div className='mt-4 flex flex-wrap gap-3'>
+										<Link href={loginHref}>
+											<Button className='gap-2'>
+												<Lock className='size-4' aria-hidden='true' />
+												Sign in as invited user
+											</Button>
+										</Link>
+										<Link href={forgotPasswordPath}>
+											<Button variant='outline' className='gap-2'>
+												<KeyRound className='size-4' aria-hidden='true' />
+												Reset invited account password
+											</Button>
+										</Link>
+									</div>
+								</div>
+							</div>
+						</div>
+					) : requiresExistingTeamLogin ? (
 						<div className='rounded-2xl border border-care-blue/20 bg-care-blue-light/40 px-5 py-5'>
 							<div className='flex items-start gap-3'>
 								<CheckCircle2 className='mt-0.5 size-5 shrink-0 text-care-blue' />
@@ -189,25 +437,38 @@ export default function AcceptInvitePage() {
 									</p>
 									<p className='mt-2 text-sm leading-relaxed text-slate-700'>
 										Sign in as <span className='font-semibold'>{preview.email}</span> and
-										then continue the acceptance flow. Your existing password stays the
-										same.
+										we&apos;ll accept the invitation automatically as soon as the correct
+										account returns here. If you no longer remember the password, reset
+										it without creating a duplicate account.
 									</p>
 									<div className='mt-4 flex flex-wrap gap-3'>
-										<Link href={`/login?next=${encodeURIComponent(nextLoginPath)}`}>
+										<Link href={loginHref}>
 											<Button className='gap-2'>
 												<Lock className='size-4' aria-hidden='true' />
 												Sign in to continue
 											</Button>
 										</Link>
-										<button
+										<Link href={forgotPasswordPath}>
+											<Button variant='outline' className='gap-2'>
+												<KeyRound className='size-4' aria-hidden='true' />
+												Reset password
+											</Button>
+										</Link>
+										<Button
 											type='button'
-											onClick={() => window.location.reload()}
-											className='inline-flex h-10 items-center rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted'>
-											I already signed in
-										</button>
+											variant='outline'
+											onClick={() => void handleCheckAgain()}
+											disabled={isSubmitting}>
+											Check again
+										</Button>
 									</div>
 								</div>
 							</div>
+						</div>
+					) : isSignedInMatch ? (
+						<div className='rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800'>
+							You are signed in as the invited account. We are accepting the
+							invitation now and moving you into this organization.
 						</div>
 					) : (
 						<form className='space-y-6' onSubmit={handleAccept}>
@@ -250,23 +511,27 @@ export default function AcceptInvitePage() {
 											id='invite-confirmPassword'
 											type='password'
 											value={confirmPassword}
-											onChange={(event) => setConfirmPassword(event.target.value)}
+											onChange={(event) =>
+												setConfirmPassword(event.target.value)
+											}
 											autoComplete='new-password'
 										/>
 									</div>
 								</div>
-							) : (
-								<div className='rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800'>
-									You are already signed in as the invited account, so we only need your
-									confirmation to join this organization.
+							) : null}
+
+							{isCarerInvite ? (
+								<div className='rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5 text-sm leading-relaxed text-slate-700'>
+									Accepting this invitation will link the carer to staff records and
+									then take them to the mobile app download screen.
 								</div>
-							)}
+							) : null}
 
 							<div className='flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end'>
 								<Link
-									href='/login'
+									href={isCarerInvite ? '/' : '/login'}
 									className='inline-flex h-11 items-center justify-center rounded-lg border border-border px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted'>
-									Back to login
+									{isCarerInvite ? 'Back home' : 'Back to login'}
 								</Link>
 								<Button type='submit' disabled={isSubmitting} className='h-11 gap-2 px-5'>
 									{isSubmitting ? 'Joining...' : 'Accept invitation'}

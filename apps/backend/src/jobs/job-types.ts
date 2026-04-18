@@ -13,6 +13,7 @@ export type PasswordResetEmailPayload = {
   to: string;
   resetToken: string;
   expiresAt: Date;
+  nextPath?: string;
 };
 
 export type InvitationEmailPayload = {

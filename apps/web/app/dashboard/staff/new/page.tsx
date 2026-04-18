@@ -34,7 +34,9 @@ function FormSection({
 					className='font-heading text-base font-bold text-foreground'>
 					{title}
 				</h2>
-				{description ? <p className='mt-1 text-sm text-slate-600'>{description}</p> : null}
+				{description ? (
+					<p className='mt-1 text-sm text-slate-600'>{description}</p>
+				) : null}
 			</div>
 			<div className='px-6 py-6'>{children}</div>
 		</section>
@@ -66,7 +68,10 @@ export default function AddCarerPage() {
 			} catch (error) {
 				if (isMounted) {
 					setErrorMessage(
-						getOrgManagementError(error, 'Unable to load the current organization.'),
+						getOrgManagementError(
+							error,
+							'Unable to load the current organization.',
+						),
 					);
 				}
 			} finally {
@@ -114,7 +119,7 @@ export default function AddCarerPage() {
 	};
 
 	return (
-		<div className='mx-auto max-w-6/12 p-4'>
+		<div className='mx-auto max-w-10/12 p-4'>
 			<nav aria-label='Breadcrumb' className='mb-6'>
 				<ol className='flex items-center gap-1.5 text-sm'>
 					<li>
@@ -148,8 +153,8 @@ export default function AddCarerPage() {
 					</h1>
 				</div>
 				<p className='mt-3 max-w-xl text-sm leading-relaxed text-slate-600'>
-					Send a dedicated carer invitation. This flow is separate from team admin
-					and manager invites.
+					Send a dedicated carer invitation. This flow is separate from team
+					admin and manager invites.
 				</p>
 			</div>
 
@@ -205,8 +210,8 @@ export default function AddCarerPage() {
 								className='h-10'
 							/>
 							<p className='text-xs text-slate-500'>
-								Phone is kept here for reference in the form, but only name and email
-								are sent in this invitation-focused pass.
+								Phone is kept here for reference in the form, but only name and
+								email are sent in this invitation-focused pass.
 							</p>
 						</div>
 					</div>
@@ -222,9 +227,9 @@ export default function AddCarerPage() {
 					<div>
 						<p className='text-sm font-bold text-foreground'>Current Scope</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							Address details, compliance documents, and qualifications are not saved
-							by this invite flow yet. They will be collected in a later onboarding
-							step.
+							Address details, compliance documents, and qualifications are not
+							saved by this invite flow yet. They will be collected in a later
+							onboarding step.
 						</p>
 					</div>
 				</div>
@@ -237,10 +242,13 @@ export default function AddCarerPage() {
 						aria-hidden='true'
 					/>
 					<div>
-						<p className='text-sm font-bold text-foreground'>Invitation Workflow</p>
+						<p className='text-sm font-bold text-foreground'>
+							Invitation Workflow
+						</p>
 						<p className='mt-1 text-sm leading-relaxed text-slate-700'>
-							The carer will receive an email invitation and will be onboarded with
-							the caregiver access path, separate from team admin and manager roles.
+							The carer will receive an email invitation and will be onboarded
+							with the caregiver access path, separate from team admin and
+							manager roles.
 						</p>
 					</div>
 				</div>
@@ -263,7 +271,9 @@ export default function AddCarerPage() {
 						disabled={!canSubmit || isSubmitting || isLoading}
 						className='h-11 gap-2 bg-care-blue px-6 text-sm font-semibold shadow-md hover:bg-care-blue-hover'>
 						<Mail className='size-4' aria-hidden='true' />
-						{isSubmitting ? 'Sending Invitation...' : 'Invite Care Professional'}
+						{isSubmitting
+							? 'Sending Invitation...'
+							: 'Invite Care Professional'}
 					</Button>
 				</div>
 			</form>

@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ACCESS_TTL } from '../../../utils/cookies';
 
 const mocks = vi.hoisted(() => ({
+	acceptInviteService: vi.fn(),
 	loginService: vi.fn(),
 	refreshService: vi.fn(),
 	logoutService: vi.fn(),
 	changePasswordService: vi.fn(),
+	resetPasswordService: vi.fn(),
 	resolveOrganizationFromRequest: vi.fn(),
 }));
 
@@ -32,20 +34,24 @@ vi.mock('../../../utils/org-resolver', () => ({
 }));
 
 vi.mock('./auth.service', () => ({
-	acceptInviteService: vi.fn(),
+	acceptInviteService: mocks.acceptInviteService,
 	changePasswordService: mocks.changePasswordService,
 	forgotPasswordService: vi.fn(),
 	loginService: mocks.loginService,
 	logoutService: mocks.logoutService,
 	myOrganizationsService: vi.fn(),
+	resetPasswordService: mocks.resetPasswordService,
 	refreshService: mocks.refreshService,
 	registerService: vi.fn(),
 }));
 
 import {
+	acceptInviteController,
 	changePasswordController,
+	currentOrgAccessController,
 	loginController,
 	logoutController,
+	resetPasswordController,
 	refreshController,
 } from './auth.controller';
 
@@ -209,5 +215,123 @@ describe('auth controllers', () => {
 			'refresh_token',
 			expect.objectContaining({ path: '/' }),
 		);
+	});
+
+	it('resetPasswordController signs the user in after a successful password reset', async () => {
+		const app = createApp();
+		const reply = createReply();
+		mocks.resetPasswordService.mockResolvedValue({
+			userId: 'user-1',
+			email: 'carer@example.com',
+		});
+
+		await resetPasswordController(app)(
+			{
+				body: {
+					token: 'reset-token',
+					newPassword: 'new-password-123',
+				},
+				headers: {},
+				ip: '127.0.0.1',
+			} as any,
+			reply as any,
+		);
+
+		expect(mocks.resetPasswordService).toHaveBeenCalledWith(
+			expect.objectContaining({
+				token: 'reset-token',
+				newPassword: 'new-password-123',
+			}),
+		);
+		expect(reply.setCookie).toHaveBeenCalledTimes(2);
+		expect(reply.send).toHaveBeenCalledWith({
+			message: 'Password reset successfully',
+			email: 'carer@example.com',
+		});
+	});
+
+	it('currentOrgAccessController marks carer-only memberships as unauthorized', async () => {
+		const reply = createReply();
+		mocks.resolveOrganizationFromRequest.mockResolvedValue({
+			id: 'org-1',
+			slug: 'great-care',
+			name: 'Great Care',
+			organizationUser: {
+				status: 'ACTIVE',
+			},
+		});
+
+		const { prisma } = await import('@repo/db');
+		(prisma.roleAssignment.findMany as any).mockResolvedValue([
+			{
+				role: {
+					name: 'Caregiver',
+					scope: 'ORGANIZATION',
+					organizationRoleKind: 'CARER',
+					permissions: [],
+				},
+			},
+		]);
+
+		await currentOrgAccessController()(
+			{
+				user: { id: 'user-1' },
+				headers: {
+					'x-org-slug': 'great-care',
+				},
+			} as any,
+			reply as any,
+		);
+
+		expect(reply.send).toHaveBeenCalledWith({
+			authorized: false,
+			organizationId: null,
+			organizationSlug: null,
+			organizationName: null,
+			permissions: [],
+			reason: 'CARER_ONLY_ACCOUNT',
+		});
+	});
+
+	it('acceptInviteController does not rewrite auth cookies for carer invite acceptance', async () => {
+		const app = createApp();
+		const reply = createReply();
+		mocks.acceptInviteService.mockResolvedValue({
+			userId: 'user-1',
+			email: 'carer@example.com',
+			organization: {
+				id: 'org-1',
+				slug: 'great-care',
+				name: 'Great Care',
+			},
+			inviteKind: 'CARER',
+			setAuthSession: false,
+			nextStep: 'carer_app_download',
+			inviteState: 'accepted',
+		});
+
+		await acceptInviteController(app)(
+			{
+				body: { token: 'invite-token' },
+				cookies: {},
+				headers: {},
+				ip: '127.0.0.1',
+			} as any,
+			reply as any,
+		);
+
+		expect(reply.setCookie).not.toHaveBeenCalled();
+		expect(reply.send).toHaveBeenCalledWith({
+			message: 'Invitation accepted successfully',
+			email: 'carer@example.com',
+			organization: {
+				id: 'org-1',
+				slug: 'great-care',
+				name: 'Great Care',
+			},
+			inviteKind: 'CARER',
+			nextStep: 'carer_app_download',
+			inviteState: 'accepted',
+		});
 	});
 });

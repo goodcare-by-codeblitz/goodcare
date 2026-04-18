@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 type GuardState = 'checking' | 'allowed';
+const CARER_ONLY_ACCESS_REASON = 'CARER_ONLY_ACCOUNT';
 
 export function DashboardOrgGuard({
 	children,
@@ -49,6 +50,18 @@ export function DashboardOrgGuard({
 
 				if (response.data?.authorized) {
 					setGuardState('allowed');
+					return;
+				}
+
+				if (response.data?.reason === CARER_ONLY_ACCESS_REASON) {
+					clearSession();
+					const blockedUrl = buildBaseAppUrl('/carer-access');
+					if (blockedUrl) {
+						window.location.replace(blockedUrl);
+						return;
+					}
+
+					window.location.replace('/carer-access');
 					return;
 				}
 

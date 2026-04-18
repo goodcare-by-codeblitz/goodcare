@@ -15,14 +15,7 @@ import {
 	type CarerStatus,
 } from '@/lib/org-management';
 import { cn } from '@/lib/utils';
-import {
-	Clock,
-	Mail,
-	Search,
-	UserPlus,
-	Users,
-	X,
-} from 'lucide-react';
+import { Clock, Mail, Search, UserPlus, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -45,7 +38,9 @@ function getAvatarColor(seed: string) {
 		'bg-slate-500 text-white',
 	];
 
-	const hash = seed.split('').reduce((total, char) => total + char.charCodeAt(0), 0);
+	const hash = seed
+		.split('')
+		.reduce((total, char) => total + char.charCodeAt(0), 0);
 	return palette[hash % palette.length];
 }
 
@@ -79,7 +74,8 @@ function CarerStatusBadge({ status }: { status: FilterStatus }) {
 }
 
 function CarerRow({ carer }: { carer: CarerListItem }) {
-	const initials = `${carer.firstName[0] ?? ''}${carer.lastName[0] ?? ''}`.toUpperCase();
+	const initials =
+		`${carer.firstName[0] ?? ''}${carer.lastName[0] ?? ''}`.toUpperCase();
 	const avatarClassName = getAvatarColor(`${carer.firstName}${carer.lastName}`);
 
 	return (
@@ -129,8 +125,11 @@ function PendingInviteRow({
 	onRevoke: (inviteId: string) => void;
 	isRevoking: boolean;
 }) {
-	const initials = `${invite.firstName[0] ?? ''}${invite.lastName[0] ?? ''}`.toUpperCase();
-	const avatarClassName = getAvatarColor(`${invite.firstName}${invite.lastName}`);
+	const initials =
+		`${invite.firstName[0] ?? ''}${invite.lastName[0] ?? ''}`.toUpperCase();
+	const avatarClassName = getAvatarColor(
+		`${invite.firstName}${invite.lastName}`,
+	);
 	const expires = new Date(invite.expiresAt);
 	const daysLeft = Math.ceil(
 		(expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
@@ -183,7 +182,9 @@ export default function StaffPage() {
 	const [carers, setCarers] = useState<CarerListItem[]>([]);
 	const [pendingInvites, setPendingInvites] = useState<CarerInvite[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [isRevokingInviteId, setIsRevokingInviteId] = useState<string | null>(null);
+	const [isRevokingInviteId, setIsRevokingInviteId] = useState<string | null>(
+		null,
+	);
 	const [canManageCarers, setCanManageCarers] = useState(true);
 	const [errorMessage, setErrorMessage] = useState('');
 	const [inviteErrorMessage, setInviteErrorMessage] = useState('');
@@ -343,7 +344,9 @@ export default function StaffPage() {
 					<p className='text-sm font-medium text-red-600'>{errorMessage}</p>
 				) : null}
 				{inviteErrorMessage ? (
-					<p className='text-sm font-medium text-red-600'>{inviteErrorMessage}</p>
+					<p className='text-sm font-medium text-red-600'>
+						{inviteErrorMessage}
+					</p>
 				) : null}
 				{actionMessage ? (
 					<p className='text-sm font-medium text-green-600'>{actionMessage}</p>
@@ -355,19 +358,25 @@ export default function StaffPage() {
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						Total Carers
 					</p>
-					<p className='mt-1 text-2xl font-bold text-foreground'>{counts.total}</p>
+					<p className='mt-1 text-2xl font-bold text-foreground'>
+						{counts.total}
+					</p>
 				</div>
 				<div className='px-5 py-4'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						Active
 					</p>
-					<p className='mt-1 text-2xl font-bold text-success'>{counts.active}</p>
+					<p className='mt-1 text-2xl font-bold text-success'>
+						{counts.active}
+					</p>
 				</div>
 				<div className='border-t border-border px-5 py-4 sm:border-t-0'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
 						On Leave
 					</p>
-					<p className='mt-1 text-2xl font-bold text-care-blue'>{counts.onLeave}</p>
+					<p className='mt-1 text-2xl font-bold text-care-blue'>
+						{counts.onLeave}
+					</p>
 				</div>
 				<div className='border-t border-border px-5 py-4 sm:border-t-0'>
 					<p className='text-xs font-semibold uppercase tracking-wider text-slate-500'>
@@ -382,24 +391,26 @@ export default function StaffPage() {
 			<div className='rounded-xl border border-border bg-white shadow-sm'>
 				<div className='flex flex-col gap-3 border-b border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between'>
 					<div className='flex flex-wrap gap-2'>
-						{(['ALL', 'ACTIVE', 'ON_LEAVE', 'SUSPENDED'] as const).map((status) => (
-							<button
-								key={status}
-								type='button'
-								onClick={() => setFilterStatus(status)}
-								className={cn(
-									'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
-									filterStatus === status
-										? 'bg-care-blue text-white shadow-sm'
-										: 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-								)}>
-								{status === 'ALL'
-									? 'All'
-									: status === 'ON_LEAVE'
-										? 'On Leave'
-										: status.charAt(0) + status.slice(1).toLowerCase()}
-							</button>
-						))}
+						{(['ALL', 'ACTIVE', 'ON_LEAVE', 'SUSPENDED'] as const).map(
+							(status) => (
+								<button
+									key={status}
+									type='button'
+									onClick={() => setFilterStatus(status)}
+									className={cn(
+										'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
+										filterStatus === status
+											? 'bg-care-blue text-white shadow-sm'
+											: 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+									)}>
+									{status === 'ALL'
+										? 'All'
+										: status === 'ON_LEAVE'
+											? 'On Leave'
+											: status.charAt(0) + status.slice(1).toLowerCase()}
+								</button>
+							),
+						)}
 					</div>
 					<div className='relative w-full sm:w-64'>
 						<Search
@@ -437,7 +448,9 @@ export default function StaffPage() {
 				</div>
 
 				{isLoading ? (
-					<div className='px-6 py-12 text-sm text-slate-500'>Loading carers...</div>
+					<div className='px-6 py-12 text-sm text-slate-500'>
+						Loading carers...
+					</div>
 				) : filteredCarers.length > 0 ? (
 					<ul role='list' className='divide-y divide-border'>
 						{filteredCarers.map((carer) => (
@@ -449,7 +462,9 @@ export default function StaffPage() {
 				) : (
 					<div className='flex flex-col items-center gap-2 px-6 py-12 text-center'>
 						<Search className='size-8 text-slate-300' aria-hidden='true' />
-						<p className='text-sm font-semibold text-foreground'>No carers found</p>
+						<p className='text-sm font-semibold text-foreground'>
+							No carers found
+						</p>
 						<p className='text-xs text-slate-500'>
 							Try a different name or adjust the filter.
 						</p>

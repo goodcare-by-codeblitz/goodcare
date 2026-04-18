@@ -16,6 +16,7 @@ import {
 } from './org.controller';
 import {
   createRoleOpts,
+  listMembersOpts,
   listRolesOpts,
   memberParamsOpts,
   orgIdParamsOpts,
@@ -47,7 +48,7 @@ export async function orgRoutes(app: FastifyInstance) {
   // GET /orgs/:organizationId/members — list members
   app.get(
     '/:organizationId/members',
-    { ...orgIdParamsOpts, preHandler: [auth, orgScope, authorize('view_users')] },
+    { ...listMembersOpts, preHandler: [auth, orgScope, authorize('view_users')] },
     listMembersController,
   );
 
